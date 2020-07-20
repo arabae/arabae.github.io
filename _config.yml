@@ -1,0 +1,55 @@
+# Site Settings
+baseurl: ""
+url : "https://arabae.github.io"
+
+# Blog Settings
+theme_settings :
+  title : Grape Theme
+  favicon : assets/favicon.ico
+
+  # Profile Settings
+  profile :
+    image : assets/img/smile.png
+    username : ARa Bae
+    description : IMPRESS LAB 
+    Department of Computer Science & Engineering Incheon National University, Incheon, Korea
+    RESEARCH INTERESTS
+    Signal Processing, Speaker Recognition, and Machine Learning
+    
+    experience :
+      - start : 2018-01
+        end : 2018-08
+        experience : 기동어 발화 데이터를 이용한 화자 인식 기술 개발
+    skills : 
+      - skill : MATLAB
+        value : 70
+      - skill : C/C++
+        value : 30
+        
+  # Icons
+  icons :
+    email: arbae@inu.ac.kr
+    linkedin:  # Full URL 
+    github: arabae
+    gitlab: 
+    bitbucket: 
+    google_plus:
+    twitter:
+    youtube:
+    facebook:
+    instagram:
+
+  # Disqus
+  disqus_shortname :
+
+# Pagination
+paginate: 5
+paginate_path: "blog/page:num"
+
+# Build Ssttings
+sass:
+  sass_dir: _sass
+  style: :compressed
+gems: [jekyll-paginate]
+bootstrap:
+  assets: true
