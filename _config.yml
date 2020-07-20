@@ -4,14 +4,14 @@ url : "https://arabae.github.io"
 
 # Blog Settings
 theme_settings :
-  title : Grape Theme
+  title : ARa Blog
   favicon : assets/favicon.ico
 
   # Profile Settings
   profile :
     image : assets/img/smile.png
     username : ARa Bae
-    description: "Department of Computer Science & Engineering Incheon National University, Incheon, Korea"
+    description: "Speaker Recognition Blog"
 
     experience :
       - start : 2018-01
