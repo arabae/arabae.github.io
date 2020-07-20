@@ -11,8 +11,8 @@ theme_settings :
   profile :
     image : assets/img/smile.png
     username : ARa Bae
-    description : "IMPRESS LAB \"Department of Computer Science & Engineering Incheon National University, Incheon, Korea. \"RESEARCH INTERESTS \"Signal Processing, Speaker Recognition, and Machine Learning"
-    
+    description: "Department of Computer Science & Engineering Incheon National University, Incheon, Korea"
+
     experience :
       - start : 2018-01
         end : 2018-08
