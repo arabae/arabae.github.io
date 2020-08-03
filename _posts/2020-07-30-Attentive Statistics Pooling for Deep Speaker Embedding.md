@@ -1,11 +1,13 @@
-```HTML
+---
 layout: post
 title: Attentive Statistics Pooling for Deep Speaker Embedding : REVIEW
 subtitle : Koji Okabe, Takafumi Koshinaka, Koichi Shinoda
 tags: [SpeakerVerification, SpeakerRecognition, AttentionMechanism, ML, Statistics]
 author: Ara Bae
 comments : True
-```
+---
+
+
 
 
 
@@ -21,14 +23,12 @@ comments : True
 
 
 
-
-
-
 ---
 
 
 
 ### ▶ Introduction
+
 \- **화자 인식은 지난 10년동안 i-vector paradigm과 진화**하였고, i-vector는 고정된 저차원의 특징 벡터 형태로 음성 발화 혹은 화자를 표현
 
 \- 다양한 기계학습을 통해 Deep learning이 성능 향상에 크게 기여하며, 화자 인식을 위한 특징 추출에 Deep learning을 도입이 증가
@@ -61,12 +61,11 @@ comments : True
 
 
 
-
 ---
 
 
-
 ### ▶ Deep speaker embedding
+
 \- 기존의 DNN을 사용한 speaker embedding 추출 방법
 
 ​    · input : acoustic feature (MFCC, filter-bank 등)
@@ -77,14 +76,13 @@ comments : True
 
 ​    · utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
 
+
+
 <center><img src="https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png" alt="img" style="zoom:60%;" /></center>
 
 
 
-
 ---
-
-
 
 
 ### **▶ High-order pooling with attention**
@@ -100,6 +98,9 @@ comments : True
 \- 기계 번역에서 긴 문장의 성능 저하를 해결하기 위해 모델이 출력 단어를 예측할 때 **특정 단어를 집중**해서 보는 방법을 도입
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165571-b1f97780-d5b3-11ea-91e3-8fa3f49000fc.png" alt="img" style="zoom: 80%;" /><img src="https://user-images.githubusercontent.com/46676700/89165573-b1f97780-d5b3-11ea-9545-3a591f97f98d.png" alt="img" style="zoom: 50%;" /></center>
+
+
+
 
 
 <img src="https://user-images.githubusercontent.com/46676700/89165553-aefe8700-d5b3-11ea-9e0a-c4c8d5fc14a0.png" alt="img"/>
@@ -121,11 +122,12 @@ comments : True
 
 < Attentive statistics pooling>
 
-<center><img src="https://user-images.githubusercontent.com/46676700/89165563-b0c84a80-d5b3-11ea-9590-62c129a447e4.png" alt="img" style="zoom: 67%;" /><img src="https://user-images.githubusercontent.com/46676700/89165564-b0c84a80-d5b3-11ea-8a2f-c887055c76d8.png"  alt="img" style="zoom: 67%;" /></center>
+<center><img src="https://user-images.githubusercontent.com/46676700/89165563-b0c84a80-d5b3-11ea-9590-62c129a447e4.png" alt="img" style="zoom: 50%;" /><img src="https://user-images.githubusercontent.com/46676700/89165564-b0c84a80-d5b3-11ea-8a2f-c887055c76d8.png"  alt="img" style="zoom: 50%;" /></center>
 
 attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 standard deviation을 갱신**
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png"  alt="img" style="zoom: 67%;"/></center>
+
 
 
 ---
