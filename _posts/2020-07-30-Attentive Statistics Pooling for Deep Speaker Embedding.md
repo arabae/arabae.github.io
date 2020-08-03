@@ -5,9 +5,8 @@ subtitle : Koji Okabe, Takafumi Koshinaka, Koichi Shinoda
 tags: [SpeakerVerification, SpeakerRecognition, AttentionMechanism, ML, Statistics]
 author: Ara Bae
 comments : True
+
 ---
-
-
 
 
 
@@ -85,7 +84,7 @@ comments : True
 ---
 
 
-### **▶ High-order pooling with attention**
+### ▶ High-order pooling with attention
 
 < Statistics pooling - 기존에 사용하던 pooling 방법 >
 
@@ -134,7 +133,7 @@ attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 stan
 
 
 
-### **▶ Experimental settings**
+### ▶ Experimental settings
 
 **\- i-vector**
 
