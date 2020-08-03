@@ -1,4 +1,3 @@
-```
 ---
 layout: post
 title: Attentive Statistics Pooling for Deep Speaker Embedding : REVIEW
@@ -7,7 +6,6 @@ tags: [SpeakerVerification, SpeakerRecognition, AttentionMechanism, ML, Statisti
 author: Ara Bae
 comments : True
 ---
-```
 
 
 
