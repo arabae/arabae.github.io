@@ -1,15 +1,16 @@
----
+```HTML
 layout: post
 title: Attentive Statistics Pooling for Deep Speaker Embedding : REVIEW
 subtitle : Koji Okabe, Takafumi Koshinaka, Koichi Shinoda
 tags: [SpeakerVerification, SpeakerRecognition, AttentionMechanism, ML, Statistics]
 author: Ara Bae
 comments : True
----
+```
 
 
 
-### **▶ Abstract
+### ▶ Abstract
+
 \- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
 
 \- 기존의 speaker embedding에서는 단일 발화의 모든 frame에서 frame-level의 특징을 모두 평균 내어 utterance-level의 특징을 형성
@@ -27,7 +28,7 @@ comments : True
 
 
 
-### **▶ Introduction
+### ▶ Introduction
 \- **화자 인식은 지난 10년동안 i-vector paradigm과 진화**하였고, i-vector는 고정된 저차원의 특징 벡터 형태로 음성 발화 혹은 화자를 표현
 
 \- 다양한 기계학습을 통해 Deep learning이 성능 향상에 크게 기여하며, 화자 인식을 위한 특징 추출에 Deep learning을 도입이 증가
@@ -65,7 +66,7 @@ comments : True
 
 
 
-### **▶ Deep speaker embedding
+### ▶ Deep speaker embedding
 \- 기존의 DNN을 사용한 speaker embedding 추출 방법
 
 ​    · input : acoustic feature (MFCC, filter-bank 등)
@@ -76,7 +77,7 @@ comments : True
 
 ​    · utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
 
-<img src="https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png" alt="img" style="zoom:60%;" />
+<center><img src="https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png" alt="img" style="zoom:60%;" /></center>
 
 
 
@@ -92,7 +93,7 @@ comments : True
 
 \- frame-level 특징에 대해 평균(mean)과 표준 편차(standard deviation) 계산 (⊙ : Hadamard 곱)하여 concatenation
 
-<img src="https://user-images.githubusercontent.com/46676700/89165568-b160e100-d5b3-11ea-9a93-2a31b6530b2b.png" alt="img" style="zoom: 45%;" />
+<center><img src="https://user-images.githubusercontent.com/46676700/89165568-b160e100-d5b3-11ea-9a93-2a31b6530b2b.png" alt="img" style="zoom: 45%;" /></center>
 
 < Attention mechanism >
 
@@ -124,7 +125,7 @@ comments : True
 
 attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 standard deviation을 갱신**
 
-<img src="https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png"  alt="img" style="zoom: 67%;"/>
+<center><img src="https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png"  alt="img" style="zoom: 67%;"/></center>
 
 
 ---
