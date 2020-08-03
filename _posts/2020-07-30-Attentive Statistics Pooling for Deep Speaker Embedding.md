@@ -8,7 +8,6 @@ comments : True
 ---
 
 
-
 **▶ Abstract**
 
 \- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
@@ -19,7 +18,9 @@ comments : True
 
 \- NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소
 
-****
+
+---
+
 
 **▶ Introduction**
 
@@ -53,7 +54,9 @@ comments : True
 
 \- 가변 길이의 text-independent한 환경에서 attentive statisitics pooling을 사용하는 첫 번째 시도 이며, 다양한 pooling layer 비교를 통해 표준 편차가 화자 특성에 미치는 효과를 실험적으로 보여줌
 
-****
+
+---
+
 
 **▶ Deep speaker embedding**
 
@@ -63,13 +66,15 @@ comments : True
 
 ​    · frame-level의 특징 추출을 위해 TDNN, CNN, LSTM 등의 Neural Network
 
-​	· 가변 길이의 frame-level 특징을 고정 차원의 벡터로 변환하기 위한 pooling layer
-
-​	· utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
+​    · 가변 길이의 frame-level 특징을 고정 차원의 벡터로 변환하기 위한 pooling layer
+  
+​    · utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
 
 <img src="G:/gits/fig/1/1.png" alt="img" style="zoom:60%;"/>
 
+
 ---
+
 
 **▶ High-order pooling with attention**
 
@@ -87,21 +92,21 @@ comments : True
 
 
 
-<left><img src="G:/gits/fig/1/4.png" alt="img"/></left>
+<img src="G:/gits/fig/1/4.png" alt="img"/>
 
-\- decoder의 <span style="color:#a5cbf0">시간 i(현재)에서 hidden state 벡터</span>는 <span style="color:#a5cbf0">**시간 i-1(이전)의 hidden state 벡터**</span>와 <span style="color:#ffaddf">**시간 i-1(이전)에서 decoder의 output**</span>, 그리고 <span style="color:#7cbfb6">**시간 i(현재)에서의 context 벡터**</span>를 입력으로 계산
+\- decoder의 <span style="color:#a5cbf0">시간 i(현재)에서 hidden state 벡터</span>는 <span style="color:#a5cbf0">시간 i-1(이전)의 hidden state 벡터</span>와 <span style="color:#ffaddf">시간 i-1(이전)에서 decoder의 output</span>, 그리고 <span style="color:#7cbfb6">시간 i(현재)에서의 context 벡터</span>를 입력으로 계산
 
-<left><img src="G:/gits/fig/1/5.png" alt="img"/></left>
+<img src="G:/gits/fig/1/5.png" alt="img"/>
 
-\- <span style="color:#7cbfb6">context 벡터는</span> **시간 i에서 입력 x에 대한 길이 T** 전체에 대한 <span style="color:#f9d877">**encoder hidden state 벡터**</span>의 **가중합**으로 계산
+\- <span style="color:#7cbfb6">context 벡터는</span> 시간 i에서 입력 x에 대한 길이 T** 전체에 대한 <span style="color:#f9d877">encoder hidden state 벡터</span>의 **가중합**으로 계산
 
-<left><img src="G:/gits/fig/1/6.png" alt="img"/></left>
+<left><img src="G:/gits/fig/1/6.png" alt="img"/>
 
-\- 시간 i에서 j번째 단어의 energy는 <span style="color:#a5cbf0">**시간 i-1(이전)에서 decoder hidden state**</span>와<span style="color:#f9d877"> **j번째 encoder hidden state**</span>가 입력인 **aligment model(a)** 결과값 (alignment model은 tanh, ReLU 등 activation function)
+\- <span style="color:#33558c">시간 i에서 j번째 단어의 energy</span>는 <span style="color:#a5cbf0">**시간 i-1(이전)에서 decoder hidden state**</span>와<span style="color:#f9d877"> **j번째 encoder hidden state**</span>가 입력인 **aligment model(a)** 결과값 (alignment model은 tanh, ReLU 등 activation function)
 
-<left><img src="G:/gits/fig/1/7.png" alt="img"/></left>
+<img src="G:/gits/fig/1/7.png" alt="img"/>
 
-\- 중요도(가중치)는 <span style="color:#33558c">**energy****</span>에 softmax 함수를 적용**하여 가중치의 합이 1이 되도록 변환(확률값)
+\- 중요도(가중치)는 <span style="color:#33558c">energy</span>에 softmax 함수를 적용하여 가중치의 합이 1이 되도록 변환(확률값)
 
 
 
@@ -113,7 +118,9 @@ attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 stan
 
 <img src="G:/gits/fig/1/9.png"  alt="img" style="zoom: 67%;"/>
 
+
 ---
+
 
 **▶ Experimental settings**
 
