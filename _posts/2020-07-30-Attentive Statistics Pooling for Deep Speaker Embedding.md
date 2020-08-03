@@ -8,8 +8,8 @@ comments : True
 ---
 
 
-### **▶ Abstract**
 
+### **▶ Abstract
 \- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
 
 \- 기존의 speaker embedding에서는 단일 발화의 모든 frame에서 frame-level의 특징을 모두 평균 내어 utterance-level의 특징을 형성
@@ -21,12 +21,13 @@ comments : True
 
 
 
+
+
 ---
 
 
 
-### **▶ Introduction**
-
+### **▶ Introduction
 \- **화자 인식은 지난 10년동안 i-vector paradigm과 진화**하였고, i-vector는 고정된 저차원의 특징 벡터 형태로 음성 발화 혹은 화자를 표현
 
 \- 다양한 기계학습을 통해 Deep learning이 성능 향상에 크게 기여하며, 화자 인식을 위한 특징 추출에 Deep learning을 도입이 증가
@@ -64,8 +65,7 @@ comments : True
 
 
 
-### **▶ Deep speaker embedding**
-
+### **▶ Deep speaker embedding
 \- 기존의 DNN을 사용한 speaker embedding 추출 방법
 
 ​    · input : acoustic feature (MFCC, filter-bank 등)
@@ -85,6 +85,7 @@ comments : True
 
 
 
+
 ### **▶ High-order pooling with attention**
 
 < Statistics pooling - 기존에 사용하던 pooling 방법 >
@@ -98,7 +99,6 @@ comments : True
 \- 기계 번역에서 긴 문장의 성능 저하를 해결하기 위해 모델이 출력 단어를 예측할 때 **특정 단어를 집중**해서 보는 방법을 도입
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165571-b1f97780-d5b3-11ea-91e3-8fa3f49000fc.png" alt="img" style="zoom: 80%;" /><img src="https://user-images.githubusercontent.com/46676700/89165573-b1f97780-d5b3-11ea-9545-3a591f97f98d.png" alt="img" style="zoom: 50%;" /></center>
-
 
 
 <img src="https://user-images.githubusercontent.com/46676700/89165553-aefe8700-d5b3-11ea-9e0a-c4c8d5fc14a0.png" alt="img"/>
@@ -115,8 +115,6 @@ comments : True
 \- <span style="color:#33558c">**시간 i에서 j번째 단어의 energy**</span>는 **<span style="color:#a5cbf0">시간 i-1(이전)에서 decoder hidden state</span>**와**<span style="color:#f9d877"> j번째 encoder hidden state</span>**가 입력인 **aligment model(a)** 결과값 (alignment model은 tanh, ReLU 등 activation function)
 
 <img src="https://user-images.githubusercontent.com/46676700/89165560-b02fb400-d5b3-11ea-8753-68026664a442.png" alt="img"/>
-
-\- 중요도(가중치)는 <span style="color:#33558c">**energy**</span>에 softmax 함수를 적용하여 가중치의 합이 1이 되도록 변환(확률값)
 
 
 
