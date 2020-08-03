@@ -8,8 +8,7 @@ comments : True
 ---
 
 
-
-**▶ Abstract**
+### **▶ Abstract**
 
 \- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
 
@@ -19,9 +18,14 @@ comments : True
 
 \- NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소
 
-****
 
-**▶ Introduction**
+
+
+---
+
+
+
+### **▶ Introduction**
 
 \- **화자 인식은 지난 10년동안 i-vector paradigm과 진화**하였고, i-vector는 고정된 저차원의 특징 벡터 형태로 음성 발화 혹은 화자를 표현
 
@@ -53,9 +57,14 @@ comments : True
 
 \- 가변 길이의 text-independent한 환경에서 attentive statisitics pooling을 사용하는 첫 번째 시도 이며, 다양한 pooling layer 비교를 통해 표준 편차가 화자 특성에 미치는 효과를 실험적으로 보여줌
 
-****
 
-**▶ Deep speaker embedding**
+
+
+---
+
+
+
+### **▶ Deep speaker embedding**
 
 \- 기존의 DNN을 사용한 speaker embedding 추출 방법
 
@@ -63,80 +72,89 @@ comments : True
 
 ​    · frame-level의 특징 추출을 위해 TDNN, CNN, LSTM 등의 Neural Network
 
-​	· 가변 길이의 frame-level 특징을 고정 차원의 벡터로 변환하기 위한 pooling layer
+​    · 가변 길이의 frame-level 특징을 고정 차원의 벡터로 변환하기 위한 pooling layer
 
-​	· utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
+​    · utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
 
-<img src="G:/gits/fig/1/1.png" alt="img" style="zoom:60%;"/>
+<img src="https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png" alt="img" style="zoom:60%;" />
+
+
+
 
 ---
 
-**▶ High-order pooling with attention**
 
-<Statistics pooling - 기존에 사용하던 pooling 방법>
+
+### **▶ High-order pooling with attention**
+
+< Statistics pooling - 기존에 사용하던 pooling 방법 >
 
 \- frame-level 특징에 대해 평균(mean)과 표준 편차(standard deviation) 계산 (⊙ : Hadamard 곱)하여 concatenation
 
-<img src="G:/gits/fig/1/2.png" alt="img" style="zoom: 45%;" />
+<img src="https://user-images.githubusercontent.com/46676700/89165568-b160e100-d5b3-11ea-9a93-2a31b6530b2b.png" alt="img" style="zoom: 45%;" />
 
-<Attention mechanism>
+< Attention mechanism >
 
 \- 기계 번역에서 긴 문장의 성능 저하를 해결하기 위해 모델이 출력 단어를 예측할 때 **특정 단어를 집중**해서 보는 방법을 도입
 
-<center><img src="G:/gits/fig/1/3.png" alt="img" style="zoom: 80%;" /><img src="G:/gits/fig/1/3-1.png" alt="img" style="zoom: 50%;" /></center>
+<center><img src="https://user-images.githubusercontent.com/46676700/89165571-b1f97780-d5b3-11ea-91e3-8fa3f49000fc.png" alt="img" style="zoom: 80%;" /><img src="https://user-images.githubusercontent.com/46676700/89165573-b1f97780-d5b3-11ea-9545-3a591f97f98d.png" alt="img" style="zoom: 50%;" /></center>
 
 
 
-<left><img src="G:/gits/fig/1/4.png" alt="img"/></left>
+<img src="https://user-images.githubusercontent.com/46676700/89165553-aefe8700-d5b3-11ea-9e0a-c4c8d5fc14a0.png" alt="img"/>
 
-\- decoder의 <span style="color:#a5cbf0">시간 i(현재)에서 hidden state 벡터</span>는 <span style="color:#a5cbf0">**시간 i-1(이전)의 hidden state 벡터**</span>와 <span style="color:#ffaddf">**시간 i-1(이전)에서 decoder의 output**</span>, 그리고 <span style="color:#7cbfb6">**시간 i(현재)에서의 context 벡터**</span>를 입력으로 계산
+\- decoder의 <span style="color:#a5cbf0">**시간 i(현재)에서 hidden state 벡터**</span>는 <span style="color:#a5cbf0">**시간 i-1(이전)의 hidden state 벡터**</span>와 <span style="color:#ffaddf">**시간 i-1(이전)에서 decoder의 output**</span>, 그리고 <span style="color:#7cbfb6">**시간 i(현재)에서의 context 벡터**</span>를 입력으로 계산
 
-<left><img src="G:/gits/fig/1/5.png" alt="img"/></left>
+<img src="https://user-images.githubusercontent.com/46676700/89165558-af971d80-d5b3-11ea-84c7-8f0478e8e680.png" alt="img"/>
 
-\- <span style="color:#7cbfb6">context 벡터는</span> **시간 i에서 입력 x에 대한 길이 T** 전체에 대한 <span style="color:#f9d877">**encoder hidden state 벡터**</span>의 **가중합**으로 계산
+\- <span style="color:#7cbfb6">**context 벡터**</span>는 **시간 i에서 입력 x에 대한 길이 T** 전체에 대한 **<span style="color:#f9d877">encoder hidden state 벡터</span>**의 **가중합**으로 계산
 
-<left><img src="G:/gits/fig/1/6.png" alt="img"/></left>
-
-\- 시간 i에서 j번째 단어의 energy는 <span style="color:#a5cbf0">**시간 i-1(이전)에서 decoder hidden state**</span>와<span style="color:#f9d877"> **j번째 encoder hidden state**</span>가 입력인 **aligment model(a)** 결과값 (alignment model은 tanh, ReLU 등 activation function)
-
-<left><img src="G:/gits/fig/1/7.png" alt="img"/></left>
-
-\- 중요도(가중치)는 <span style="color:#33558c">**energy****</span>에 softmax 함수를 적용**하여 가중치의 합이 1이 되도록 변환(확률값)
+<img src="https://user-images.githubusercontent.com/46676700/89165559-b02fb400-d5b3-11ea-9ad9-a8383a6810d6.png" alt="img"/>
 
 
+\- <span style="color:#33558c">**시간 i에서 j번째 단어의 energy**</span>는 **<span style="color:#a5cbf0">시간 i-1(이전)에서 decoder hidden state</span>**와**<span style="color:#f9d877"> j번째 encoder hidden state</span>**가 입력인 **aligment model(a)** 결과값 (alignment model은 tanh, ReLU 등 activation function)
 
-<Attentive statistics pooling>
+<img src="https://user-images.githubusercontent.com/46676700/89165560-b02fb400-d5b3-11ea-8753-68026664a442.png" alt="img"/>
 
-<center><img src="G:/gits/fig/1/8.png" alt="img" style="zoom: 67%;" /><img src="G:/gits/fig/1/8-1.png"  alt="img" style="zoom: 67%;" /></center>
+\- 중요도(가중치)는 <span style="color:#33558c">**energy**</span>에 softmax 함수를 적용하여 가중치의 합이 1이 되도록 변환(확률값)
+
+
+
+< Attentive statistics pooling>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/89165563-b0c84a80-d5b3-11ea-9590-62c129a447e4.png" alt="img" style="zoom: 67%;" /><img src="https://user-images.githubusercontent.com/46676700/89165564-b0c84a80-d5b3-11ea-8a2f-c887055c76d8.png"  alt="img" style="zoom: 67%;" /></center>
 
 attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 standard deviation을 갱신**
 
-<img src="G:/gits/fig/1/9.png"  alt="img" style="zoom: 67%;"/>
+<img src="https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png"  alt="img" style="zoom: 67%;"/>
+
 
 ---
 
-**▶ Experimental settings**
-
-<i-vector>
-
-· input : 60차원 MFCC
-
-· UBM : 2048 mixture
-
-· TV matrix, i-vector : 400차원
-
-· Similarity score : PLDA
 
 
+### **▶ Experimental settings**
 
-<Deep speaker embedding>
+**\- i-vector**
 
-· input : 20차원(SRE 12), 40차원(VoxCeleb) MFCC
+​	· input : 60차원 MFCC
 
-· hidden layer : 5-layer TDNN(activation function : ReLU, node : 512)
+​	· UBM : 2048 mixture
 
-· pooling dimension : 1500차원
+​	· TV matrix, i-vector : 400차원
 
-· acoustic feature vector(MFCC) 15개 frame으로 frame-level 특징 생성
+​	· Similarity score : PLDA
 
-· 2 fully-connected layer (1st : bottleneck feature - 512, activation function : ReLU, batch normalization)
+
+
+**\- Deep speaker embedding**
+
+​	· input : 20차원(SRE 12), 40차원(VoxCeleb) MFCC
+
+​	· hidden layer : 5-layer TDNN(activation function : ReLU, node : 512)
+
+​	· pooling dimension : 1500차원
+
+​	· acoustic feature vector(MFCC) 15개 frame으로 frame-level 특징 생성
+
+​	· 2 fully-connected layer (1st : bottleneck feature - 512, activation function : ReLU, batch normalization)
