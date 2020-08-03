@@ -37,7 +37,7 @@ theme_settings :
     instagram:
 
   # Disqus
-  disqus_shortname : https://arabae.github.io
+  disqus_shortname : "https://arabae.github.io"
 
 # Pagination
 paginate: 5
