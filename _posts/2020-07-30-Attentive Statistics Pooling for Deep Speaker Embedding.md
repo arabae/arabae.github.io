@@ -7,8 +7,6 @@ author: Ara Bae
 comments : True
 ---
 
-
-
 **▶ Abstract**
 
 \- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
@@ -88,7 +86,6 @@ comments : True
 
 
 <left><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\4.png" alt="img"/></left>
-
 \- decoder의 <span style="color:#a5cbf0">시간 i(현재)에서 hidden state 벡터</span>는 <span style="color:#a5cbf0">**시간 i-1(이전)의 hidden state 벡터**</span>와 <span style="color:#ffaddf">**시간 i-1(이전)에서 decoder의 output**</span>, 그리고 <span style="color:#7cbfb6">**시간 i(현재)에서의 context 벡터**</span>를 입력으로 계산
 
 <left><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\5.png" alt="img"/></left>
