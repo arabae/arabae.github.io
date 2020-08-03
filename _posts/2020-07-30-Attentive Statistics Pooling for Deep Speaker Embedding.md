@@ -7,6 +7,8 @@ author: Ara Bae
 comments : True
 ---
 
+
+
 **▶ Abstract**
 
 \- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
@@ -65,7 +67,7 @@ comments : True
 
 ​	· utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
 
-<img src="https://postfiles.pstatic.net/MjAxOTA3MTZfMjMg/MDAxNTYzMjQ2NTIwNjcz.DLmKYwqg4M8PHNmEmglTABGm_Z_0fWVlM6JBlo6yj7gg.jwbaR4SUVNg9J9jcTzSfiE8ycW0L_Sx4I3QqTUoYpNYg.PNG.ara96q/image.png?type=w966" alt="img" style="zoom:60%;" />
+<img src="G:/gits/fig/1/1.png" alt="img" style="zoom:60%;"/>
 
 ---
 
@@ -75,28 +77,29 @@ comments : True
 
 \- frame-level 특징에 대해 평균(mean)과 표준 편차(standard deviation) 계산 (⊙ : Hadamard 곱)하여 concatenation
 
-<img src="https://postfiles.pstatic.net/MjAxOTA3MTZfNjQg/MDAxNTYzMjQ4NTA0NDQx.1pPH2lvhr5S-0kidCmglZ83ef5PiV97S9UkvpdE8U_Ug.sRvxgS2O38dERGUNd240lxsDe1DyOTQYu0TgL2deNTkg.PNG.ara96q/image.png?type=w966" alt="img" style="zoom: 45%;" />
+<img src="G:/gits/fig/1/2.png" alt="img" style="zoom: 45%;" />
 
 <Attention mechanism>
 
 \- 기계 번역에서 긴 문장의 성능 저하를 해결하기 위해 모델이 출력 단어를 예측할 때 **특정 단어를 집중**해서 보는 방법을 도입
 
-<center><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\3.png" alt="img" style="zoom: 80%;" /><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\3-1.png" alt="img" style="zoom: 50%;" /></center>
+<center><img src="G:/gits/fig/1/3.png" alt="img" style="zoom: 80%;" /><img src="G:/gits/fig/1/3-1.png" alt="img" style="zoom: 50%;" /></center>
 
 
 
-<left><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\4.png" alt="img"/></left>
+<left><img src="G:/gits/fig/1/4.png" alt="img"/></left>
+
 \- decoder의 <span style="color:#a5cbf0">시간 i(현재)에서 hidden state 벡터</span>는 <span style="color:#a5cbf0">**시간 i-1(이전)의 hidden state 벡터**</span>와 <span style="color:#ffaddf">**시간 i-1(이전)에서 decoder의 output**</span>, 그리고 <span style="color:#7cbfb6">**시간 i(현재)에서의 context 벡터**</span>를 입력으로 계산
 
-<left><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\5.png" alt="img"/></left>
+<left><img src="G:/gits/fig/1/5.png" alt="img"/></left>
 
 \- <span style="color:#7cbfb6">context 벡터는</span> **시간 i에서 입력 x에 대한 길이 T** 전체에 대한 <span style="color:#f9d877">**encoder hidden state 벡터**</span>의 **가중합**으로 계산
 
-<left><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\6.png" alt="img"/></left>
+<left><img src="G:/gits/fig/1/6.png" alt="img"/></left>
 
 \- 시간 i에서 j번째 단어의 energy는 <span style="color:#a5cbf0">**시간 i-1(이전)에서 decoder hidden state**</span>와<span style="color:#f9d877"> **j번째 encoder hidden state**</span>가 입력인 **aligment model(a)** 결과값 (alignment model은 tanh, ReLU 등 activation function)
 
-<left><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\7.png" alt="img"/></left>
+<left><img src="G:/gits/fig/1/7.png" alt="img"/></left>
 
 \- 중요도(가중치)는 <span style="color:#33558c">**energy****</span>에 softmax 함수를 적용**하여 가중치의 합이 1이 되도록 변환(확률값)
 
@@ -104,11 +107,11 @@ comments : True
 
 <Attentive statistics pooling>
 
-<center><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\8.png" alt="img" style="zoom: 67%;" /><img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\8-1.png"  alt="img" style="zoom: 67%;" /></center>
+<center><img src="G:/gits/fig/1/8.png" alt="img" style="zoom: 67%;" /><img src="G:/gits/fig/1/8-1.png"  alt="img" style="zoom: 67%;" /></center>
 
 attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 standard deviation을 갱신**
 
-<img src="C:\Users\IMPRESS\OneDrive - inu.ac.kr\INU\IMPRESS\방학세미나\2019 여름세미나\1\fig\9.png"  alt="img" style="zoom: 67%;"/>
+<img src="G:/gits/fig/1/9.png"  alt="img" style="zoom: 67%;"/>
 
 ---
 
