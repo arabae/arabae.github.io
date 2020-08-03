@@ -11,13 +11,14 @@ comments: True
 
 ### ▶ Abstract
 
-\- **Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안
+
+\- <span style="background-color:#fff6dd">**Text-independent**(문장 독립 : 발화 내용이 동일하지 하지 않음)한 **Speaker Verification**(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 **Deep speaker embedding을 위한 attentive statistics pooling** 제안</span>
 
 \- 기존의 speaker embedding에서는 단일 발화의 모든 frame에서 frame-level의 특징을 모두 평균 내어 utterance-level의 특징을 형성
 
 \- 제안하는 방법은 attention mechanism을 사용하여 각 frame마다 다른 weight(가중치)를 부여하고, weighted mean(가중 평균)과 weighted standard deviations(가중 표준 편차)를 생성
 
-\- NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소
+✔ <span style="background-color:#fff6dd">NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소</span>
 
 <br/>
 
