@@ -2,7 +2,6 @@
 layout: post
 title: "Attentive Statistics Pooling for Deep Speaker Embedding : REVIEW"
 subtitle: "Koji Okabe, Takafumi Koshinaka, Koichi Shinoda"
-description: '마크다운 문법 숙지'
 tags: [SpeakerVerification, SpeakerRecognition, AttentionMechanism, ML, Statistics]
 author: Ara Bae
 comments: True
@@ -18,12 +17,11 @@ comments: True
 
 ✔  <span style="background-color:#fff6dd">NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소</span>
 
-
-
+<br/>
 
 ---
 
-
+<br/>
 
 ### ▶ Introduction
 
@@ -43,7 +41,7 @@ comments: True
 
 \- 그러나 아직 정확도 향상에 대한 표준 편차 pooling의 효율성은 보고하지 않음
 
-
+<br/>
 
 \- 최근 다른 연구에서는 이전에 기계 번역에서 상당한 성능 향상을 가져온 **attention mechanism과 통합**
 
@@ -57,10 +55,11 @@ comments: True
 
 \- 가변 길이의 text-independent한 환경에서 attentive statisitics pooling을 사용하는 첫 번째 시도 이며, 다양한 pooling layer 비교를 통해 표준 편차가 화자 특성에 미치는 효과를 실험적으로 보여줌
 
-
+<br/>
 
 ---
 
+<br/>
 
 ### ▶ Deep speaker embedding
 
@@ -74,14 +73,15 @@ comments: True
 
 ​    · utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)
 
-
+<br/>
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png" alt="img" style="zoom:60%;" /></center>
 
-
+<br/>
 
 ---
 
+<br/>
 
 ### ▶ High-order pooling with attention
 
@@ -97,9 +97,7 @@ comments: True
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165571-b1f97780-d5b3-11ea-91e3-8fa3f49000fc.png" alt="img" style="zoom: 80%;" /><img src="https://user-images.githubusercontent.com/46676700/89165573-b1f97780-d5b3-11ea-9545-3a591f97f98d.png" alt="img" style="zoom: 50%;" /></center>
 
-
-
-
+<br/>
 
 <img src="https://user-images.githubusercontent.com/46676700/89165553-aefe8700-d5b3-11ea-9e0a-c4c8d5fc14a0.png" alt="img"/>
 
@@ -116,9 +114,9 @@ comments: True
 
 <img src="https://user-images.githubusercontent.com/46676700/89165560-b02fb400-d5b3-11ea-8753-68026664a442.png" alt="img"/>
 
+<br/>
 
-
-< Attentive statistics pooling>
+< Attentive statistics pooling >
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165563-b0c84a80-d5b3-11ea-9590-62c129a447e4.png" alt="img" style="zoom: 50%;" /><img src="https://user-images.githubusercontent.com/46676700/89165564-b0c84a80-d5b3-11ea-8a2f-c887055c76d8.png"  alt="img" style="zoom: 50%;" /></center>
 
@@ -126,11 +124,11 @@ attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 stan
 
 <center><img src="https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png"  alt="img" style="zoom: 67%;"/></center>
 
-
+<br/>
 
 ---
 
-
+<br/>
 
 ### ▶ Experimental settings
 
@@ -144,7 +142,7 @@ attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 stan
 
 ​	· Similarity score : PLDA
 
-
+<br/>
 
 **\- Deep speaker embedding**
 
