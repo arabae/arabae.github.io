@@ -142,7 +142,9 @@ attention mechanism을 사용하여 계산한 **가중치를 통해 mean과 stan
 ​	· TV matrix, i-vector : 400차원
 
 ​	· Similarity score : PLDA
+
 <br/>
+
 **\- Deep speaker embedding**
 
 ​	· input : 20차원(SRE 12), 40차원(VoxCeleb) MFCC
