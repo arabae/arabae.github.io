@@ -24,6 +24,7 @@ comments: True
 <br/>
 ### Ⅰ. Introduction
 [ 이전에 소개된 DNN 기반의 speaker recognition system 특징 ]
+
 1. **i-vector + PLDA system의 구성요소**(feature extraction, calculation of sufficient statistics, i-vector extraction or PLDA) 중 **하나를 NN**(Neural Network)로 **대체**하거나 **개선**
 
    - MFCC feature 대신 bottleneck feature 사용
@@ -33,12 +34,12 @@ comments: True
 <br/>
 
 2. **Speaker ID를 분류하여 훈련한 NN**을 통해 **speaker embedding 추출** - 대표적인 특징 : d-vector, x-vector와 같은 embedding
+- acoustic feature를 입력으로 넣어서 speaker label과 loss를 계산한 뒤, NN 모델의 일부(hidden layer, TDNN + fully-connected DNN 중 DNN)을 utterance-level의 feature로 사용
+  
+- text-dependent, 짧은 발화 text-independent에서 효과적
+  
+- 비교적 긴 발화 text-independent에서는 i-vector + PLDA보다 성능이 낮음
 
-   - acoustic feature를 입력으로 넣어서 speaker label과 loss를 계산한 뒤, NN 모델의 일부(hidden layer, TDNN + fully-connected DNN 중 DNN)을 utterance-level의 feature로 사용
-
-   - text-dependent, 짧은 발화 text-independent에서 효과적
-
-   - 비교적 긴 발화 text-independent에서는 i-vector + PLDA보다 성능이 낮음
 <br/>
 
 <span style="background-color:#dee03f">Proposed Method : i-vector + PLDA baseline을 모방한 End-to-End speaker verification 시스템</span>
@@ -82,7 +83,7 @@ comments: True
 - 훈련 데이터 중 전화 데이터만 사용 (짧은 발화 시간은 10~60초 사이 균일 분포를 따르며 총 85,858개 중 짧은 발화는 22,766개)
 
 - PLDA/DPLDA : 2048개 component를 갖는 UBM, 400차원 i-vector
-
+<br/>
 <span style="background-color:#f4d451">PLDA</span>
 
 - i-vector의 평균(모든 훈련 데이터의 i-vector 평균) 과 길이를 정규화
@@ -131,7 +132,7 @@ comments: True
 
 **2. Sufficient statistics to i-vectors : s2i [충분 통계량 → i-vector]**
 
-- f2s에서 나온 충분 통계량을 input으로 사용 (2048*60차원)
+- f2s에서 나온 충분 통계량을 input으로 사용 (2048x60차원)
 
 - MAP 적응된 supervector로 변환 (112880 차원) - 차원 수를 줄이기 위해 PCA를 사용하여 4000차원으로 축소
 
@@ -172,22 +173,19 @@ comments: True
 
 - 메모리가 굉장히 많이 필요하는 문제점이 존재
 
-1. PCA : f2s와 s2i를 연결하기 위해 network의 일부가 되어야 하는데, 122800*4000개의 파라미터가 필요
+1. PCA : f2s와 s2i를 연결하기 위해 network의 일부가 되어야 하는데, 122800x4000개의 파라미터가 필요
    - 전체 End-to-End 훈련 전에, s2i NN과 DPLDA 모델만 공동으로 훈련
 
    - s2i의 개별 훈련 시, f2s가 업데이트되지 않는 이상 입력이 고정이므로 PCA를 거친 특징을 입력으로 사용할 수 있음
 <br/>
 2. f2s : DPLDA 모듈을 훈련하기 위해 여러 가지 다양한 발화의 모든 frame을 한 번에 처리해야 함
    - 중간 결과를 메모리에 덜 유지하도록 훈련과정을 수정
-
    - 하나의 발화에 대해 충분 통계량을 계산하고 block A의 모든 layer의 출력을 없앰
-
-   - block A의 파라미터는 전체 frame(nf) * (1500+1500+1500+1500+2048) 개 변수가 메모리에 저장
-
-   - 충분 통계량 F, N으로 pooling 한 뒤 파라미터 : 2048*60
-- Optimizer : ADAM
-- Training rate를 epoch에서<img src="https://user-images.githubusercontent.com/46676700/89504554-2b3ad980-d803-11ea-8c3e-830d8bf51285.PNG" alt="img" style="zoom:50%;" />이 개선되지 않을 때  마다 절반으로 줄임
-- 훈련 데이터는 DPLDA와 같음
+   - block A의 파라미터는 전체 frame(nf) x (1500+1500+1500+1500+2048) 개 변수가 메모리에 저장
+   - 충분 통계량 F, N으로 pooling 한 뒤 파라미터 : 2048x60
+   - Optimizer : ADAM
+   - Training rate를 epoch에서<img src="https://user-images.githubusercontent.com/46676700/89504554-2b3ad980-d803-11ea-8c3e-830d8bf51285.PNG" alt="img" style="zoom:50%;" />이 개선되지 않을 때  마다 절반으로 줄임
+   - 훈련 데이터는 DPLDA와 같음
 
 ---
 
@@ -208,10 +206,10 @@ comments: True
 · 7행 : s2i와 DPLDA만 공동으로 훈련될 때의 성능 <br/>
 · 8행 : 모든 모듈이 공동으로 훈련될 때의 성능 <br/>
 </center>
-
+<br/>
 
 - 3개의 모듈이 공동으로 훈련될 때의 성능(8행)과 2개의 모듈이 공동으로 훈련되었을 때 성능(7행)이 큰 차이가 없었음
-
+<br/>
 <span style="background-color:#ceddf2">< 3가지 가능성 ></span>
 
 1. Minibatch가 안정적인 훈련을 하기에 너무 작을 수 있다. (3개의 모듈을 공동으로 훈련 시, N=75 최대)
