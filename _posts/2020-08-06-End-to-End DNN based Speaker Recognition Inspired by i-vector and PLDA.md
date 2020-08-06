@@ -24,21 +24,15 @@ comments: True
 <br/>
 ### Ⅰ. Introduction
 [ 이전에 소개된 DNN 기반의 speaker recognition system 특징 ]
-
 1. **i-vector + PLDA system의 구성요소**(feature extraction, calculation of sufficient statistics, i-vector extraction or PLDA) 중 **하나를 NN**(Neural Network)로 **대체**하거나 **개선**
-
    - MFCC feature 대신 bottleneck feature 사용
    - sufficient statistics 계산 시 GMM-UBM 대신 NN acoustic model 사용
    - PLDA를 보완하거나 대체하는 NN 사용
 
-<br/>
-
 2. **Speaker ID를 분류하여 훈련한 NN**을 통해 **speaker embedding 추출** - 대표적인 특징 : d-vector, x-vector와 같은 embedding
-- acoustic feature를 입력으로 넣어서 speaker label과 loss를 계산한 뒤, NN 모델의 일부(hidden layer, TDNN + fully-connected DNN 중 DNN)을 utterance-level의 feature로 사용
-  
-- text-dependent, 짧은 발화 text-independent에서 효과적
-  
-- 비교적 긴 발화 text-independent에서는 i-vector + PLDA보다 성능이 낮음
+   - acoustic feature를 입력으로 넣어서 speaker label과 loss를 계산한 뒤, NN 모델의 일부(hidden layer, TDNN + fully-connected DNN 중 DNN)을 utterance-level의 feature로 사용
+   - text-dependent, 짧은 발화 text-independent에서 효과적
+   - 비교적 긴 발화 text-independent에서는 i-vector + PLDA보다 성능이 낮음
 
 <br/>
 
@@ -67,37 +61,27 @@ comments: True
 ### Ⅱ. Database and Baseline Systems
 
 1. 훈련 및 테스트는 PRISM  dataset 기반, 3가지 평가 셋
-
-    (1) NIST SRE 2005~2010년 데이터 원본(긴) 전화 발화 중 여성
-
-    (2) (1) 음원을 여러 짧은 발화로 생성(등록 : 20~50초, 테스트 30~40초)
-
-    (3) NIST SRE 2016 평가 세트 (남/여 모두, 단일 등록)
+   (1) NIST SRE 2005~2010년 데이터 원본(긴) 전화 발화 중 여성
+   (2) (1) 음원을 여러 짧은 발화로 생성(등록 : 20~50초, 테스트 30~40초)
+   (3) NIST SRE 2016 평가 세트 (남/여 모두, 단일 등록)
 
 <br/>
 
 2. Generative(PLDA) and Discriminative(DPLDA) Baseline
-
 - 특징 : 60dimension-MFCC (20차원, ∆, ∆∆)
-
 - 훈련 데이터 중 전화 데이터만 사용 (짧은 발화 시간은 10~60초 사이 균일 분포를 따르며 총 85,858개 중 짧은 발화는 22,766개)
+- PLDA/DPLDA : 2048개 component를 갖는 UBM, 400차원 i-vector 
 
-- PLDA/DPLDA : 2048개 component를 갖는 UBM, 400차원 i-vector
 <br/>
+
 <span style="background-color:#f4d451">PLDA</span>
-
-- i-vector의 평균(모든 훈련 데이터의 i-vector 평균) 과 길이를 정규화
-
-- 추가적인 domain 적응이나 score normalization은 수행하지 않음
-
-- 각 화자가 6개의 발화를 갖도록 훈련 데이터를 68,994개로 줄여서 사용
+   - i-vector의 평균(모든 훈련 데이터의 i-vector 평균) 과 길이를 정규화
+   - 추가적인 domain 적응이나 score normalization은 수행하지 않음
+   - 각 화자가 6개의 발화를 갖도록 훈련 데이터를 68,994개로 줄여서 사용
 
 <span style="background-color:#f4d451">DPLDA</span>
-
 - LBFGS optimizer로 binary cross-entropy를 최적화 (모델 훈련 시, 초기화로 PLDA를 사용)
-
 - i-vector의 평균과 길이를 정규화
-
 - LDA를 수행하여 i-vector의 차원을 250차원으로 축소
 
 <br/>
@@ -112,11 +96,11 @@ comments: True
 
 - 입력 발화의 각 frame에 대해 GMM responsibilities (posteriors, 사후 확률)을 예측
 
-   - 60차원의 MFCC를 전처리(preprocessing) 하여 input으로 사용
+   \- 60차원의 MFCC를 전처리(preprocessing) 하여 input으로 사용
    
-   - 현재 frame을 기준으로 ±15 frame을 고려 (총 31개 frame) → 6개 사용
+   \- 현재 frame을 기준으로 ±15 frame을 고려 (총 31개 frame) → 6개 사용
    
-   - 6 * 60 → 360차원
+   \- 6 * 60 → 360차원
 
 - Hidden layer : 4개 (activation function : sigmoid, node : 1500개)
 
@@ -162,8 +146,8 @@ comments: True
 
 < Minibatch 선택 rule >
 1. 각 화자에 대해 랜덤하게 발화를 쌍으로 만든다
-   - 만약 어떤 화자의 발화가 하나라면 동일한 발화를 쌍으로 만들어서 사용
-   - 만약 어떤 화자의 발화가 균등한 개수가 아니라면 발화의 쌍 중 하나는 세 개의 발화를 가짐
+   \- 만약 어떤 화자의 발화가 하나라면 동일한 발화를 쌍으로 만들어서 사용
+   \- 만약 어떤 화자의 발화가 균등한 개수가 아니라면 발화의 쌍 중 하나는 세 개의 발화를 가짐
 <br/>
 2. 각 Minibatch에 대해 임의로 N 개의 발화를 선택하여 선택된 발화로 형성될 수 있는 모든 실험에 사용(마지막 쌍을 선택한 경우 다시 1로 돌아감)
 
@@ -210,8 +194,9 @@ comments: True
 
 - 3개의 모듈이 공동으로 훈련될 때의 성능(8행)과 2개의 모듈이 공동으로 훈련되었을 때 성능(7행)이 큰 차이가 없었음
 <br/>
-<span style="background-color:#ceddf2">< 3가지 가능성 ></span>
+<br/>
 
+<span style="background-color:#ceddf2">< 3가지 가능성 ></span>
 1. Minibatch가 안정적인 훈련을 하기에 너무 작을 수 있다. (3개의 모듈을 공동으로 훈련 시, N=75 최대)
 2. 모델이 local minimum으로 고정될 수 있다. (f2s의 출력에 따라 후속 모델들도 훈련이 되기 때문)
 3. f2s의 설계가 상당히 제약적이다. (사후 확률만 추정 할 뿐 통계 계산에 사용되는 특징을 수정할 수 없기 때문)
@@ -223,5 +208,5 @@ comments: True
 - 다양한 언어와 긴 발화, 짧은 발화를 모두 포함하는 세 개의 서로 다른 데이터셋에 대한 i-vector + PLDA baseline을 능가하는 End-to-End 화자 검증 시스템 개발
 - i-vector + PLDA 시스템과 비슷하게 동작하도록 제한함으로써 End-to-End 시스템의 성능을 저하시키는 overfitting을 완화
 - 시스템 3개의 서브 모듈 중 3개의 모듈의 공동 훈련은 성능이 좋았지만, 모두 공동 훈련하였을 때 효과적이지 않았음
-   - 세가지 모듈을 공동으로 훈련하였을 때 더 나은 성능이 나오도록 개발할 것
+   \- 세가지 모듈을 공동으로 훈련하였을 때 더 나은 성능이 나오도록 개발할 것
 - 단일 등록을 사용하도록 설계, 여러 등록을 처리하도록 확장할 것
