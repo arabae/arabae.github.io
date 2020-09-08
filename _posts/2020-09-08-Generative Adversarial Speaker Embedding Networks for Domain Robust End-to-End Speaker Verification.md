@@ -181,10 +181,8 @@ comments: True
 - G(generator)는 L_c - L_s를 최대화
 
 <br/>
-$$
-L_s = E[logP(s=real|X_{real})] + E[logP(S=fake|X_{fake})]\\
-L_c = E[logP(C=c|X_{real})] + E[logP(C=c|X_{fake})]
-$$
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92473528-b699f700-f215-11ea-8256-b66f1ff59f9b.png" alt="img" style="zoom: 70%;" /></center>
 
 <br/>
 
