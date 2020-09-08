@@ -7,7 +7,7 @@ author: Ara Bae
 comments: True
 ---
 
-### ▶ Abstract
+### ✏ Abstract 🔎
 - GANs를 이용한 domain invariant speaker embedding을 위한 새로운 접근 방식 제안
 	\- source data와 target data로 generator가 embedding을 생성
 	\- 생성된 embedding이 source인지 target인지 discriminator가 식별
@@ -22,48 +22,55 @@ comments: True
 ---
 
 <br/>
-### Ⅰ. Introduction
+### Ⅰ. Introduction 🔎
 \- 화자 embedding : 개인의 identity와 관련된 정보를 포함하는 저차원 벡터 표현
 
 <br/>
 
-**Neural Network기반 화자 embedding**
+**✔  Neural Network기반 화자 embedding**
 
 - 음성 인식, 합성 및 source 분리, 화자 검증 적용 등 다양하게 적용
 
 <br/>
 
-**End-to-End system speaker verification**
+**✔  End-to-End system speaker verification**
+
 - 두 개의 음성 파일에서 embedding을 추출한 뒤 embedding 사이의 cosine distance 등을 사용하여 score 계산
 - 모델이 견고하기 위해서 일반적으로 거리 측정 기준을 직접 최적화해야 함 (End-to-End)
 - 그러나, 화자 검증에서 훈련하기 어려운 것으로 판단
 
 <br/>
 
-**I-vector system과 동일하게 사용**
+**✔  I-vector system과 동일하게 사용**
 
 - 차원 감소에는 LDA(Linear Discriminant Analysis) 사용
 - 검증 시 PLDA(Probabilistic Linear Discriminant Analysis) 사용
 
 <br/>
 
-**NIST SRE 2016 dataset 사용**
+**✔  NIST SRE 2016 dataset 사용**
+
 - 훈련 데이터(영어)와 테스트 데이터(광둥어 및 타갈로그어) 사이의 mismatch를 도입 (Domain or Covariate shift)
 - domain 보상을 위한 적은 양의 label이 없는 target 데이터 제공
 
 <br/>
 
-** 본 논문 저자의 최근 연구에서, End-to-End의 cosine score를 사용하는 domain adversarial 훈련을 이용한 domain 불변 화자 embedding 훈련 제안 (Domain Adversarial Neural Speaker Embeddings, DANSE)**
+**✔  본 논문 저자의 최근 연구에서, End-to-End의 cosine score를 사용하는 domain adversarial 훈련을 이용한 domain 불변 화자 embedding 훈련 제안 (Domain Adversarial Neural Speaker Embeddings, DANSE)**
+
 - Gradient reversal을 사용하여 domain 불변성 및 adversarial grame의 최소화 목표를 달성
 
-<span style="background-color:#f4d451">**본 논문에서는 GANs를 사용하여 unsupervised domain adaptation/invariant로 이전 연구 확장**</span>
+<br/>
+
+<span style="background-color:#f4d451">**✔  본 논문에서는 GANs를 사용하여 unsupervised domain adaptation/invariant로 이전 연구 확장**</span>
 < 장점>
+
 - gradient reversal보다 불변성 mapping을 학습하는데 더 나은 gradients 제공
 - GAN framework는 gradient reversal보다 더 일반적이고 확장 가능
 
 <br/>
 
-**다양한 GAN 변형**
+**✔  다양한 GAN 변형**
+
 - 특징 공간의 다른 변형을 생성
 - 이러한 특징 공간을 결합이 성능 향상을 가져옴
 - Auxiliary Classifier GAN(AuxGAN)의 수정을 제안
@@ -77,9 +84,10 @@ comments: True
 
 <br/>
 
-### Ⅱ. Domain Adaption with GANs
+### Ⅱ. Domain Adaption with GANs 🔎
 
-**GAN**
+**✔  GAN**
+
 - Generator : target data를 source data의 domain으로 mapping
 - Discriminator : source data와 target data의 domain을 구별
 
@@ -90,23 +98,19 @@ comments: True
 
 <br/>
 
-**GAN game (기존 GAN loss)**
+**✔  GAN game (기존 GAN loss)**
 
 <center><img src="https://user-images.githubusercontent.com/46676700/92464831-af202100-f208-11ea-9c86-bb4318bebe00.png" alt="img" style="zoom: 50%;" /></center>
 
 - E, D : Embedding(generator), Discriminator 함수
 
-$$
-X_s : source\; data\\
-X_t : target\; data
-$$
+<center><img src="https://user-images.githubusercontent.com/46676700/92472815-fc09f480-f214-11ea-9b00-1274915072c1.png" alt="img" style="zoom: 70%;" /></center>
 
 <br/>
 
-**Gradients reversal model**
-$$
-L_{advE} = -L_{advD}
-$$
+**✔  Gradients reversal model**
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92472846-01673f00-f215-11ea-8f18-c267f86a118d.png" alt="img" style="zoom: 80%;" /></center>
 
 <br/>
 
@@ -114,16 +118,16 @@ $$
 
 <br/>
 
-### Ⅲ. Generative Adversarial Speaker Embedding Networks
+### Ⅲ. Generative Adversarial Speaker Embedding Networks 🔎
 
-**본 논문의 목표**
+**✔  본 논문의 목표**
 
 - 화자 embedding model이 특징 추출기(generator)와 domain 식별자(discriminator) 사이의 GAN game을 통해 domain 불변적 특징을 학습
 - GAN이 domain 불변성을 갖으며, embedding이 화자를 구분할 수 있어야 함
 
 <br/>
 
-**Loss function (AM-softmax/GAN loss)**
+**✔  Loss function (AM-softmax/GAN loss)**
 
 - class간 cosine similarity를 직접 최적화
 <center><img src="https://user-images.githubusercontent.com/46676700/92466967-d7f5e580-f20b-11ea-9b8b-ae4db11acd0b.png" alt="img" style="zoom: 50%;" /></center>
@@ -151,7 +155,7 @@ $$
 
 ##### 3.1. Auxiliary Classifier GAN
 
-** AuxGAN(ACGAN)**
+**✔  AuxGAN(ACGAN)**
 
 - 조건(conditional) 이미지 생성을 위해 보조(Auxiliary) loss를 사용하여 GAN을 보완
 
@@ -165,7 +169,7 @@ $$
 
 <center><img src="https://user-images.githubusercontent.com/46676700/92468316-ec3ae200-f20d-11ea-882d-0045ffc0cd5c.png" alt="img" style="zoom: 50%;" /></center>
 
-**원래 ACGAN의 object fuction**
+**✔  원래 ACGAN의 object fuction**
 
 - source의 log-likelihood L_s, class의 log-likelihood L_c
 - L_s : 기존 GAN의 목적 함수와 같음 (real/fake 판별)
@@ -175,6 +179,8 @@ $$
 
 - D(discriminator)는 L_s + L_c를 최대화
 - G(generator)는 L_c - L_s를 최대화
+
+<br/>
 $$
 L_s = E[logP(s=real|X_{real})] + E[logP(S=fake|X_{fake})]\\
 L_c = E[logP(C=c|X_{real})] + E[logP(C=c|X_{fake})]
@@ -182,7 +188,7 @@ $$
 
 <br/>
 
-**논문에서 사용한 ACGAN의 object function**
+**✔  논문에서 사용한 ACGAN의 object function**
 
 <center><img src="https://user-images.githubusercontent.com/46676700/92469327-9a935700-f20f-11ea-8183-b78231d799d4.png" alt="img" style="zoom: 50%;" /></center>
 
@@ -190,17 +196,17 @@ $$
 
 ##### 3.2. GAN Variants
 
-**다양한 GAN의 변형 사용**
+**🔹  다양한 GAN의 변형 사용**
 
 - 표준 GAN
 - Least-Squares GAN
 - Relativistic GAN
 
-**각 변형이 특징 공간을 다른 방식으로 변형**
+**🔹  각 변형이 특징 공간을 다른 방식으로 변형**
 
 - 모든 모델은 거의 비슷한 성능을 보임
 
-**모든 GAN 모델의 성능을 결합**
+**🔹 모든 GAN 모델의 성능을 결합**
 
 - 평균 점수(cosine distance score)를 결합한 것이 최고의 성능을 보임
 
@@ -210,9 +216,9 @@ $$
 
 <br/>
 
-### Ⅳ.  Experiments and Results
+### Ⅳ.  Experiments and Results 🔎
 
-**Training data(source)**
+**✔  Training data(source)**
 
 <br/>
 
@@ -224,7 +230,7 @@ $$
 
 <br/>
 
-**Model**
+**✔  Model**
 
 <br/>
 
@@ -237,7 +243,7 @@ $$
 
 <br/>
 
-**Optimization**
+**✔  Optimization**
 
 <br/>
 
@@ -247,7 +253,7 @@ $$
 
 <br/>
 
-**Data sampling**
+**✔  Data sampling**
 
 <br/>
 
@@ -257,7 +263,7 @@ $$
 
 <br/>
 
-**Speaker Verification**
+**✔  Speaker Verification**
 
 <br/>
 
@@ -268,7 +274,7 @@ $$
 
 <br/>
 
-**Model block**
+**✔  Model block**
 
 <br/>
 <center><img src="https://user-images.githubusercontent.com/46676700/92470103-e5fa3500-f210-11ea-8ca4-58b5d1bcf508.png" alt="img" style="zoom: 50%;" /></center>
@@ -276,7 +282,7 @@ $$
 
 <br/>
 
-**제안한 adversarial 화자 embedding과 baseline system 성능 비교**
+**✔  제안한 adversarial 화자 embedding과 baseline system 성능 비교**
 
 - Baseline시스템 중에서는 DNN 기반의 x vector 시스템이 LDA 차원 감소 추가하는 것 만으로도 i-vector 의 성능보다 향상
 - 모든 GAN 기반의 모델이 DANSE 보다 더 나은 성능을 보임
@@ -292,7 +298,7 @@ $$
 
 <br/>
 
-### Ⅴ.  Conclusion
+### Ⅴ.  Conclusion 🔎
 
 - GANs를 이용한 domain 불변 화자 embedding 학습을 위한 새로운 framework 제안
 - 여러 가지 GAN 의 변형을 학습하여 score 를 결합함으로써 크게 향상된 성능을 얻음
