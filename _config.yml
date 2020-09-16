@@ -15,9 +15,14 @@ theme_settings :
     experience :
       - start : 2016-12
         end : 2021-02
-        experience : IMPRESS(INTELLIGENT MULTIMEDIA PROCESSING LABORATORY) 연구원
+        experience : IMPRESS 연구원
     skills : 
-      - skill : Python/MATLAB/C++
+      - skill : Python
+        value : 90
+      - skill : MATLAB
+        value : 75
+      - skill : C++
+        value : 60
         
   # Icons
   icons :

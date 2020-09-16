@@ -8,6 +8,7 @@
     summary : 화자인식 파트 담당
     description : 기동어 발화 데이터를 이용한 화자 인식 기술 개발
 
+
 - project :
     print : True
     modal : True
@@ -17,6 +18,7 @@
     title : 기업 프로젝트
     summary : 화자인식 파트 담당
     description :  사용자 정의 기동어 인식 기술 개발
+
             
 - project :
     print : True
@@ -27,7 +29,7 @@
     title : 기업 프로젝트
     summary : 화자모델 구축 파트 담당
     description :  전화 녹취 음성에서 화자분리 및 음원분리 기술 구현 용역 개발
-            
+
 
 - project :
     print : True
