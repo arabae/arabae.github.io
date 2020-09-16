@@ -12,18 +12,12 @@ theme_settings :
     image : assets/img/smile.png
     username : ARa Bae
     description: "Speaker Recognition Blog"
-
     experience :
       - start : 2016-12
         end : 2021-02
         experience : IMPRESS(INTELLIGENT MULTIMEDIA PROCESSING LABORATORY) 연구원
     skills : 
-      - skill : Python
-        value : 90
-      - skill : MATLAB
-        value : 60
-      - skill : C/C++
-        value : 50
+      - skill : Python/MATLAB/C++
         
   # Icons
   icons :
