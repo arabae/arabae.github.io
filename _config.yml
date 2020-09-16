@@ -22,6 +22,28 @@ theme_settings :
         value : 70
       - skill : C/C++
         value : 30
+      
+    experience :
+      - start : 2019-02
+        end : 2019-09
+        experience : 사용자 정의 기동어 인식 기술 개발
+    skills : 
+      - skill : python
+        value : 10
+      - skill : MATLAB
+        value : 20
+      - skill : C/C++
+        value : 70
+
+    experience :
+      - start : 2020-01
+        end : 2020-07
+        experience : 전화 녹취 음성에서 화자분리 및 음원분리 기술 구현 용역 개발
+    skills :
+      - skill : MATLAB
+        value : 10    
+      - skill : python
+        value : 90
         
   # Icons
   icons :
