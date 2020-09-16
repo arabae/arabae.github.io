@@ -1,0 +1,85 @@
+- project :
+    print : True # If 'False' is selected, it will not be displayed in 'home.html > aside > .proj-content'. 
+    modal : True # If 'True' is selected, modal can open in 'portfolio.html'. 
+    url : # Full URL
+    image : # path: assets/project/
+    date : 2018.01 - 2018.08
+    title : 기업 프로젝트
+    summary : 화자인식 파트 담당
+    description : 기동어 발화 데이터를 이용한 화자 인식 기술 개발
+    contents :
+        - title : Language
+          description :
+            <li>MATLAB</li> 
+            <li>C/C++</li>
+
+- project :
+    print : True 
+    modal : True 
+    url :
+    image :
+    date : 2019.02 - 2019.09
+    title : 기업 프로젝트
+    summary : 화자인식 파트 담당
+    description :  사용자 정의 기동어 인식 기술 개발
+        contents :
+        - title : Language
+          description :
+            <li>Python</li> 
+            <li>MATLAB</li> 
+            <li>C/C++</li>
+            
+- project :
+    print : True
+    modal : True 
+    url :
+    image :
+    date : 2020.01 - 2020.07
+    title : 기업 프로젝트
+    summary : 화자모델 구축 파트 담당
+    description :  전화 녹취 음성에서 화자분리 및 음원분리 기술 구현 용역 개발
+        contents :
+        - title : Language
+          description :
+            <li>MATLAB</li> 
+            <li>Python</li>
+            
+- project :
+    print : True
+    modal : True 
+    url : http://www.jask.or.kr/articles/xml/LPLB/
+    image :
+    date : 2019.02
+    title : 논문 [한국음향학회지]
+    summary : 잡음 환경에 효과적인 음성인식을 위한 특징보상 이득 기반의 음성 향상 기법
+    description :  주저자
+    
+- project :
+    print : True
+    modal : True 
+    url : http://www.jask.or.kr/articles/xml/zWwq/
+    image :
+    date : 2019.11
+    title : 논문 [한국음향학회지]
+    summary : 심층신경망 구조에 따른 구개인두부전증 환자 음성 인식 향상 연구
+    description :  공동저자
+    
+- project :
+    print : True
+    modal : True 
+    url : http://www.jask.or.kr/articles/xml/BD7j/
+    image :
+    date : 2020.02
+    title : 논문 [한국음향학회지]
+    summary : Attention-long short term memory 기반의 화자 임베딩과 I-vector를 결합한 원거리 및 잡음 환경에서의 화자 검증 알고리즘
+    description :  주저자
+    
+- project :
+    print : True
+    modal : True 
+    url :
+    image :
+    date : 2020.09
+    title : 논문 [한국음향학회지]
+    summary : 화자 구분 시스템의 관심 화자 추출을 위한 i-vector 유사도 기반의 음성 분할 기법
+    description :  주저자
