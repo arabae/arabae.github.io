@@ -9,9 +9,7 @@
     description : 기동어 발화 데이터를 이용한 화자 인식 기술 개발
     contents :
         - title : Language
-          description :
-            <li>MATLAB</li> 
-            <li>C/C++</li>
+          description : MATLAB, C/C++
 
 - project :
     print : True 
@@ -24,10 +22,7 @@
     description :  사용자 정의 기동어 인식 기술 개발
         contents :
         - title : Language
-          description :
-            <li>Python</li> 
-            <li>MATLAB</li> 
-            <li>C/C++</li>
+          description : Python, MATLAB, C/C++
             
 - project :
     print : True
@@ -40,10 +35,9 @@
     description :  전화 녹취 음성에서 화자분리 및 음원분리 기술 구현 용역 개발
         contents :
         - title : Language
-          description :
-            <li>MATLAB</li> 
-            <li>Python</li>
+          description : Python, MATLAB
             
+
 - project :
     print : True
     modal : True 
@@ -54,6 +48,7 @@
     summary : 잡음 환경에 효과적인 음성인식을 위한 특징보상 이득 기반의 음성 향상 기법
     description :  주저자
     
+
 - project :
     print : True
     modal : True 
@@ -64,6 +59,7 @@
     summary : 심층신경망 구조에 따른 구개인두부전증 환자 음성 인식 향상 연구
     description :  공동저자
     
+
 - project :
     print : True
     modal : True 
@@ -74,6 +70,7 @@
     summary : Attention-long short term memory 기반의 화자 임베딩과 I-vector를 결합한 원거리 및 잡음 환경에서의 화자 검증 알고리즘
     description :  주저자
     
+
 - project :
     print : True
     modal : True 
