@@ -50,7 +50,9 @@ comments: True
 - 각 훈련 단계에서, 하나의 테스트용 발화 𝒙𝑗~와 등록 발화 𝒙𝑘𝑚 tuple을 입력으로 사용
 
 > 𝒙: 고정 길이의 log melfiterbank
+>
 > 𝑗,𝑘: 발화한 화자
+>
 > (j 와 k 는 같을 수 있음만약 𝒙𝑗~와 𝑀개의 등록 발화가 같은 화자라면 tuple positive ( 𝑗=𝑘), 다르면 negative
 
 <br/>
@@ -78,6 +80,7 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94106059-93a64e80-fe75-11ea-8b31-a8b2629cfc6f.png" alt="img" style="zoom:80%;" /></center>
 <center><img src="https://user-images.githubusercontent.com/46676700/94106117-ae78c300-fe75-11ea-8bfb-cff4fa7b2e8a.png" alt="img" style="zoom:80%;" /></center>
 > 𝜎(𝑥) = 1/(1+𝑒^−𝑥) : sigmoid function
+>
 > 𝛿(𝑗,𝑘) = 1 (𝑗=𝑘) or 0 (𝑗≠𝑘)
 
 <br/>
@@ -99,7 +102,9 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94107053-a588f100-fe77-11ea-9812-931dfe797405.png" alt="img" style="zoom: 80%;" /></center>
 
 > 𝒙𝑗𝑖: 화자 j 의 i 번째 발화를 추출한 특징 벡터
+>
 > 𝑓(𝒙𝑗𝑖; 𝒘): LSTM 과 linear layer 를 거치고 나온 마지막 출력
+>
 > 𝒆𝑗𝑖: L2 정규화 후 embedding 벡터
 
 <center><img src="https://user-images.githubusercontent.com/46676700/94107148-d2d59f00-fe77-11ea-80f8-973a38b624f0.png" alt="img" style="zoom: 80%;" /></center>
@@ -109,7 +114,9 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94107170-dff28e00-fe77-11ea-87a5-be7ed870bfc8.png" alt="img" style="zoom:40%;" /></center>
 
 > Embedding vector 𝒆𝑗𝑖, 모든 centroid 𝒄𝑘로계산 (1≤𝑗,𝑘≤𝑁,1≤𝑖≤𝑀)
+>
 > 𝑤,𝑏는 학습되는 변수
+>
 > 𝑤 >0 : cosine similarity 값이 클수록 similarity 를 크게 하기 위하여 양수로 설정
 
 <br/>
@@ -280,7 +287,9 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94112311-349a0700-fe80-11ea-8edf-f098ab62b9a8.png" alt="img" style="zoom:75%;"/></center>
 
 > 1 행 : 512 개의 hidden node 와 128 차원의 embedding vector 크기를 가진 단일 계층 LSTM
+>
 > 2행  : 3 layer LSTM (TE2E)
+>
 > 3 행 : 3 layer LSTM (GE2E)
 
 <br/>
@@ -319,7 +328,9 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94113342-b8082800-fe81-11ea-9cde-7831829befa1.png" alt="img" style="zoom: 50%;" /></center>
 
 > Softmax : 훈련 데이터의 모든 화자에 대한 label 을 예측
+>
 > TE2E : TE2E 로 훈련된 모델
+>
 > GE2E : GE2E 로 훈련된 모델
 
 <br/>
