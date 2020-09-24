@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification  REVIEW"
+title: "Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification : REVIEW"
 subtitle: "Gautam Bhattacharya, Joao Monteiro, Jahangir Alam, Patrick Kenny"
 tags: [GAN, SpeakerVerification, SpeakerRecognition, research_review, ML, Unsupervised Domain Adaptation, E2E]
 author: Ara Bae
