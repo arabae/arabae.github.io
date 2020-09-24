@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA  REVIEW"
+title: "End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA : REVIEW"
 subtitle: "Johan Rohdin, Anna Silnova, Mireia Diez, Oldrich Plchot, Pavel Matejka, Lukas Burget"
 tags: [SpeakerVerification, SpeakerRecognition, research_review, ML, i-vector, E2E]
 author: Ara Bae
