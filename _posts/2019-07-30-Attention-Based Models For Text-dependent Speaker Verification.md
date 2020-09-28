@@ -2,7 +2,7 @@
 layout: post
 title: "Attention-based Models For Text-dependent Speaker Verification : REVIEW"
 subtitle: "F A Rezaur Rahman Chowdhury, Quan Wang, Ignacio Lopez Moreno, Li Wan"
-tags: [Attention, pooling, LSTM,, SpeakerVerification, SpeakerRecognition, research_review]
+tags: [Attention, pooling, LSTM, SpeakerVerification, SpeakerRecognition, research_review]
 author: Ara Bae
 comments: True
 ---
