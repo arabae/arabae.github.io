@@ -19,6 +19,7 @@ comments: True
 ---
 
 <br/>
+
 ### Ⅰ. Introduction 🔎
 
 **✔ Global Password Text-dependent Speaker Verification(SV) 시스템**
