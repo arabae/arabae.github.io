@@ -88,16 +88,16 @@ use_math: true
 <center><img src="https://user-images.githubusercontent.com/46676700/95653158-5a3a3800-0b31-11eb-94ce-6f077868a0f7.png" alt="img" style="zoom: 50%;" /></center>
 
 
-> $x_i, x'_i$ : 같은 class $i$으로부터 얻은 input samples
+> $x_i, {x'}_i$ : 같은 class $i$으로부터 얻은 input samples
 >
 > $x_j$ : 다른 class $j(j{\neq}i)$로부터 얻은 sample
 >
 > $\|{x-y}\|$ : $x$와 $y$간 pairwise-distance
 
-- triplet $P_{i,j} = (x_i, x'_i, x_j)$일때, triplet loss L은 batch에 대해 minimized되어 훈련
+- triplet $P_{i,j} = (x_i, {x'}_i, x_j)$일때, triplet loss L은 batch에 대해 minimized되어 훈련
 > 여기서 $\alpha$는 constant margin (e.g. $\alpha=1$)
 
-- $\|f(x_i)-f(x'_j)\| < \|f(x_i)-f(x_j)\| + \alpha$; "같은 class에서 나온 sample들의 거리가 다른 class의 sample보다 가까울 것이다." 에서 발전된 loss
+- $\|f(x_i)-f({x'}_j)\| < \|f(x_i)-f(x_j)\| + \alpha$; "같은 class에서 나온 sample들의 거리가 다른 class의 sample보다 가까울 것이다." 에서 발전된 loss
 
 <br/>
 
