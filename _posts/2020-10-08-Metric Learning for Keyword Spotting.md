@@ -5,6 +5,7 @@ subtitle: "Jaesung Huh*, Minjae Lee*, Heesoo Heo*, Seongkyu Mun, Joon Son Chung"
 tags: [keyword spotting, metric learning]
 author: Ara Bae
 comments: True
+use_math: true
 ---
 
 ### ✏ Abstract 🔎

@@ -39,6 +39,7 @@ theme_settings :
 
   # Disqus
   disqus_shortname: arabae-github-io
+
 # Pagination
 paginate: 5
 paginate_path: "blog/page:num"
@@ -50,3 +51,11 @@ sass:
 gems: [jekyll-paginate]
 bootstrap:
   assets: true
+
+
+# Conversion
+markdown: kramdown
+highlighter: rouge
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
