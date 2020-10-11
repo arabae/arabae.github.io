@@ -92,12 +92,12 @@ use_math: true
 >
 > $x_j$ : 다른 class $j(j{\neq}i)$로부터 얻은 sample
 >
-> $||x-y||$ : $x$와 $y$간 pairwise-distance
+> $\norm{x-y}$ : $x$와 $y$간 pairwise-distance
 
 - triplet $P_{i,j} = (x_i, x_i', x_j)$일때, triplet loss L은 batch에 대해 minimized되어 훈련
 > 여기서 $\alpha$는 constant margin (e.g. $\alpha=1$)
 
-- $||f(x_i) - f(x_i')|| < ||f(x_i) - f(x_j)|| + \alpha$; "같은 class에서 나온 sample들의 거리가 다른 class의 sample보다 가까울 것이다." 에서 발전된 loss
+- $\norm{f(x_i) - f(x_i')} < \norm{f(x_i) - f(x_j)} + \alpha$; "같은 class에서 나온 sample들의 거리가 다른 class의 sample보다 가까울 것이다." 에서 발전된 loss
 
 <br/>
 
