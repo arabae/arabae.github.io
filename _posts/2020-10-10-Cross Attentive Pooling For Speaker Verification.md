@@ -158,9 +158,9 @@ Q = {(\tilde{x_i}, \tilde{y_i})}^{N\times(M-1)}_{i=1}$$
 
 - meta-projection layer 이후, 모든 frame에 대한 hidden representation인 $S, Q$를 얻을 수 있음
 
-> $ S = \{{S_i}\}^{T_s}_{i=1}$
+> $ S = {S_i}^{T_s}_{i=1}$
 >
-> $ Q = \{{Q_i}\}^{T_q}_{i=1}$
+> $ Q = {Q_i}^{T_q}_{i=1}$
 >
 > $S_i, Q_i$ 는 각각 $g_{\Phi}(s_i), g_{\Phi}(q_i)$
 
