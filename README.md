@@ -1,14 +1,9 @@
+# **Speech/Speaker Recognition** 🗣
 
-# Blog for review of research papers :-)
-![home](./assets/img/home.png)
-
-화자 인식을 공부하고, 논문을 읽어 정리하는 블로그
-
-## Grape-Theme
-[naye0ng](https://github.com/naye0ng/Grape-Theme)
+음성인식과 화자인식에 대해 공부하고, 정리하는 블로그입니다.
 
 
-## License
+<br/>
 
-The theme is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
+[IMPRESS Lab](http://impress.inu.ac.kr/){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [Blog](https://arabae.github.io/arabae.github.io/){: .btn .fs-5 .mb-4 .mb-md-0 }
