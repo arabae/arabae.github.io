@@ -1,8 +1,8 @@
 ---
-layout: post
+layout: default
 title: "Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification  REVIEW"
-subtitle: "Gautam Bhattacharya, Joao Monteiro, Jahangir Alam, Patrick Kenny"
-tags: [GAN, SpeakerVerification, SpeakerRecognition, research_review, ML, Unsupervised Domain Adaptation, E2E]
+parent: "Paper review"
+nav_order: 1
 author: Ara Bae
 comments: True
 ---
@@ -164,7 +164,7 @@ comments: True
 - D (discriminator) : 2개의 classifier
    \- 데이터가 진짜(real) 인지 가짜(fake) 인지 판별
    \- 해당 데이터의 범주(category)를 분류
-   
+
 - G (generator) : label정보와 z(noise)로 가짜 데이터 생성
 
 <center><img src="https://user-images.githubusercontent.com/46676700/92468316-ec3ae200-f20d-11ea-882d-0045ffc0cd5c.png" alt="img" style="zoom: 50%;" /></center>
@@ -220,7 +220,7 @@ comments: True
 
 <br/>
 
-- 제안한 DANSE 모델과 x vector, i vector 의 baseline 을 훈련하기 위해 NIST SRE 2004 2010 및 Switchboard Cellular audio 사용 
+- 제안한 DANSE 모델과 x vector, i vector 의 baseline 을 훈련하기 위해 NIST SRE 2004 2010 및 Switchboard Cellular audio 사용
 - 잡음 및 잔향으로 데이터 증강 (128K의 noisy data추가하여, 220K개 사용)
 - Adversarial 모델을 훈련시키기 위해 , 5 개 이하의 발화인 화자는 걸러내고 약 6000 명의 화자를 사용
 - x-vector, i-vector 는 Kaldi toolkit 사용
@@ -234,7 +234,7 @@ comments: True
 
 - Embedding(generator) 함수는 3X 2 3 input 의 Convolutional layer, 4 개의 residual block, attentive statistics layer, 2 개의 fully connected layer (512, 512) 로 구성
 - Classifier는 fully connected layer (64) 와 AM softmax output layer 로 구성 (fully connected layer 가 최종 domain 불편 화자 embedding)
-- Discriminator는 2 개의 fully connected layer (256, 256) 와 binary cross entropy output layer 로 구성 
+- Discriminator는 2 개의 fully connected layer (256, 256) 와 binary cross entropy output layer 로 구성
 - ELU(Exponential Linear Units)를 모든 계층에 사용
 - Batch normalization은 attentive statistics layer 를 사용한 계층에 사용
 - AMsoftmax loss 의 s 와 m parameter 는 각각 30 과 0.6 으로 설정
@@ -265,7 +265,7 @@ comments: True
 
 <br/>
 
-- Test시 embedding 추출에 필요하지 않은 domain discriminator 를 없앰 
+- Test시 embedding 추출에 필요하지 않은 domain discriminator 를 없앰
 - 64차원의 마지막 hidden layer 가 최종 화자 embedding
 - Verification실험은 cosine distance 를 사용하여 score 계산
 - 성능의 지표는 EER 사용
@@ -305,4 +305,3 @@ comments: True
 <br/>
 
 - 향후 특징 공간과 데이터 공간 GAN 의 결합 및 GAN 기반 특징 공간 증강 방법과 같이 다른 adversarial 전략을 고려할 것
-

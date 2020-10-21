@@ -1,8 +1,8 @@
 ---
-layout: post
-title: "End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA : REVIEW"
-subtitle: "Johan Rohdin, Anna Silnova, Mireia Diez, Oldrich Plchot, Pavel Matejka, Lukas Burget"
-tags: [SpeakerVerification, SpeakerRecognition, research_review, ML, i-vector, E2E]
+layout: default
+title: "End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA"
+parent: "Paper review"
+nav_order: 7
 author: Ara Bae
 comments: True
 ---
@@ -70,7 +70,7 @@ comments: True
 2. Generative(PLDA) and Discriminative(DPLDA) Baseline
 - 특징 : 60dimension-MFCC (20차원, ∆, ∆∆)
 - 훈련 데이터 중 전화 데이터만 사용 (짧은 발화 시간은 10~60초 사이 균일 분포를 따르며 총 85,858개 중 짧은 발화는 22,766개)
-- PLDA/DPLDA : 2048개 component를 갖는 UBM, 400차원 i-vector 
+- PLDA/DPLDA : 2048개 component를 갖는 UBM, 400차원 i-vector
 
 <br/>
 
@@ -97,9 +97,9 @@ comments: True
 - 입력 발화의 각 frame에 대해 GMM responsibilities (posteriors, 사후 확률)을 예측
 
    \- 60차원의 MFCC를 전처리(preprocessing) 하여 input으로 사용
-   
+
    \- 현재 frame을 기준으로 ±15 frame을 고려 (총 31개 frame) → 6개 사용
-   
+
    \- 6 * 60 → 360차원
 
 - Hidden layer : 4개 (activation function : sigmoid, node : 1500개)
@@ -137,9 +137,9 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/89503158-1fe6ae80-d801-11ea-9705-f8eeb4eefac9.png" alt="img" style="zoom:60%;" /></center>
 
 - DPLDA는 위의 식에서 파라미터 (Λ, Γ, c, k)를 훈련하여 구하는 것
-  
+
 - 두 i-vector가 같은 화자 인지 판단 (Binary cross-entropy 혹은 SVM 최적화를 통해 얻어짐)
-  
+
 - 모든 훈련 데이터를 기반 계산 (전체 batch를 사용) 하나, End-to-End 시스템 훈련 시에는 너무 많은 메모리와 시간이 필요하여 훈련 데이터 중 무작위로 subset을 선택한 Minibatch 기반
 
    <br/>

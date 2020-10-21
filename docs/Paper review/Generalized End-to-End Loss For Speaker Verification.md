@@ -1,8 +1,8 @@
 ---
-layout: post
+layout: default
 title: "Generalized End to End Loss For Speaker Verification : REVIEW"
-subtitle: "Li Wan, Quan Wang, Alan Papir, Ignacio Lopez Moreno"
-tags: [GE2E, Metric, SpeakerVerification, SpeakerRecognition, research_review]
+parent: "Paper review"
+nav_order: 3
 author: Ara Bae
 comments: True
 ---
@@ -103,7 +103,7 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94107053-a588f100-fe77-11ea-9812-931dfe797405.png" alt="img" style="zoom: 80%;" /></center>
 
 > 𝒙𝑗𝑖: 화자 j 의 i 번째 발화를 추출한 특징 벡터
-> 
+>
 > 𝑓(𝒙𝑗𝑖; 𝒘): LSTM 과 linear layer 를 거치고 나온 마지막 출력
 >
 > 𝒆𝑗𝑖: L2 정규화 후 embedding 벡터
@@ -163,7 +163,7 @@ comments: True
 
 - TI-SV 의 경우 softmax loss 가 약간 더 나은 성능을,, TD SV 의 경우 contrast loss 가 더 나은 성능을 보여 두 가지 GE2E loss 의 구현이 모두 유용함을 발견
 - 𝒆𝑗𝑖제거 : 화자의 centroid 계산시 , 훈련이 안정되고 사소한 문제를 피할 수 있도록 도와줌
-- j 와 k 가 같은 화자일 경우는 (1) 대신 (8) 을 사용하여 centroid 계산 
+- j 와 k 가 같은 화자일 경우는 (1) 대신 (8) 을 사용하여 centroid 계산
 
 <center><img src="https://user-images.githubusercontent.com/46676700/94108065-95721100-fe79-11ea-90cf-b8fe4dd86f1c.png" alt="img" style="zoom:80%;" /></center>
 
@@ -287,7 +287,7 @@ comments: True
 <center><img src="https://user-images.githubusercontent.com/46676700/94112311-349a0700-fe80-11ea-8edf-f098ab62b9a8.png" alt="img" style="zoom:75%;"/></center>
 
 > 1 행 : 512 개의 hidden node 와 128 차원의 embedding vector 크기를 가진 단일 계층 LSTM
-> 
+>
 > 2행  : 3 layer LSTM (TE2E)
 >
 > 3 행 : 3 layer LSTM (GE2E)
@@ -345,4 +345,3 @@ comments: True
 - 이론 및 실험적 결과 에서 모두 본 논문에서 제안한 모델의 장점 을 입증
 - 다양한data source 를 결합하는 MultiReader 기법을 도입하여 여러 키워드와 언어를 지원 할 수 있도록 함
 - <span style="color:#FF0000">**두 가지 기법을 결합하여 보다 정확한 Speaker Verification Model 구축**</span>
-

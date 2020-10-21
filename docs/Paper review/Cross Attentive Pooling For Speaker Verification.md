@@ -1,9 +1,8 @@
 ---
-layout: post
+layout: default
 title: "Cross attentive pooling for speaker verification : REVIEW"
-subtitle: "Seong Min Kye, Yoohwan Kwon, Joon Son Chung"
-tags: [speaker recognition, speaker verification, cross attention]
-author: Ara Bae
+parent: "Paper review"
+nav_order: 6
 comments: True
 use_math: true
 ---

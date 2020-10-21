@@ -1,8 +1,8 @@
 ---
-layout: post
+layout: default
 title: "Attentive Statistics Pooling for Deep Speaker Embedding : REVIEW"
-subtitle: "Koji Okabe, Takafumi Koshinaka, Koichi Shinoda"
-tags: [SpeakerVerification, SpeakerRecognition, AttentionMechanism, ML, Statistics]
+parent: "Paper review"
+nav_order: 2
 author: Ara Bae
 comments: True
 ---

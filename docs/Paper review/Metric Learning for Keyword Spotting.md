@@ -1,8 +1,8 @@
 ---
-layout: post
+layout: default
 title: "Metric Learning for Keyword Spotting : REVIEW"
-subtitle: "Jaesung Huh*, Minjae Lee*, Heesoo Heo*, Seongkyu Mun, Joon Son Chung"
-tags: [keyword spotting, metric learning]
+parent: "Paper review"
+nav_order: 5
 author: Ara Bae
 comments: True
 use_math: true
@@ -195,4 +195,4 @@ use_math: true
 
 - 모든 $k ∈ {target}$에 대한 학습되는 parameter $W_k$는 각 target keyword의 centroid 역할을 하도록 훈련되었을 것이라 기대
 - 하나의 mini-batch에는 target과 non-target의 균형을 조정하기 위해 각 target keyword에 대한 하나의 sample과 non-target keyword의 여러 sample을 포함
-- L을 최소화하면 분자에 있는 값(k번째 class의 embedding과 parameter의 거리)이 작아지므로 해당 class에 속한 embedding과 parameter가 점점 가까워질 것 
+- L을 최소화하면 분자에 있는 값(k번째 class의 embedding과 parameter의 거리)이 작아지므로 해당 class에 속한 embedding과 parameter가 점점 가까워질 것

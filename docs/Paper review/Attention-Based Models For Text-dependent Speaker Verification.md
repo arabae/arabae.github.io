@@ -1,8 +1,8 @@
 ---
-layout: post
+layout: default
 title: "Attention-based Models For Text-dependent Speaker Verification : REVIEW"
-subtitle: "F A Rezaur Rahman Chowdhury, Quan Wang, Ignacio Lopez Moreno, Li Wan"
-tags: [Attention, pooling, LSTM, SpeakerVerification, SpeakerRecognition, research_review]
+parent: "Paper review"
+nav_order: 4
 author: Ara Bae
 comments: True
 ---
@@ -68,18 +68,18 @@ comments: True
 - 훈련 단계에서, 하나의 평가용 발화 𝒙𝑗~와 N개의 등록 발화 𝒙𝑘𝑛 (𝑓𝑜𝑟 𝑛=1, …, 𝑁) tuple이 LSTM network의 입력으로 사용
 
 > {𝒙𝑗~, (𝒙𝑘1, …, 𝒙𝑘𝑁)} ; input
-> 
+>
 > 𝒙 : 고정 길이의 log-mel fiterbank feature
-> 
+>
 > 𝑗, 𝑘 : 발화한 화자 (j와 k는 같을 수 있음)
-> 
+>
 > 만약 𝒙𝑗~와 𝑀 개의 등록 발화가 같은 화자라면 tuple positive (𝑗=𝑘), 다르면 negative
 
 - ℎ𝑡 : t번째 frame에서 LSTM의 마지막 layer의 출력 ( 고정 차원의 vector )
 - 마지막 frame의 output을 d-vector 𝝎 (ℎ𝑇) 로 정의
 
 > {𝝎𝑗~, (𝝎𝑘1, …, 𝝎𝑘𝑁)} ; output
-> 
+>
 > Tuple (𝝎𝑘1, …, 𝝎𝑘𝑁)을 평균내어 centroid 계산
 
 <br/>
@@ -116,7 +116,7 @@ comments: True
 
 <center><img src="https://user-images.githubusercontent.com/46676700/94430186-76071b00-01ce-11eb-8ae9-0fdf5abcf182.png" alt="img" style="zoom: 80%;" /></center>
 
-- Normalized weight 𝛼𝑡와 weighted sum한 결과 d-vector는 다음과 같이 정의 
+- Normalized weight 𝛼𝑡와 weighted sum한 결과 d-vector는 다음과 같이 정의
 
 <center><img src="https://user-images.githubusercontent.com/46676700/94430336-ac449a80-01ce-11eb-8094-4fcf8644fec6.png" alt="img" style="zoom: 80%;" /></center>
 
@@ -190,13 +190,13 @@ comments: True
 
 **✔ 두 가지 maxpooling 방법 사용**
 
-- Sliding Window maxpooling : Sliding window안의 weight 중 큰 값만 두고, 나머지는 0으로 만듦 
+- Sliding Window maxpooling : Sliding window안의 weight 중 큰 값만 두고, 나머지는 0으로 만듦
 - Global top-K maxpooling : 가장 큰 K개의 값만 두고, 나머지는 0으로 만듦
 
 <center><img src="https://user-images.githubusercontent.com/46676700/94432216-63421580-01d1-11eb-8235-ee4f90a727af.png" alt="img" style="zoom: 80%;" /></center>
 
 > t번째 pixel : 가중치 𝛼𝑡
-> 
+>
 > 밝을 수록 가중치가 큰 값을 의미
 
 
@@ -241,7 +241,7 @@ comments: True
 
 <center><img src="https://user-images.githubusercontent.com/46676700/94432517-d8ade600-01d1-11eb-8325-50d593324e2b.png" alt="img" style="zoom: 80%;" /></center>
 
-- cross-layer는 마지막에서 2번째 layer에서 score를 훈련 
+- cross-layer는 마지막에서 2번째 layer에서 score를 훈련
 - divided-layer attention이 마지막 LSTM layer의 차원이 2배이지만, Basic attention과 cross-layer attention보다 약간 더 나은 성능을 보임
 
 
@@ -286,4 +286,3 @@ comments: True
 - 위의 3가지를 결합하였을 때 기본 LSTM모델 EER 1.72%에서 14%의 상대적 성능 향상을 가져옴
 
 - <span style="color:#FF0000">**동일한 attention mechanism(특히, shared-parameter scoring function)은 Text-independent한 화자 검증 및 화자 식별을 개선하기 위해 사용될 수 있음**</span>
-
