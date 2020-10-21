@@ -8,11 +8,13 @@ permalink: /
 # Speech/Speaker Recognition 🗣
 
 음성인식과 화자인식에 대해 공부하고, 정리하는 블로그입니다.
+
+<br/>
 [IMPRESS Lab](http://impress.inu.ac.kr/){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [GitHub](https://github.com/arabae/arabae.github.io){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
-##👩‍💻 Project
+## 👩‍💻 Project
 
 **한국연구재단**
 
@@ -31,7 +33,7 @@ permalink: /
 <br/>
 
 
-##👩‍🏫 Conference
+## 👩‍🏫 Conference
 
 **한국음향학회 음성통신 및 신호처리 학술대회**
 
@@ -53,14 +55,14 @@ permalink: /
 <br/>
 
 
-##📚 Papers
+## 📚 Papers
 
 **2019**
 
-- 잡음 환경에 효과적인 음성인식을 위한 특징 보상 이득 기반의 음성 향상 기법 [click[👆]](http://www.jask.or.kr/articles/xml/LPLB/)
-- 심층신경망 구조에 따른 구개인두부전증 환자 음성 인식 향상 연구 [click[👆]](http://www.jask.or.kr/articles/xml/zWwq/)
+- 잡음 환경에 효과적인 음성인식을 위한 특징 보상 이득 기반의 음성 향상 기법 [click [👆]](http://www.jask.or.kr/articles/xml/LPLB/)
+- 심층신경망 구조에 따른 구개인두부전증 환자 음성 인식 향상 연구 [click [👆]](http://www.jask.or.kr/articles/xml/zWwq/)
 
 **2020**
 
-- Attention-long short term memory 기반의 화자 임베딩과 I-vector를 결합한 원거리 및 잡음 환경에서의 화자 검증 알고리즘 [click[👆]](http://www.jask.or.kr/articles/xml/BD7j/)
-- 화자 구분 시스템의 관심 화자 추출을 위한 i-vector 유사도 기반의 음성 분할 기법 [click[👆]](http://www.jask.or.kr/articles/xml/GkPm/)
+- Attention-long short term memory 기반의 화자 임베딩과 I-vector를 결합한 원거리 및 잡음 환경에서의 화자 검증 알고리즘 [click [👆]](http://www.jask.or.kr/articles/xml/BD7j/)
+- 화자 구분 시스템의 관심 화자 추출을 위한 i-vector 유사도 기반의 음성 분할 기법 [click [👆]](http://www.jask.or.kr/articles/xml/GkPm/)
