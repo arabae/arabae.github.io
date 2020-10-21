@@ -10,5 +10,3 @@ permalink: /docs/prml
 ### Christopher M. Bishop
 
 패턴 인식과 머신 러닝 책을 읽고 정리하는 카테고리
-
----
