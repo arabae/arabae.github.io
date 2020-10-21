@@ -10,5 +10,3 @@ docs/test
 docker-compose.yml
 Dockerfile
 Rakefile
-package
-package-lock
