@@ -1,46 +1,40 @@
 <head>
-  <meta name="google-site-verification" content="uF_kwfXKNqH7H93TwqR0icGgk8oiyknNf8wA5BF2DTs" />
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <!--Favicon-->
-  <link rel="shortcut icon" href="{{ site.baseurl }}/{{ site.theme_settings.favicon }}" type="image/x-icon">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.9.0/css/all.css"
-    integrity="sha384-i1LQnF23gykqWXg6jxC2ZbCbUMxyw5gLZY6UiUS98LYV5unm8GWmfkIS6jqJfb4E" crossorigin="anonymous">
+  {% unless site.plugins contains "jekyll-seo-tag" %}
+    <title>{{ page.title }} - {{ site.title }}</title>
 
-  <!-- Spoqa Han Sans -->
-  <link href='//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css' rel='stylesheet' type='text/css'>
+    {% if page.description %}
+      <meta name="Description" content="{{ page.description }}">
+    {% endif %}
+  {% endunless %}
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+  <link rel="shortcut icon" href="{{ 'favicon.ico' | relative_url }}" type="image/x-icon">
 
-  <!-- OG Tag -->
-  {% if page.title %}
-  {% assign title = site.theme_settings.title | append: "-" | append: page.title %}
-  {% else %}
-  {% assign title = site.theme_settings.title %}
+  <link rel="stylesheet" href="{{ '/assets/css/just-the-docs-default.css' | relative_url }}">
+
+  {% if site.ga_tracking != nil %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.ga_tracking }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', '{{ site.ga_tracking }}'{% unless site.ga_tracking_anonymize_ip == nil %}, { 'anonymize_ip': true }{% endunless %});
+    </script>
+
   {% endif %}
-  <meta name="title" content="{{ title }}" />
-  <meta name="author" content="{{ site.theme_settings.profile.username }}" />
-  <meta name="keywords" content="{{ page.tags | join: ',' }}" />
-  <meta name="description" content="{{ page.subtitle }}" />
-  <meta name="robots" content="index,follow" />
 
-  <meta property="og:title" content="{{ title }}" />
-  <meta property="og:description" content="{{ page.subtitle }}" />
-  <meta property="og:type" content="website, blog" />
-  <meta property="og:image"
-    content="{{ site.url }}/{% if page.image %}{{ page.image }}{% else %}{{ site.theme_settings.profile.image }}{% endif %}" />
-  <meta property="og:site_name" content="{{ site.theme_settings.title }}" />
-  <meta property="og:url" content="{{ site.url }}{{ page.url }}" />
+  {% if site.search_enabled != false %}
+    <script type="text/javascript" src="{{ '/assets/js/vendor/lunr.min.js' | relative_url }}"></script>
+  {% endif %}
+  <script type="text/javascript" src="{{ '/assets/js/just-the-docs.js' | relative_url }}"></script>
 
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="{{ title }}" />
-  <meta name="twitter:description" content="{{ page.subtitle }}" />
-  <meta name="twitter:image"
-    content="{{ site.url }}/{% if page.image %}{{ page.image }}{% else %}{{ site.theme_settings.profile.image }}{% endif %}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>{{ title }}</title>
+  {% seo %}
+
+  {% include head_custom.html %}
+
 </head>
