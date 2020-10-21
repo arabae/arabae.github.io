@@ -2,95 +2,65 @@
 layout: default
 title: Home
 nav_order: 1
-description: "Just the Docs is a responsive Jekyll theme with built-in search that is easily customizable and hosted on GitHub Pages."
 permalink: /
 ---
 
-# Focus on writing good documentation
-{: .fs-9 }
+# Speech/Speaker Recognition 🗣
 
-Just the Docs gives your documentation a jumpstart with a responsive Jekyll theme that is easily customizable and hosted on GitHub Pages.
-{: .fs-6 .fw-300 }
-
-[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/pmarsceill/just-the-docs){: .btn .fs-5 .mb-4 .mb-md-0 }
+음성인식과 화자인식에 대해 공부하고, 정리하는 블로그입니다.
+[IMPRESS Lab](http://impress.inu.ac.kr/){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [GitHub](https://github.com/arabae/arabae.github.io){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
-## Getting started
+##👩‍💻 Project
 
-### Dependencies
+**한국연구재단**
 
-Just the Docs is built for [Jekyll](https://jekyllrb.com), a static site generator. View the [quick start guide](https://jekyllrb.com/docs/) for more information. Just the Docs requires no special plugins and can run on GitHub Pages' standard Jekyll compiler. The [Jekyll SEO Tag plugin](https://github.com/jekyll/jekyll-seo-tag) is included by default (no need to run any special installation) to inject SEO and open graph metadata on docs pages. For information on how to configure SEO and open graph metadata visit the [Jekyll SEO Tag usage guide](https://jekyll.github.io/jekyll-seo-tag/usage/).
+- 구개인두부전증 환자 음성과 연축성 발성장애 음성을 대상으로 한 심층신경망을 이용한 발성장애 음성의 진단 지표 및 인식 기술 개발
 
-### Quick start: Use as a GitHub Pages remote theme
+**LG 전자**
 
-1. Add Just the Docs to your Jekyll site's `_config.yml` as a [remote theme](https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/)
-```yaml
-remote_theme: pmarsceill/just-the-docs
-```
-<small>You must have GitHub Pages enabled on your repo, one or more Markdown files, and a `_config.yml` file. [See an example repository](https://github.com/pmarsceill/jtd-remote)</small>
+- 기동어 발화 데이터를 이용한 화자 인식기술 개발
+- 사용자 정의 기동어 인식 기술 개발
 
-### Local installation: Use the gem-based theme
+**미디어젠**
 
-1. Install the Ruby Gem
-```bash
-$ gem install just-the-docs
-```
-```yaml
-# .. or add it to your your Jekyll site’s Gemfile
-gem "just-the-docs"
-```
-2. Add Just the Docs to your Jekyll site’s `_config.yml`
-```yaml
-theme: "just-the-docs"
-```
-3. _Optional:_ Initialize search data (creates `search-data.json`)
-```bash
-$ bundle exec just-the-docs rake search:init
-```
-3. Run you local Jekyll server
-```bash
-$ jekyll serve
-```
-```bash
-# .. or if you're using a Gemfile (bundler)
-$ bundle exec jekyll serve
-```
-4. Point your web browser to [http://localhost:4000](http://localhost:4000)
+- 전화 녹취 음성에서 화자분리 및 음원분리 기술 구현 용역 개발
 
-If you're hosting your site on GitHub Pages, [set up GitHub Pages and Jekyll locally](https://help.github.com/en/articles/setting-up-your-github-pages-site-locally-with-jekyll) so that you can more easily work in your development environment.
 
-### Configure Just the Docs
+<br/>
 
-- [See configuration options]({{ site.baseurl }}{% link docs/configuration.md %})
 
----
+##👩‍🏫 Conference
 
-## About the project
+**한국음향학회 음성통신 및 신호처리 학술대회**
 
-Just the Docs is &copy; 2017-{{ "now" | date: "%Y" }} by [Patrick Marsceill](http://patrickmarsceill.com).
+- DNN기반 구개인두부전증 환자 음성 검출 기법 연구
+- 잡음 환경에 효과적인 DNN 기반 음성 인식기 성능 평가
+- 잡음 환경에 효과적인 데이터 증강 기반 화자인식 성능 평가
+- 화자 임베딩 기반의 화자 검증 알고리즘
 
-### License
+**한국음향학회 춘계학술대회**
 
-Just the Docs is distributed by an [MIT license](https://github.com/pmarsceill/just-the-docs/tree/master/LICENSE.txt).
+- 잡음 환경에 효과적인 i/d-vector 결합 시스템 기반의 화자 검증 알고리즘
 
-### Contributing
+**한국음향학회 추계학술대회**
 
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change. Read more about becoming a contributor in [our GitHub repo](https://github.com/pmarsceill/just-the-docs#contributing).
+- 잡음 환경에서 등록 횟수에 따른 i-vector 기반 화자 인식 성능 평가
+- 주의집중기법을 활용한 LSTM기반의 화자 검증 시스템
 
-#### Thank you to the contributors of Just the Docs!
 
-<ul class="list-style-none">
-{% for contributor in site.github.contributors %}
-  <li class="d-inline-block mr-1">
-     <a href="{{ contributor.html_url }}"><img src="{{ contributor.avatar_url }}" width="32" height="32" alt="{{ contributor.login }}"/></a>
-  </li>
-{% endfor %}
-</ul>
+<br/>
 
-### Code of Conduct
 
-Just the Docs is committed to fostering a welcoming community.
+##📚 Papers
 
-[View our Code of Conduct](https://github.com/pmarsceill/just-the-docs/tree/master/CODE_OF_CONDUCT.md) on our GitHub repository.
+**2019**
+
+- 잡음 환경에 효과적인 음성인식을 위한 특징 보상 이득 기반의 음성 향상 기법 [click[👆]](http://www.jask.or.kr/articles/xml/LPLB/)
+- 심층신경망 구조에 따른 구개인두부전증 환자 음성 인식 향상 연구 [click[👆]](http://www.jask.or.kr/articles/xml/zWwq/)
+
+**2020**
+
+- Attention-long short term memory 기반의 화자 임베딩과 I-vector를 결합한 원거리 및 잡음 환경에서의 화자 검증 알고리즘 [click[👆]](http://www.jask.or.kr/articles/xml/BD7j/)
+- 화자 구분 시스템의 관심 화자 추출을 위한 i-vector 유사도 기반의 음성 분할 기법 [click[👆]](http://www.jask.or.kr/articles/xml/GkPm/)
