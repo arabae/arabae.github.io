@@ -1,5 +1,7 @@
 ---
 layout: post
+title: "Chapter1. Introduction"
+subtitle: "Christopher M. Bishop"
 author: Ara Bae
 comments: True
 ---
