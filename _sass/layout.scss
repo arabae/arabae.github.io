@@ -203,3 +203,20 @@ body {
   height: $sp-5;
   color: $link-color;
 }
+
+.blockquote {
+    background-color: #fcf9ff;
+    border-left: 6px solid #d2b4de;
+    margin: 15px 0;
+    padding: 15px;
+}
+
+blockquote p {
+    margin-bottom: 10px;
+}
+
+blockquote cite {
+    color: #a1a1a1;
+    display: block;
+    font-size: 14px;
+}
