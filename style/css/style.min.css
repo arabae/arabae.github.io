@@ -1056,15 +1056,6 @@ input:-ms-input-placeholder,textarea:-ms-input-placeholder {
     margin: 20px 0
 }
 
-.post-content h1::before,.post-content h2::before,.post-content h3::before,.post-content h4::before,.post-content h5::before,.post-content h6::before {
-    font-weight: 600;
-    position: absolute;
-    top: 0;
-    left: -15px;
-    content: '#';
-    color: #eb5055
-}
-
 .post-content pre {
     overflow-x: auto;
     margin: 20px 0;
