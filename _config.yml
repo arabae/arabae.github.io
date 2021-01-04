@@ -1,0 +1,22 @@
+name: ARa's DevBlog
+author: ARa Bae
+url: https://arabae.github.io/arabae.github.io/
+baseurl: 
+resume_site: https://arabae.github.io/arabae.github.io/
+description: Speech/Speaker Recognition Study
+github_username: arabae
+github: https://github.com/arabae
+plugins: [jekyll-paginate]
+permalink: /:year-:month-:day-:title
+paginate: 12
+paginate_path: "/page/:num/"
+exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile']
+highlighter: rouge
+markdown: kramdown
+comments :
+  gitalk :
+    clientID : 5304ae17c5ba0ce3b2aa
+    clientSecret : 22801b52c86101ff074072faa1631475954d2936
+    repo : arabae.github.io
+    owner : arabae
+    admin : arabae
