@@ -3,7 +3,7 @@ layout: post
 title: "Cross attentive pooling for speaker verification"
 date: 2019-10-13
 category: review
-thumbnail: /style/image/attention.png
+thumbnail: /style/image/CAP.png
 icon: book
 ---
 

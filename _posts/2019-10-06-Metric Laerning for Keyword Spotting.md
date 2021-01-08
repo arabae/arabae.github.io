@@ -3,7 +3,7 @@ layout: post
 title: "Metric Learning for Keyword Spotting"
 date: 2019-10-06
 category: review
-thumbnail: /style/image/keyword.jpg
+thumbnail: /style/image/metric_keyword.jpg
 icon: book
 ---
 

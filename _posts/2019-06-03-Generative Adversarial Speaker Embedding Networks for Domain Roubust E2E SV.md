@@ -3,7 +3,7 @@ layout: post
 title: "Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification"
 date: 2019-06-03
 category: review
-thumbnail: /style/image/GANs.png
+thumbnail: /style/image/GAN_SE.png
 icon: book
 ---
 

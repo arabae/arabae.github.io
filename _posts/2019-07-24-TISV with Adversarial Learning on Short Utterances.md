@@ -3,7 +3,7 @@ layout: post
 title: "Text-Independent Speaker Verification with Adversarial Learning on Short Utterances"
 date: 2019-07-24
 category: review
-thumbnail: /style/image/GANs.png
+thumbnail: /style/image/GAN_shortutt.png
 icon: book
 ---
 
