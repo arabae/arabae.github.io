@@ -7,11 +7,41 @@ title: About Me
 
 음성인식과 화자인식에 대해 공부하고, 정리하는 블로그입니다.
 
-
-<br/>
-
-
-[IMPRESS Lab](http://impress.inu.ac.kr/){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [GitHub](https://github.com/arabae/arabae.github.io){: .btn .fs-5 .mb-4 .mb-md-0 }
+<html>
+<head>
+<title>Button Test</title>
+  <style>
+    #test_btn1{
+      font-size: 18px;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      margin-right:-4px; }
+    #test_btn2{
+      font-size: 18px;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      margin-left:10px; }
+    #btn_group button{
+      border: 2px solid black;
+      background-color: #FFAF5A;
+      box-shadow: 4px 4px 1px #8C8C8C, 0 22px 22px 0 #EAEAEA;
+      padding: 5px; }
+    #btn_group button:hover{
+      color:white;
+      background-color: #FE8300; }
+  </style>
+</head>
+<body>
+  <div id="btn_group">
+    <button id="test_btn1" onclick="window.open('http://impress.inu.ac.kr/')'">IMPRESS Lab</button>
+    <button id="test_btn2" onclick="window.open('https://github.com/arabae/arabae.github.io')">GitHub</button>
+    </div>
+</body>
+</html>
 
 ---
 
