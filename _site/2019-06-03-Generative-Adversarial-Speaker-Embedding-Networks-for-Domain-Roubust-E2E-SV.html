@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <title>Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</title>
+	<meta name="description" content="">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/style/image/favicon.png"/>
+    <link href="/style/css/highlight.min.css" rel="stylesheet">
+    <link href="/style/css/style.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+</head>
+
+<body class="bg-grey" gtools_scp_screen_capture_injected="true">
+
+    <header id="header" class="header bg-white">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">
+            <img src="/style/image/logo.png" alt="ARa's DevBlog" />
+            <span>ARa's DevBlog</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="/archives">Archives</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="navbar-mobile-menu" onclick="">
+            <span class="icon-menu cross"><span class="middle"></span></span>
+            <ul>
+                <li><a href="/archives">Archives</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+    <article class="main-content page-page" itemscope itemtype="http://schema.org/Article">
+    <div class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification
+        </h1>
+        <div class="post-data">
+            <time itemprop="datePublished">Jun 03, 2019</time>
+        </div>
+    </div>
+</article>
+<div class="main-container">
+    <div class="post-container">
+        <div class="navigation" id="navigation">
+            <h1>Contents</h1>
+            <div class="nav sidenav">
+	    </div>
+        </div>
+        <article class="post-content">
+            <ul id="markdown-toc">
+  <li><a href="#-abstract" id="markdown-toc--abstract">📌 <strong>Abstract</strong></a></li>
+  <li><a href="#ⅰ-introduction" id="markdown-toc-ⅰ-introduction"><strong>Ⅰ. Introduction</strong></a></li>
+  <li><a href="#ⅱ-domain-adaption-with-gans" id="markdown-toc-ⅱ-domain-adaption-with-gans"><strong>Ⅱ. Domain Adaption with GANs</strong></a></li>
+  <li><a href="#ⅲ-generative-adversarial-speaker-embedding-networks" id="markdown-toc-ⅲ-generative-adversarial-speaker-embedding-networks"><strong>Ⅲ. Generative Adversarial Speaker Embedding Networks</strong></a>    <ul>
+      <li><a href="#31-auxiliary-classifier-gan" id="markdown-toc-31-auxiliary-classifier-gan">3.1. Auxiliary Classifier GAN</a></li>
+      <li><a href="#32-gan-variants" id="markdown-toc-32-gan-variants">3.2. GAN Variants</a></li>
+    </ul>
+  </li>
+  <li><a href="#ⅳ--experiments-and-results" id="markdown-toc-ⅳ--experiments-and-results"><strong>Ⅳ.  Experiments and Results</strong></a></li>
+  <li><a href="#ⅴ--conclusion" id="markdown-toc-ⅴ--conclusion"><strong>Ⅴ.  Conclusion</strong></a></li>
+</ul>
+
+<p><span style="font-size:13pt">Gautam Bhattacharya, Joao Monteiro, Jahangir Alam, Patrick Kenny</span></p>
+
+<h1 id="-abstract">📌 <strong>Abstract</strong></h1>
+<ul>
+  <li>
+    <p>GANs를 이용한 domain invariant speaker embedding을 위한 새로운 접근 방식 제안
+  - source data와 target data로 generator가 embedding을 생성
+  - 생성된 embedding이 source인지 target인지 discriminator가 식별</p>
+  </li>
+  <li>
+    <p><strong>이러한 framework를 사용하여 여러 가지 GAN 변형을 훈련하고 화자 검증에 적용</strong></p>
+  </li>
+  <li>
+    <p>Angular Margin loss를 사용하여 End-to-End model 최적화</p>
+  </li>
+</ul>
+<center><img src="https://user-images.githubusercontent.com/46676700/92461324-1e474680-f204-11ea-91bc-e748da169035.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+<h1 id="ⅰ-introduction"><strong>Ⅰ. Introduction</strong></h1>
+<p>- 화자 embedding : 개인의 identity와 관련된 정보를 포함하는 저차원 벡터 표현</p>
+
+<p><br /></p>
+
+<p><strong>✔  Neural Network기반 화자 embedding</strong></p>
+
+<ul>
+  <li>음성 인식, 합성 및 source 분리, 화자 검증 적용 등 다양하게 적용</li>
+</ul>
+
+<p><strong>✔  End-to-End system speaker verification</strong></p>
+
+<ul>
+  <li>두 개의 음성 파일에서 embedding을 추출한 뒤 embedding 사이의 cosine distance 등을 사용하여 score 계산</li>
+  <li>모델이 견고하기 위해서 일반적으로 거리 측정 기준을 직접 최적화해야 함 (End-to-End)</li>
+  <li>그러나, 화자 검증에서 훈련하기 어려운 것으로 판단</li>
+</ul>
+
+<p><strong>✔  I-vector system과 동일하게 사용</strong></p>
+
+<ul>
+  <li>차원 감소에는 LDA(Linear Discriminant Analysis) 사용</li>
+  <li>검증 시 PLDA(Probabilistic Linear Discriminant Analysis) 사용</li>
+</ul>
+
+<p><strong>✔  NIST SRE 2016 dataset 사용</strong></p>
+
+<ul>
+  <li>훈련 데이터(영어)와 테스트 데이터(광둥어 및 타갈로그어) 사이의 mismatch를 도입 (Domain or Covariate shift)</li>
+  <li>domain 보상을 위한 적은 양의 label이 없는 target 데이터 제공</li>
+</ul>
+
+<p><strong>✔  본 논문 저자의 최근 연구에서, End-to-End의 cosine score를 사용하는 domain adversarial 훈련을 이용한 domain 불변 화자 embedding 훈련 제안 (Domain Adversarial Neural Speaker Embeddings, DANSE)</strong></p>
+
+<ul>
+  <li>Gradient reversal을 사용하여 domain 불변성 및 adversarial grame의 최소화 목표를 달성</li>
+</ul>
+
+<p><br /></p>
+
+<p><span style="background-color:#f4d451"><strong>✔  본 논문에서는 GANs를 사용하여 unsupervised domain adaptation/invariant로 이전 연구 확장</strong></span></p>
+
+<p>&lt; 장점&gt;</p>
+<ul>
+  <li>gradient reversal보다 불변성 mapping을 학습하는데 더 나은 gradients 제공</li>
+  <li>GAN framework는 gradient reversal보다 더 일반적이고 확장 가능</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  다양한 GAN 변형</strong></p>
+
+<ul>
+  <li>특징 공간의 다른 변형을 생성</li>
+  <li>이러한 특징 공간을 결합이 성능 향상을 가져옴</li>
+  <li>Auxiliary Classifier GAN(AuxGAN)의 수정을 제안</li>
+  <li>GAN 모델이 DNASE 모델의 성능을 능가</li>
+  <li>다양한 GAN 모델의 score를 평균함으로써 x-vector의 성능보다 향상됨</li>
+</ul>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅱ-domain-adaption-with-gans"><strong>Ⅱ. Domain Adaption with GANs</strong></h1>
+
+<p><strong>✔  GAN</strong></p>
+
+<ul>
+  <li>Generator : target data를 source data의 domain으로 mapping</li>
+  <li>Discriminator : source data와 target data의 domain을 구별</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92464311-ecd07a00-f207-11ea-8527-64991f1f261d.png" alt="img" style="zoom: 70%;" /></center>
+
+<ul>
+  <li>여러 GAN 변형에 해당하는 다른 discriminator의 구성이 특징 공간의 다른 변환을 가져온다는 것을 발견</li>
+  <li>vanilla GAN에서 discriminator는 binary cross-entropy(BCE) loss를 최적화하여 훈련</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  GAN game (기존 GAN loss)</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92464831-af202100-f208-11ea-9c86-bb4318bebe00.png" alt="img" style="zoom: 50%;" /></center>
+
+<blockquote>
+  <p>E, D : Embedding(generator), Discriminator 함수</p>
+</blockquote>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92472815-fc09f480-f214-11ea-9b00-1274915072c1.png" alt="img" style="zoom: 70%;" /></center>
+
+<p><br /></p>
+
+<p><strong>✔  Gradients reversal model</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92472846-01673f00-f215-11ea-8f18-c267f86a118d.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅲ-generative-adversarial-speaker-embedding-networks"><strong>Ⅲ. Generative Adversarial Speaker Embedding Networks</strong></h1>
+
+<p><strong>✔  본 논문의 목표</strong></p>
+
+<ul>
+  <li>화자 embedding model이 특징 추출기(generator)와 domain 식별자(discriminator) 사이의 GAN game을 통해 domain 불변적 특징을 학습</li>
+  <li>GAN이 domain 불변성을 갖으며, embedding이 화자를 구분할 수 있어야 함</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  Loss function (AM-softmax/GAN loss)</strong></p>
+
+<ul>
+  <li>class간 cosine similarity를 직접 최적화</li>
+</ul>
+<center><img src="https://user-images.githubusercontent.com/46676700/92466967-d7f5e580-f20b-11ea-9b8b-ae4db11acd0b.png" alt="img" style="zoom: 50%;" /></center>
+
+<blockquote>
+  <p>C, E : Classifier, Embedding(generator)  함수</p>
+</blockquote>
+
+<p><br /></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92467164-17243680-f20c-11ea-83c2-adb068c4d9df.png" alt="img" style="zoom: 40%;" /></center>
+
+<blockquote>
+  <p>s, m : scale factor, margin</p>
+</blockquote>
+
+<p><br /></p>
+
+<ul>
+  <li>BCE loss를 사용하여 domain discriminator를 훈련</li>
+</ul>
+<center><img src="https://user-images.githubusercontent.com/46676700/92467390-7d10be00-f20c-11ea-9136-515c58c834d9.png" alt="img" style="zoom: 50%;" /></center>
+
+<ul>
+  <li>마지막으로, 아래의 loss를 사용하여 discriminator를 속이기 위해 generator(embedding) 훈련</li>
+</ul>
+<center><img src="https://user-images.githubusercontent.com/46676700/92467437-9580d880-f20c-11ea-9aa0-c336bf2bd007.png" alt="img" style="zoom: 50%;" /></center>
+
+<ul>
+  <li>embedding 함수는 task loss와 함께 그 다음 adversarial loss 총 2번 학습</li>
+</ul>
+
+<p><br /></p>
+
+<h3 id="31-auxiliary-classifier-gan">3.1. Auxiliary Classifier GAN</h3>
+
+<p><strong>✔  AuxGAN(ACGAN)</strong></p>
+
+<ul>
+  <li>
+    <p>조건(conditional) 이미지 생성을 위해 보조(Auxiliary) loss를 사용하여 GAN을 보완</p>
+  </li>
+  <li>
+    <p>side 정보(class label 등)을 예측하는 것이 목표</p>
+  </li>
+  <li>
+    <p>D (discriminator) : 2개의 classifier
+ - 데이터가 진짜(real) 인지 가짜(fake) 인지 판별
+ - 해당 데이터의 범주(category)를 분류</p>
+  </li>
+  <li>
+    <p>G (generator) : label정보와 z(noise)로 가짜 데이터 생성</p>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92468316-ec3ae200-f20d-11ea-882d-0045ffc0cd5c.png" alt="img" style="zoom: 50%;" /></center>
+
+<p><strong>✔  원래 ACGAN의 object fuction</strong></p>
+
+<ul>
+  <li>source의 log-likelihood $L_s$, class의 log-likelihood $L_c$
+    <blockquote>
+      <p>$L_s$ : 기존 GAN의 목적 함수와 같음 (real/fake 판별)<br />
+$L_c$ : 해당 데이터의 class를 판단 (conditional-GAN, CGAN과 유사)</p>
+    </blockquote>
+  </li>
+</ul>
+
+<p><br /></p>
+
+<ul>
+  <li>D(discriminator)는 $L_s + L_c$를 최대화</li>
+  <li>G(generator)는 $L_c - L_s$를 최대화</li>
+</ul>
+
+<p><br /></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92473528-b699f700-f215-11ea-8256-b66f1ff59f9b.png" alt="img" style="zoom: 70%;" /></center>
+
+<p><br /></p>
+
+<p><strong>✔  논문에서 사용한 ACGAN의 object function</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92469327-9a935700-f20f-11ea-8183-b78231d799d4.png" alt="img" style="zoom: 50%;" /></center>
+
+<p><br /></p>
+
+<h3 id="32-gan-variants">3.2. GAN Variants</h3>
+
+<p><strong>🔹  다양한 GAN의 변형 사용</strong></p>
+
+<ul>
+  <li>표준 GAN</li>
+  <li>Least-Squares GAN</li>
+  <li>Relativistic GAN</li>
+</ul>
+
+<p><strong>🔹  각 변형이 특징 공간을 다른 방식으로 변형</strong></p>
+
+<ul>
+  <li>모든 모델은 거의 비슷한 성능을 보임</li>
+</ul>
+
+<p><strong>🔹 모든 GAN 모델의 성능을 결합</strong></p>
+
+<ul>
+  <li>평균 점수(cosine distance score)를 결합한 것이 최고의 성능을 보임</li>
+</ul>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅳ--experiments-and-results"><strong>Ⅳ.  Experiments and Results</strong></h1>
+
+<p><strong>✔  Training data(source)</strong></p>
+
+<p><br /></p>
+
+<ul>
+  <li>제안한 DANSE 모델과 x vector, i vector 의 baseline 을 훈련하기 위해 NIST SRE 2004 2010 및 Switchboard Cellular audio 사용</li>
+  <li>잡음 및 잔향으로 데이터 증강 (128K의 noisy data추가하여, 220K개 사용)</li>
+  <li>Adversarial 모델을 훈련시키기 위해 , 5 개 이하의 발화인 화자는 걸러내고 약 6000 명의 화자를 사용</li>
+  <li>x-vector, i-vector 는 Kaldi toolkit 사용</li>
+  <li>대부분이 영어 사용자 이며 , 전화를 통해 녹음</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  Model</strong></p>
+
+<p><br /></p>
+
+<ul>
+  <li>Embedding(generator) 함수는 3X 2 3 input 의 Convolutional layer, 4 개의 residual block, attentive statistics layer, 2 개의 fully connected layer (512, 512) 로 구성</li>
+  <li>Classifier는 fully connected layer (64) 와 AM softmax output layer 로 구성 (fully connected layer 가 최종 domain 불편 화자 embedding)</li>
+  <li>Discriminator는 2 개의 fully connected layer (256, 256) 와 binary cross entropy output layer 로 구성</li>
+  <li>ELU(Exponential Linear Units)를 모든 계층에 사용</li>
+  <li>Batch normalization은 attentive statistics layer 를 사용한 계층에 사용</li>
+  <li>AMsoftmax loss 의 s 와 m parameter 는 각각 30 과 0.6 으로 설정</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  Optimization</strong></p>
+<ul>
+  <li>cross entropy 훈련을 사용하여 embedding 특징을 사전 훈련</li>
+  <li>세 가지 네트워크 (embedding 특징 , Classifier, 를 서로 다른 optimizer 사용</li>
+  <li>Discriminator는 lr = 0.003 의 RMSprop , Classifier 와 embedding 은lr 0.001 의 SGD 사용</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  Data sampling</strong></p>
+<ul>
+  <li>훈련 중 훈련 set 의 각 녹음에서 무작위로 audio chunk sampling</li>
+  <li>각 음성을 10 번 sampling (epoch)</li>
+  <li>Source data의 mini batch 에 대해 GAN 훈련을 위한 label 이 없는 adaption data 도 동일하게 무작위로 mini batch 를 sampling</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  Speaker Verification</strong></p>
+<ul>
+  <li>Test시 embedding 추출에 필요하지 않은 domain discriminator 를 없앰</li>
+  <li>64차원의 마지막 hidden layer 가 최종 화자 embedding</li>
+  <li>Verification실험은 cosine distance 를 사용하여 score 계산</li>
+  <li>성능의 지표는 EER 사용</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔  Model block</strong></p>
+<center><img src="https://user-images.githubusercontent.com/46676700/92470103-e5fa3500-f210-11ea-8ca4-58b5d1bcf508.png" alt="img" style="zoom: 50%;" /></center>
+<center><img src="https://user-images.githubusercontent.com/46676700/92470119-ebf01600-f210-11ea-8d0b-bab531d6d72d.png" alt="img" style="zoom: 50%;" /></center>
+
+<p><br /></p>
+
+<p><strong>✔  제안한 adversarial 화자 embedding과 baseline system 성능 비교</strong></p>
+
+<ul>
+  <li>Baseline시스템 중에서는 DNN 기반의 x vector 시스템이 LDA 차원 감소 추가하는 것 만으로도 i-vector 의 성능보다 향상</li>
+  <li>모든 GAN 기반의 모델이 DANSE 보다 더 나은 성능을 보임</li>
+  <li>AuxGAN(ACGAN), LSGAN, RelGAN embedding 의 score 를 평균한 것이 가장 성능을 크게 개선함</li>
+</ul>
+
+<p><br /></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/92470359-3d98a080-f211-11ea-8d38-75adaeb55df0.png" alt="img" style="zoom: 50%;" /></center>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅴ--conclusion"><strong>Ⅴ.  Conclusion</strong></h1>
+
+<ul>
+  <li>GANs를 이용한 domain 불변 화자 embedding 학습을 위한 새로운 framework 제안</li>
+  <li>여러 가지 GAN 의 변형을 학습하여 score 를 결합함으로써 크게 향상된 성능을 얻음</li>
+  <li>End-to-End model 에 최적화되어 있으며 간단한 cosine distance 를 사용하여 score 를 계산</li>
+</ul>
+
+<p><br /></p>
+
+<ul>
+  <li>향후 특징 공간과 데이터 공간 GAN 의 결합 및 GAN 기반 특징 공간 증강 방법과 같이 다른 adversarial 전략을 고려할 것</li>
+</ul>
+
+        </article>
+        <div class="post-content">
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+
+<script data-no-instant type="text/javascript">
+const gitalk = new Gitalk({
+  clientID: '5304ae17c5ba0ce3b2aa',
+  clientSecret: '22801b52c86101ff074072faa1631475954d2936',
+  repo: 'arabae.github.io',
+  owner: 'arabae',
+  admin: ['arabae'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: true  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+        </div>
+    </div>
+</div>
+
+    
+    <footer id="footer" class="footer bg-white">
+    <div class="footer-social">
+        <div class="footer-container clearfix">
+            <div class="social-list">
+                <a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+                <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
+                <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-meta">
+        <div class="footer-container">
+            <div class="meta-item meta-copyright">
+                <div class="meta-copyright-info">
+                    <a href="https://github.com/arabae" class="info-logo">
+                        <img src="/style/image/logo.png" alt="wonder">
+                    </a>
+                    <div class="info-text">
+                        <p>Copyright &copy; 2021 - 2021 <a href="https://github.com/arabae"><code>ARa Bae</code></a></p>
+                        <p>Powered by <a href="http://jekyllrb.com" target="_blank" rel="nofollow"><code>jekyll</code></a>，theme is <a href="https://github.com/lightfish-zhang/pinghsu-jekyll" target="_blank" rel="nofollow"><code>pinghsu</code></a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-item meta-posts">
+                <h3 class="meta-title">RECENT POSTS</h3>
+                
+                    <li>
+                        <a href="/2019-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-30-Attention-based-models-for-TDSV">Attention-based Models For Text-dependent Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances">Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV">Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA">End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA</a>
+                    </li>
+                
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<!-- #end -->
+<script src="//cdn.bootcss.com/jquery/1.10.1/jquery.min.js"></script>
+<script>
+	!window.jQuery && document.write(unescape('%3Cscript src="/style/js/jquery.min.js"%3E%3C/script%3E'))
+</script>
+<script src="/style/js/headroom.min.js"></script>
+<script src="/style/js/nav.min.js"></script>
+<script type="text/javascript">
+    var header = new Headroom(document.getElementById("header"), {
+        tolerance: 10,
+        offset : 80,
+        classes: {
+            initial: "animated",
+            pinned: "slideDown",
+            unpinned: "slideUp"
+        }
+    });
+    header.init();
+</script>
+
+<script>window.SmoothScrollOptions = { stepSize: 36 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.8/SmoothScroll.min.js"></script>
+<script>
+	!window.SmoothScroll && document.write(unescape('%3Cscript src="/style/js/SmoothScroll.min.js"%3E%3C/script%3E'))
+</script>
+
+
+
+
+  </body>
+</html>

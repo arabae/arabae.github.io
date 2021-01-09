@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <title>Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</title>
+	<meta name="description" content="">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/style/image/favicon.png"/>
+    <link href="/style/css/highlight.min.css" rel="stylesheet">
+    <link href="/style/css/style.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+</head>
+
+<body class="bg-grey" gtools_scp_screen_capture_injected="true">
+
+    <header id="header" class="header bg-white">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">
+            <img src="/style/image/logo.png" alt="ARa's DevBlog" />
+            <span>ARa's DevBlog</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="/archives">Archives</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="navbar-mobile-menu" onclick="">
+            <span class="icon-menu cross"><span class="middle"></span></span>
+            <ul>
+                <li><a href="/archives">Archives</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+    <article class="main-content page-page" itemscope itemtype="http://schema.org/Article">
+    <div class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            Text-Independent Speaker Verification with Adversarial Learning on Short Utterances
+        </h1>
+        <div class="post-data">
+            <time itemprop="datePublished">Jul 24, 2019</time>
+        </div>
+    </div>
+</article>
+<div class="main-container">
+    <div class="post-container">
+        <div class="navigation" id="navigation">
+            <h1>Contents</h1>
+            <div class="nav sidenav">
+	    </div>
+        </div>
+        <article class="post-content">
+            <ul id="markdown-toc">
+  <li><a href="#-abstract" id="markdown-toc--abstract">📌 <strong>Abstract</strong></a></li>
+  <li><a href="#ⅰ-introduction-" id="markdown-toc-ⅰ-introduction-"><strong>Ⅰ. Introduction</strong> 🌱</a></li>
+  <li><a href="#ⅱ-related-work-" id="markdown-toc-ⅱ-related-work-"><strong>Ⅱ. Related Work</strong> 🌿</a></li>
+  <li><a href="#ⅲ-proposed-approach-" id="markdown-toc-ⅲ-proposed-approach-"><strong>Ⅲ. Proposed Approach</strong> 🌳</a></li>
+  <li><a href="#ⅳ-experiments-and-results-" id="markdown-toc-ⅳ-experiments-and-results-"><strong>Ⅳ. Experiments and Results</strong> 🌺</a></li>
+  <li><a href="#ⅴ-conclusion-" id="markdown-toc-ⅴ-conclusion-"><strong>Ⅴ. Conclusion</strong> 🌞</a></li>
+</ul>
+
+<p><span style="font-size:13pt">Kai Liu, Huan Zhou</span></p>
+
+<h1 id="-abstract">📌 <strong>Abstract</strong></h1>
+
+<p><strong>문제점:</strong> Text-independent speaker verification은 짧은 발화 조건에서 심각한 성능 저하를 겪음
+<strong>해결방법:</strong> short embedding을 enhanced embedding에 직접 매핑하여 판별력(discriminability)을 높이도록 adversarial하게 훈련된 embedding model 제안</p>
+
+<ul>
+  <li>특히, loss criteria(기준)이 많은 <span style="background-color:#AED6F1"><strong>Wasserstein GAN</strong></span> 사용</li>
+  <li>여러 loss function은 뚜렷하게 최적화하려는 목표를 가지고 있으나 그 중 일부는 화자 검증 연구에 도움이 되지 않음</li>
+  <li>대부분의 이전 연구와 달리  <span style="background-color:#AED6F1"><strong>이 연구의 주요 목표</strong> 는 <strong>수많은 ablation 연구</strong> 로 부터 loss criteria의 효과를 검증</span>
+　→ 위에서 말하는 SV에서 도움이 되지 않는 loss들을 제거하면서 loss에 따른 영향을 조사</li>
+  <li>VoxCeleb dataset에 대한 실험에서 일부 criteria는 SV 성능에 이로운 반면 일부 criteria는 사소한 영향을 미친다는 것을 보여줌</li>
+  <li>마지막으로, finetuning없이 사용한 Wasserstein GAN은 baseline을 넘어 의미 있는 성능 향상을 달성하며, EER에서는 4%의 상대적 개선과 2초간의 짧은 발화의 challenge한 시나리오에서는 7%의 minDCF를 달성</li>
+</ul>
+
+<hr />
+
+<h1 id="ⅰ-introduction-"><strong>Ⅰ. Introduction</strong> 🌱</h1>
+
+<ul>
+  <li>TI-SV: 등록된 화자와 테스트 음성(내용 제약 X)을 통해 화자의 신원을 검증</li>
+  <li>중요한 단계: 임의의 지속시간을 갖는 음성을 고정 차원의 speaker representation으로 매핑하는 것 (acoustic feature → speaker feature)</li>
+  <li>Baseline System: GhostVLAD-aggregated embedding(G-vector); 긴 발화, 짧은 발화에서 좋은 성능을 보였으며, 잡음 환경에서 x-vector보다 이점이 있어 SV 시스템에 더 유리</li>
+  <li>NIST-SRE 2010 test set에서 <strong>full-duration이 5초로 단축</strong>되었을 때 i-vector/PLDA system <strong>성능이 2.48%에서 24.78%</strong> 로 감소, <strong>최근 딥러닝 기술 사용하여 이를 보완하는 연구가 많이 진행 중</strong></li>
+  <li>본 논문에서는 Wasserstein GAN의 adversarial 학습을 이용하여 향상된 차별성을 가진 새로운 embedding을 제안
+(같은 화자의 짧은 발화와 긴 발화에서 추출한 G-vector를 활용하여)</li>
+</ul>
+
+<hr />
+
+<h1 id="ⅱ-related-work-"><strong>Ⅱ. Related Work</strong> 🌿</h1>
+
+<p><strong>✔ GAN 이란</strong>: 생성자(Generator)와 식별자(Discriminator)가 싸우면서 학습하는 모델</p>
+<ul>
+  <li>Generator : Discriminator를 속이도록 학습</li>
+  <li>Discriminator : real sample 𝑦와 noise 𝜂로부터 생성된 fake sample 𝑔의 차이를 학습</li>
+</ul>
+
+<p>&lt;/br&gt;</p>
+
+<p><strong>✔ Adversarial Learning</strong></p>
+<ul>
+  <li>minmax loss function이 교대로 최적화 과정을 수행 (두 모델의 loss가 같아지는 상태가 될 때까지)</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101442311-735b3b80-395e-11eb-87da-130ab93a5834.png" alt="img" /></center>
+
+<ul>
+  <li>Gradients diminishing, exploding 문제로 훈련하기 어려운데 이를 Wasserstein GAN(WGAN)에서 수학적으로 다루었음</li>
+  <li>Discriminator는 좋은 $𝑓_𝑤$를 찾도록 설계되었으며, 새로운 loss function은 Wasserstein 거리를 측정하도록 구성</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101442322-76eec280-395e-11eb-8f23-77c965f91d6a.png" alt="img" /></center>
+
+<hr />
+
+<h1 id="ⅲ-proposed-approach-"><strong>Ⅲ. Proposed Approach</strong> 🌳</h1>
+
+<ul>
+  <li>제안하는 전급 방식은 아래의 구조와 같음</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101442513-ccc36a80-395e-11eb-923b-4ca1aa2ac183.png" alt="img" /></center>
+
+<blockquote>
+  <p>$𝑥, 𝑦$ : 같은 speaker의 각각 짧고 긴 발화에 해당하는 D차원의 G-vector<br />
+$𝑧$ : speaker ID label<br />
+$𝐺_𝑓$ : embedding generator<br />
+$𝐺_𝑐$ : speaker label predictor<br />
+$𝐺_𝑑$ : Distance calculator<br />
+$𝐷_𝑤$ : Wasserstein discriminator</p>
+</blockquote>
+
+<p><br /></p>
+
+<ul>
+  <li>제안된 방법의 <strong>핵심적인 task</strong>는 <strong>discriminability이 향상된 embedding을 학습</strong>하는 것</li>
+</ul>
+
+<p><span style="background-color:#E4C4F0"><strong>✔ loss functions</strong></span></p>
+
+<ul>
+  <li><strong>WGAN loss</strong></li>
+</ul>
+<center><img src="https://user-images.githubusercontent.com/46676700/101443118-02b51e80-3960-11eb-86ce-40b44aed35fc.png" alt="img" /></center>
+
+<p><br /></p>
+
+<ul>
+  <li>
+    <p><strong>Conditional WGAN loss</strong>: GAN에 Wasserstein 거리를 이용한 새로운 loss function 정의</p>
+
+    <ul>
+      <li>$𝑥$ (짧은 발화 embedding)이 주어졌을 때, $𝐷_𝑤$와 $𝐺_𝑓$ 분포의 차이 ($𝑥$와 real sample, fake sample을 연결하여 학습)</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101443121-047ee200-3960-11eb-85e3-d6cdb120eb2f.png" alt="img" /></center>
+
+<p><br /></p>
+
+<p>⚡️ WGAGN loss / Conditional WGAN loss 중 하나만 사용하고, 그 차이를 성능 평가 실시</p>
+
+<p>&lt;/br&gt;</p>
+
+<ul>
+  <li>
+    <p><strong>FID loss</strong>: Fréchet Inception Distance</p>
+
+    <ul>
+      <li>Real sample과 fake sample의 벡터 사이의 거리 계산을 위한 metric</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101443125-05b00f00-3960-11eb-83a1-b11abcfe6840.png" alt="img" /></center>
+
+<p><br /></p>
+
+<ul>
+  <li>
+    <p><strong>class loss</strong>: Multi-class cross-entropy loss</p>
+
+    <ul>
+      <li>Speaker에 따른 embedding 차이를 위한 loss 정의</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101443129-08126900-3960-11eb-98d6-16200989d2ff.png" alt="img" /></center>
+
+<blockquote>
+  <p>$𝑁$ : Batch size<br />
+$𝑐$ : Class 수<br />
+$𝑔_𝑖$ : i번째 생성된 embedding<br />
+$𝑧_𝑖$ : 해당 label index<br />
+$𝑊∈ℜ^(𝐷∗𝑐), 𝑏∈ℜ^𝑐$ : weight matrix, bias</p>
+</blockquote>
+
+<p><br /></p>
+
+<ul>
+  <li>
+    <p><strong>Triplet loss</strong></p>
+
+    <ul>
+      <li>Class 분류 시 error에 대한 패널티</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101443133-09dc2c80-3960-11eb-882f-caf3570671b9.png" alt="img" /></center>
+
+<blockquote>
+  <p>$\Gamma$ : training set에서 가능한 모든 embedding의 triplet $\gamma=(𝑔_𝑎, 𝑔_𝑝, 𝑔_𝑛)$의 set<br />
+$𝑔_𝑎$ : anchor input<br />
+$𝑔_𝑝$ : positive input<br />
+$𝑔_𝑛$ : negative input<br />
+$\Psi∈ℜ^+$ : positive와 negative 사이의 safety margin</p>
+</blockquote>
+
+<p><br /></p>
+
+<ul>
+  <li>
+    <p><strong>Center loss</strong></p>
+
+    <ul>
+      <li>Class 내 variation 최소화</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101443140-0c3e8680-3960-11eb-8896-37b5be81d367.png" alt="img" /></center>
+
+<blockquote>
+  <p>$𝑐_(𝑦_𝑖)$ : deep feature의 𝑦_𝑖번째 class center<br />
+$𝑥_𝑖$ : $𝑦_𝑖$번째 class에 속하는 𝑖번째 deep feature<br />
+$𝑚$ : mini-batch size</p>
+</blockquote>
+
+<p><br /></p>
+
+<ul>
+  <li>
+    <p><strong>Cosine distance loss</strong></p>
+
+    <ul>
+      <li>Generator model로 얻은 향상된 embedding과 real sample(target) 사이의 유사도를 고려</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101443144-0ea0e080-3960-11eb-8437-04997a2f26bc.png" alt="img" /></center>
+
+<blockquote>
+  <p>$\bar 𝑒$: normalized embedding</p>
+</blockquote>
+
+<p><br /></p>
+
+<p>:star: <span style="background-color:#FFED81"><strong>✔ Generator와 Discriminator의 최종 Loss</strong></span></p>
+
+<ul>
+  <li>$G_f$</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101444427-d3ec7780-3962-11eb-8967-3f0ff2912fad.png" alt="img" /></center>
+
+<ul>
+  <li>$D_w$</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101444430-d5b63b00-3962-11eb-97a0-807326d8a4a4.png" alt="img" /></center>
+
+<ul>
+  <li>
+    <p>WGAN 훈련 후 generative model $𝐺_𝑓$ 유지</p>
+
+    <ul>
+      <li>Test 단계에서 짧은 발화 embedding $𝑥$를 $𝐺_𝑓$에 넣어 enhanced embedding($g$)를 얻음</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h1 id="ⅳ-experiments-and-results-"><strong>Ⅳ. Experiments and Results</strong> 🌺</h1>
+
+<p><strong>✔ Experimental setup</strong></p>
+
+<ul>
+  <li><strong>Train:</strong>  VoxCeleb2의 subset (1,057명 화자의 164,716개 발화)</li>
+  <li><strong>Test:</strong>   VoxCeleb1의 subset (40명 화자의 13,265개 발화)</li>
+  <li>짧은 발화를 위해 <strong>random하게 2초 잘라서</strong> 사용</li>
+</ul>
+
+<p><strong>✔ Baseline system</strong></p>
+
+<ul>
+  <li>G-vector (VGG-Restnet34s)</li>
+</ul>
+
+<p><strong>✔ Hyper Parameter</strong></p>
+
+<ul>
+  <li>Learning rate 0.0001</li>
+  <li>Adam Optimizer</li>
+  <li>Weight clipping -0.01 ~ 0.01 threshold ($𝐷_𝑤$)</li>
+  <li>Batch size 128</li>
+</ul>
+
+<p><br /></p>
+
+<p><span style="background-color:#AED6F1"><strong>✔ 다양한 loss function의 영향 연구</strong></span></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101445011-0d71b280-3964-11eb-8d77-389d6aa37ee3.png" alt="img" /></center>
+<center><img src="https://user-images.githubusercontent.com/46676700/101445016-0f3b7600-3964-11eb-94f9-767587338bcc.png" alt="img" /></center>
+
+<center> - FID loss은 긍정적인 영향 (v1 vs v2) </center>
+<center> - Conditional WGAN이 WGAN보다 나음 (v3 vs v4) </center>
+<center> - Triplet loss를 넣으면 조금 더 나은 결과를 보임 (v7 vs v2) </center>
+<center> - Triplet b(fake)보다 Triplet a(real, fake 모두)가 크게 성능 향상 (v3 vs v8) </center>
+<center> - Softmax는 긍정적인 영향 (v3 vs v5) </center>
+<center> - Center loss은 부정적인 영향 (v6 vs v7) </center>
+<center> - Cosine loss은 긍정적 영향 (v6 vs v8) </center>
+
+<p><br /></p>
+
+<ul>
+  <li><strong>추가적인 training function</strong>(softmax, cosine, triplet)이 모두 <strong>훈련에 긍정적인</strong> 영향을 미침</li>
+  <li>SV시스템에 FID, conditional WGAN은 매우 유용, 추가 조사 가치가 있음</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔ Baseline system과 비교</strong></p>
+
+<ul>
+  <li>실험 중 가장 성능이 좋았던 v3 system과 G-vector baseline system 비교
+    <ul>
+      <li>EER과 minDCF</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/101445333-a6083280-3964-11eb-86af-900deb097f6e.png" alt="img" /></center>
+
+<p><br /></p>
+
+<ul>
+  <li>Baseline보다 짧은 duration에 대해 더 나은 성능을 보임
+    <ul>
+      <li>상대적으로 EER은 4.2% 개선하였으며, minDCF는 7.2% 개선 – 1초 task에서도 상대적 EER 3.8% 향상</li>
+    </ul>
+  </li>
+  <li>시간 제약으로 FID loss는 최종 system에 추가하지 않았으며 hyper-parameter, loss weight($\alpha, \beta, \gamma, \lambda, \epsilon$)와 triplet margin $\Psi$에 대한 미세조정이 없었음
+    <ul>
+      <li>제안한 system의 개선될 여지가 많이 남아있음</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h1 id="ⅴ-conclusion-"><strong>Ⅴ. Conclusion</strong> 🌞</h1>
+
+<ul>
+  <li>본 논문에서는 <strong>WGAN을 적용</strong> 하여 <strong>발화가 짧은</strong> speaker verification application의 <strong>향상된 embedding을 성공적으로 학습</strong></li>
+  <li>제안된 WGAN 기반 커널 시스템 그리고 그 위에, GAN 훈련에서 <strong>많은 loss criteria의 효과를 검증</strong></li>
+  <li>최종 제안 시스템은 도전적인 짧은 스피커 검증 시나리오에서 baseline system을 능가</li>
+  <li>전반적으로, 상당한 진보와 연구가 진전되는 잠재적 방향을 보여줌</li>
+</ul>
+
+        </article>
+        <div class="post-content">
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+
+<script data-no-instant type="text/javascript">
+const gitalk = new Gitalk({
+  clientID: '5304ae17c5ba0ce3b2aa',
+  clientSecret: '22801b52c86101ff074072faa1631475954d2936',
+  repo: 'arabae.github.io',
+  owner: 'arabae',
+  admin: ['arabae'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: true  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+        </div>
+    </div>
+</div>
+
+    
+    <footer id="footer" class="footer bg-white">
+    <div class="footer-social">
+        <div class="footer-container clearfix">
+            <div class="social-list">
+                <a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+                <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
+                <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-meta">
+        <div class="footer-container">
+            <div class="meta-item meta-copyright">
+                <div class="meta-copyright-info">
+                    <a href="https://github.com/arabae" class="info-logo">
+                        <img src="/style/image/logo.png" alt="wonder">
+                    </a>
+                    <div class="info-text">
+                        <p>Copyright &copy; 2021 - 2021 <a href="https://github.com/arabae"><code>ARa Bae</code></a></p>
+                        <p>Powered by <a href="http://jekyllrb.com" target="_blank" rel="nofollow"><code>jekyll</code></a>，theme is <a href="https://github.com/lightfish-zhang/pinghsu-jekyll" target="_blank" rel="nofollow"><code>pinghsu</code></a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-item meta-posts">
+                <h3 class="meta-title">RECENT POSTS</h3>
+                
+                    <li>
+                        <a href="/2019-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-30-Attention-based-models-for-TDSV">Attention-based Models For Text-dependent Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances">Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV">Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA">End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA</a>
+                    </li>
+                
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<!-- #end -->
+<script src="//cdn.bootcss.com/jquery/1.10.1/jquery.min.js"></script>
+<script>
+	!window.jQuery && document.write(unescape('%3Cscript src="/style/js/jquery.min.js"%3E%3C/script%3E'))
+</script>
+<script src="/style/js/headroom.min.js"></script>
+<script src="/style/js/nav.min.js"></script>
+<script type="text/javascript">
+    var header = new Headroom(document.getElementById("header"), {
+        tolerance: 10,
+        offset : 80,
+        classes: {
+            initial: "animated",
+            pinned: "slideDown",
+            unpinned: "slideUp"
+        }
+    });
+    header.init();
+</script>
+
+<script>window.SmoothScrollOptions = { stepSize: 36 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.8/SmoothScroll.min.js"></script>
+<script>
+	!window.SmoothScroll && document.write(unescape('%3Cscript src="/style/js/SmoothScroll.min.js"%3E%3C/script%3E'))
+</script>
+
+
+
+
+  </body>
+</html>

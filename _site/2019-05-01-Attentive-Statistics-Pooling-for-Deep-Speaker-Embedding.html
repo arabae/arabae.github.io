@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <title>Attentive Statistics Pooling for Deep Speaker Embedding</title>
+	<meta name="description" content="">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/style/image/favicon.png"/>
+    <link href="/style/css/highlight.min.css" rel="stylesheet">
+    <link href="/style/css/style.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+</head>
+
+<body class="bg-grey" gtools_scp_screen_capture_injected="true">
+
+    <header id="header" class="header bg-white">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">
+            <img src="/style/image/logo.png" alt="ARa's DevBlog" />
+            <span>ARa's DevBlog</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="/archives">Archives</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="navbar-mobile-menu" onclick="">
+            <span class="icon-menu cross"><span class="middle"></span></span>
+            <ul>
+                <li><a href="/archives">Archives</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+    <article class="main-content page-page" itemscope itemtype="http://schema.org/Article">
+    <div class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            Attentive Statistics Pooling for Deep Speaker Embedding
+        </h1>
+        <div class="post-data">
+            <time itemprop="datePublished">May 01, 2019</time>
+        </div>
+    </div>
+</article>
+<div class="main-container">
+    <div class="post-container">
+        <div class="navigation" id="navigation">
+            <h1>Contents</h1>
+            <div class="nav sidenav">
+	    </div>
+        </div>
+        <article class="post-content">
+            <ul id="markdown-toc">
+  <li><a href="#-abstract" id="markdown-toc--abstract">📌 <strong>Abstract</strong></a></li>
+  <li><a href="#-introduction" id="markdown-toc--introduction">📌 <strong>Introduction</strong></a></li>
+  <li><a href="#-deep-speaker-embedding" id="markdown-toc--deep-speaker-embedding">📌 <strong>Deep speaker embedding</strong></a></li>
+  <li><a href="#-high-order-pooling-with-attention" id="markdown-toc--high-order-pooling-with-attention">📌 <strong>High-order pooling with attention</strong></a></li>
+  <li><a href="#-experimental-settings" id="markdown-toc--experimental-settings">📌 <strong>Experimental settings</strong></a></li>
+</ul>
+
+<p><span style="font-size:13pt">Koji Okabe, Takafumi Koshinaka, Koichi Shinoda</span></p>
+
+<h1 id="-abstract">📌 <strong>Abstract</strong></h1>
+<ul>
+  <li>
+    <p><span style="background-color:#FFE49B"><strong>Text-independent</strong>(문장 독립 : 발화 내용이 동일하지 하지 않음)한 <strong>Speaker Verification</strong>(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 <strong>Deep speaker embedding을 위한 attentive statistics pooling</strong> 제안</span></p>
+  </li>
+  <li>
+    <p>기존의 speaker embedding에서는 단일 발화의 모든 frame에서 frame-level의 특징을 모두 평균 내어 utterance-level의 특징을 형성</p>
+  </li>
+  <li>
+    <p>제안하는 방법은 attention mechanism을 사용하여 각 frame마다 다른 weight(가중치)를 부여하고, weighted mean(가중 평균)과 weighted standard deviations(가중 표준 편차)를 생성</p>
+  </li>
+</ul>
+
+<p>✔  <span style="background-color:#FFE49B">NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소</span></p>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="-introduction">📌 <strong>Introduction</strong></h1>
+
+<ul>
+  <li>
+    <p><strong>화자 인식은 지난 10년동안 i-vector paradigm과 진화</strong>하였고, i-vector는 고정된 저차원의 특징 벡터 형태로 음성 발화 혹은 화자를 표현</p>
+  </li>
+  <li>
+    <p>다양한 기계학습을 통해 Deep learning이 성능 향상에 크게 기여하며, 화자 인식을 위한 특징 추출에 Deep learning을 도입이 증가</p>
+  </li>
+  <li>
+    <p>초기 연구에서는 ASR(Automatic Speech Recognition)의 음향 모델에서 도출된 DNN을 UBM으로 사용하여 기존의 GMM기반 UBM보다 우수한 성능을 보였지만 언어 의존성 단점과 훈련을 위해 음소 transcription이 필요</p>
+  </li>
+  <li>
+    <p>최근 <strong>DNN은 이러한 i-vector framework와 독립적</strong>으로 <strong>화자 마다 고유한 특징 벡터를 추출하는데 유용</strong>하다고 밝혀짐 (특히, 짧은 발화 조건에서 더 나은 성능을 보임)</p>
+  </li>
+  <li>
+    <p>Text-dependent(문장 종속 : 발화 내용이 동일함) SV에서 LSTM(마지막 frame에서 하나의 출력을 갖는 구조)을 사용하여 utterance-level의 특징을 얻는 End-to-End Neural Network기반의 방법이 제안되었으며, 기존의 i-vector보다 좋은 성능을 보임</p>
+  </li>
+  <li>
+    <p>Text-independent SV는 입력으로 다양한 길이의 발화를 갖으므로 average pooling layer가 도입되어 frame-level의 화자 특징 벡터를 일정한차원을 갖는 speaker embedding 벡터를 얻음</p>
+  </li>
+  <li>
+    <p>대부분 최근 연구에서 DNN이 i-vector보다 더 나은 정확도를 갖는 것을 보여주며 Snyder 외는 average pooling를 확장한 statistics pooling (평균 및 표준 편차 계산)을 채택</p>
+  </li>
+  <li>
+    <p>그러나 아직 정확도 향상에 대한 표준 편차 pooling의 효율성은 보고하지 않음</p>
+  </li>
+</ul>
+
+<p><br /></p>
+
+<ul>
+  <li>
+    <p>최근 다른 연구에서는 이전에 기계 번역에서 상당한 성능 향상을 가져온 <strong>attention mechanism과 통합</strong></p>
+  </li>
+  <li>
+    <p>화자 인식에서도 중요도 계산 시, speaker embedding 추출하는 network의 일부로 작동하는 작은 attention network 사용</p>
+  </li>
+  <li>
+    <p>계산된 중요도는 frame-level의 특징 벡터의 weighted mean 계산할 때 사용하여 speaker embedding이 중요한 frame에 초점을 맞춤</p>
+  </li>
+  <li>
+    <p>그러나 이전 연구에서는 고정 길이의 text-independent 혹은 text-dependent 화자 인식과 같은 제한된 작업에서만 수행</p>
+  </li>
+</ul>
+
+<p><strong>- 본 논문에서 attention mechanism으로 계산된 중요도로 importance-weighted standard deviation과 weighted mean사용한 새로운 pooling방법인 attentive statistics pooling를 제안</strong></p>
+
+<ul>
+  <li>가변 길이의 text-independent한 환경에서 attentive statisitics pooling을 사용하는 첫 번째 시도 이며, 다양한 pooling layer 비교를 통해 표준 편차가 화자 특성에 미치는 효과를 실험적으로 보여줌</li>
+</ul>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="-deep-speaker-embedding">📌 <strong>Deep speaker embedding</strong></h1>
+
+<ul>
+  <li>기존의 DNN을 사용한 speaker embedding 추출 방법</li>
+</ul>
+
+<blockquote>
+  <p>input : acoustic feature (MFCC, filter-bank 등)<br />
+frame-level의 특징 추출을 위해 TDNN, CNN, LSTM 등의 Neural Network<br />
+가변 길이의 frame-level 특징을 고정 차원의 벡터로 변환하기 위한 pooling layer<br />
+utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)</p>
+</blockquote>
+
+<p><br /></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png" alt="img" style="zoom:60%;" /></center>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="-high-order-pooling-with-attention">📌 <strong>High-order pooling with attention</strong></h1>
+
+<p>&lt; Statistics pooling - 기존에 사용하던 pooling 방법 &gt;</p>
+
+<ul>
+  <li>frame-level 특징에 대해 평균(mean)과 표준 편차(standard deviation) 계산 (⊙ : Hadamard 곱)하여 concatenation</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/89165568-b160e100-d5b3-11ea-9a93-2a31b6530b2b.png" alt="img" style="zoom: 45%;" /></center>
+
+<p>&lt; Attention mechanism &gt;</p>
+
+<ul>
+  <li>기계 번역에서 긴 문장의 성능 저하를 해결하기 위해 모델이 출력 단어를 예측할 때 <strong>특정 단어를 집중</strong>해서 보는 방법을 도입</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/89165571-b1f97780-d5b3-11ea-91e3-8fa3f49000fc.png" alt="img" style="zoom: 80%;" /><img src="https://user-images.githubusercontent.com/46676700/89165573-b1f97780-d5b3-11ea-9545-3a591f97f98d.png" alt="img" style="zoom: 50%;" /></center>
+
+<p><br /></p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/89165553-aefe8700-d5b3-11ea-9e0a-c4c8d5fc14a0.png" alt="img" /></p>
+
+<ul>
+  <li>decoder의 <span style="color:#a5cbf0"><strong>시간 i(현재)에서 hidden state 벡터</strong></span>는 <span style="color:#a5cbf0"><strong>시간 i-1(이전)의 hidden state 벡터</strong></span>와 <span style="color:#ffaddf"><strong>시간 i-1(이전)에서 decoder의 output</strong></span>, 그리고 <span style="color:#7cbfb6"><strong>시간 i(현재)에서의 context 벡터</strong></span>를 입력으로 계산</li>
+</ul>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/89165558-af971d80-d5b3-11ea-84c7-8f0478e8e680.png" alt="img" /></p>
+
+<ul>
+  <li><span style="color:#7cbfb6"><strong>context 벡터</strong></span>는 <strong>시간 i에서 입력 x에 대한 길이 T</strong> 전체에 대한 <strong><span style="color:#f9d877">encoder hidden state 벡터</span></strong>의 <strong>가중합</strong>으로 계산</li>
+</ul>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/89165559-b02fb400-d5b3-11ea-9ad9-a8383a6810d6.png" alt="img" /></p>
+
+<ul>
+  <li><span style="color:#33558c"><strong>시간 i에서 j번째 단어의 energy</strong></span>는 <strong><span style="color:#a5cbf0">시간 i-1(이전)에서 decoder hidden state</span></strong>와<strong><span style="color:#f9d877"> j번째 encoder hidden state</span></strong>가 입력인 <strong>aligment model(a)</strong> 결과값 (alignment model은 tanh, ReLU 등 activation function)</li>
+</ul>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/89165560-b02fb400-d5b3-11ea-8753-68026664a442.png" alt="img" /></p>
+
+<p><br /></p>
+
+<p>&lt; Attentive statistics pooling &gt;</p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/89165563-b0c84a80-d5b3-11ea-9590-62c129a447e4.png" alt="img" style="zoom: 50%;" /><img src="https://user-images.githubusercontent.com/46676700/89165564-b0c84a80-d5b3-11ea-8a2f-c887055c76d8.png" alt="img" style="zoom: 50%;" /></center>
+
+<p>attention mechanism을 사용하여 계산한 <strong>가중치를 통해 mean과 standard deviation을 갱신</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png" alt="img" style="zoom: 67%;" /></center>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="-experimental-settings">📌 <strong>Experimental settings</strong></h1>
+
+<p><strong>i-vector</strong></p>
+
+<blockquote>
+  <p>input : 60차원 MFCC<br />
+UBM : 2048 mixture<br />
+TV matrix, i-vector : 400차원<br />
+Similarity score : PLDA</p>
+</blockquote>
+
+<p><br /></p>
+
+<p><strong>Deep speaker embedding</strong></p>
+
+<blockquote>
+  <p>input : 20차원(SRE 12), 40차원(VoxCeleb) MFCC<br />
+hidden layer : 5-layer TDNN(activation function : ReLU, node : 512)<br />
+pooling dimension : 1500차원<br />
+acoustic feature vector(MFCC) 15개 frame으로 frame-level 특징 생성<br />
+2 fully-connected layer (1st : bottleneck feature - 512, activation function : ReLU, batch   normalization)</p>
+</blockquote>
+
+        </article>
+        <div class="post-content">
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+
+<script data-no-instant type="text/javascript">
+const gitalk = new Gitalk({
+  clientID: '5304ae17c5ba0ce3b2aa',
+  clientSecret: '22801b52c86101ff074072faa1631475954d2936',
+  repo: 'arabae.github.io',
+  owner: 'arabae',
+  admin: ['arabae'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: true  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+        </div>
+    </div>
+</div>
+
+    
+    <footer id="footer" class="footer bg-white">
+    <div class="footer-social">
+        <div class="footer-container clearfix">
+            <div class="social-list">
+                <a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+                <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
+                <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-meta">
+        <div class="footer-container">
+            <div class="meta-item meta-copyright">
+                <div class="meta-copyright-info">
+                    <a href="https://github.com/arabae" class="info-logo">
+                        <img src="/style/image/logo.png" alt="wonder">
+                    </a>
+                    <div class="info-text">
+                        <p>Copyright &copy; 2021 - 2021 <a href="https://github.com/arabae"><code>ARa Bae</code></a></p>
+                        <p>Powered by <a href="http://jekyllrb.com" target="_blank" rel="nofollow"><code>jekyll</code></a>，theme is <a href="https://github.com/lightfish-zhang/pinghsu-jekyll" target="_blank" rel="nofollow"><code>pinghsu</code></a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-item meta-posts">
+                <h3 class="meta-title">RECENT POSTS</h3>
+                
+                    <li>
+                        <a href="/2019-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-30-Attention-based-models-for-TDSV">Attention-based Models For Text-dependent Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances">Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV">Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA">End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA</a>
+                    </li>
+                
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<!-- #end -->
+<script src="//cdn.bootcss.com/jquery/1.10.1/jquery.min.js"></script>
+<script>
+	!window.jQuery && document.write(unescape('%3Cscript src="/style/js/jquery.min.js"%3E%3C/script%3E'))
+</script>
+<script src="/style/js/headroom.min.js"></script>
+<script src="/style/js/nav.min.js"></script>
+<script type="text/javascript">
+    var header = new Headroom(document.getElementById("header"), {
+        tolerance: 10,
+        offset : 80,
+        classes: {
+            initial: "animated",
+            pinned: "slideDown",
+            unpinned: "slideUp"
+        }
+    });
+    header.init();
+</script>
+
+<script>window.SmoothScrollOptions = { stepSize: 36 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.8/SmoothScroll.min.js"></script>
+<script>
+	!window.SmoothScroll && document.write(unescape('%3Cscript src="/style/js/SmoothScroll.min.js"%3E%3C/script%3E'))
+</script>
+
+
+
+
+  </body>
+</html>

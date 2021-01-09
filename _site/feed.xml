@@ -1,0 +1,2600 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title></title>
+    <description>Speech/Speaker Recognition Study</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 09 Jan 2021 19:21:09 +0900</pubDate>
+    <lastBuildDate>Sat, 09 Jan 2021 19:21:09 +0900</lastBuildDate>
+    <generator>Jekyll v3.8.7</generator>
+    
+      <item>
+        <title>Cross attentive pooling for speaker verification</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction&quot; id=&quot;markdown-toc-ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-methods&quot; id=&quot;markdown-toc-ⅱ-methods&quot;&gt;&lt;strong&gt;Ⅱ. Methods&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#21-few-shot-learning-framwork&quot; id=&quot;markdown-toc-21-few-shot-learning-framwork&quot;&gt;&lt;strong&gt;2.1 Few-shot learning framwork&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#22-instance-wise-aggregation&quot; id=&quot;markdown-toc-22-instance-wise-aggregation&quot;&gt;&lt;strong&gt;2.2 Instance-wise aggregation&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#23-pair-wise-aggregation&quot; id=&quot;markdown-toc-23-pair-wise-aggregation&quot;&gt;&lt;strong&gt;2.3 Pair-wise aggregation&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅲ-experiments&quot; id=&quot;markdown-toc-ⅲ-experiments&quot;&gt;&lt;strong&gt;Ⅲ. Experiments&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Seong Min Kye, Yoohwan Kwon, Joon Son Chung&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;목표 : ‘in the wild’ video와 관련없는 signal을 포함하는 utterance를 사용하는 TI-SV(Text-Independent Speaker Verification)&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;SV는 pair-wise 문제(등록과 테스트 쌍을 비교), 기존의 embedding 추출은 instance-wise 문제(각 utterance에 대한 embedding을 추출하여 서로 비교)&lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;background-color:#ffed54&quot;&gt;본 논문에서는 reference-query pair 전체의 context 정보를 활용하여 &lt;strong&gt;pair-wise 문제에 가장 discriminative한 utterance-level의 embedding 추출을 생성&lt;/strong&gt;하는 &lt;strong&gt;CAP(Cross Attention Pooling)&lt;/strong&gt;을 제안&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;VoxCeleb dataset을 사용하고, 다른 pooling 방법과 비교하여 우수한 성능을 보였음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Automatic Speaker Recognition; 음성은 가장 쉽게 접근할 수 있는 생체 정보 중 하나이기 때문에 누군가의 신원을 확인하는데 매력적인 방법&lt;/li&gt;
+  &lt;li&gt;speaker recognition은 identification과 verification을 모두 포함하지만, 후자의 경우 더 실용적인 응용 분야를 가짐(ex. 콜센터, AI 스피커 등)&lt;/li&gt;
+  &lt;li&gt;closed-set identification과 달리 open-set verification은 훈련에서 보지 못했던 화자의 identity를 확인하는 것을 목표로 하기 때문에, speaker verification은 음성이 discriminative한 embedding 차원의 표현으로 mapping되어야하는 metric learning 문제&lt;/li&gt;
+  &lt;li&gt;다른 논문들에서 주로 classification loss를 사용하여 embedding을 학습하였으나 embedding similarity를 최적화하도록 설계되지 않음&lt;/li&gt;
+  &lt;li&gt;최근 연구들에서 class 간 분리를 강화하기 위해 verification의 성능을 향상시키는 것으로 알려진 margin variant를 추가한 softmax를 접목시킴 (AM-softmax)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;open-set verification&lt;/strong&gt;은 network가 제한된 example을 갖으면서 unseen class에 대해 인식해야하므로 &lt;strong&gt;few-shot learning&lt;/strong&gt; 문제라고 볼 수 있음&lt;/li&gt;
+  &lt;li&gt;few-shot learning 시나리오를 모방하는 &lt;strong&gt;prototypical network&lt;/strong&gt;가 제안되었으며, &lt;strong&gt;최근 speaker verification에서 좋은 성능을 달성&lt;/strong&gt;하는 것으로 나타남&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;similarity metric을 최적화하도록 network를 훈련시키기 위해서는 frame-level의 representation(feature)를 utterance-level로 모아야 함&lt;/li&gt;
+  &lt;li&gt;가장 단순한 방법은 frame-level을 평균하는 것(TAP, Temporal Average Pooling), 이때 frame들은 모두 같은 weight를 갖게 됨&lt;/li&gt;
+  &lt;li&gt;verification에 더 discriminative한 frame에 attention하도록 SAP(Self-Attentive Pooling)방법이 제안&lt;/li&gt;
+  &lt;li&gt;그러나 instance-level self-attention은 support set(training set)의 특정 sample이 아닌, 일반적으로(training set의 전체 data를 아우름) discriminative한 feature를 찾음; training dataset의 전체적인 특성이 반영되어 특정 sample에 대해서는 효과적이지 않을 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;CAN(Cross Attention Network): few-shot learning에서 최근 support set의 example들과 관련있고, discriminative한 input image의 부분에 attention함으로써 unseen target class를 기반의 attention을 선택할 수 있도록 제안된 방법&lt;/li&gt;
+  &lt;li&gt;support set의 한 class(speaker)와 utterance를 비교하기 위한 discriminative한 특성이 다른 class와 비교하기 위해 생성되는 특징과 다를 것, 따라서 이 아이디어를 speaker verification에 적용할 수 있음&lt;/li&gt;
+  &lt;li&gt;본 논문에서는 frame-level의 정보를 효과적으로 utterance-level의 embedding으로 모으기 위해 support set의 example을 참조하여 attention을 계산하는 CAP(Cross Attentive Pooling)를 제안&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;이러한 방식으로 network는 support set의 특정 class에 대한 특정 특징을 제공하는 utterance을 식별하고 집중시킬 수 있음&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;이는 사람이 unseen class의 instance를 인식할 때, sample 쌍들의 공통적인 특성을 갖는 특징을 찾는 것과 유사함&lt;/li&gt;
+  &lt;li&gt;instance-level의 pooling과 달리, 제안된 attention module은 class(prototype) feature와 query feature의 관련성을 모델링하여 verification task에서 pair-wise 특성을 최대한 활용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅱ-methods&quot;&gt;&lt;strong&gt;Ⅱ. Methods&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;21-few-shot-learning-framwork&quot;&gt;&lt;strong&gt;2.1 Few-shot learning framwork&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Speaker recognition을 위한 embedding을 훈련하기 위해 few-shot learning framework인 prototypical network 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Batch formation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 mini-batch에는 support(training) set $S$와 query(test) set $Q$가 포함&lt;/li&gt;
+  &lt;li&gt;서로 다른 화자 N명마다 M개의 발화 포함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;
+
+$S = {(x_i, y_i)}^{N \times 1}_{i=1}$  
+
+$Q = {(\tilde{x_i}, \tilde{y_i})}^{N \times (M-1)}_{i=1}$  
+
+&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;support set은 각 화자마다 1개의 발화를 사용하고, query set은 나머지 발화($2 \leq i \leq M$)를 사용&lt;br /&gt;
+$y, \tilde{y} \in {1, …, N}$; class label&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Training object&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;support set은 단일 발화 $x$로 구성되어, prototype(centroid)는 각 화자 %y%의 support utterance와 같음&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678027-a5714b00-0c04-11eb-816d-01da565f1eaa.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;log-softmax function을 사용하는 cross-entropy loss는 같은 speaker의 segment 간 거리는 최소화하면서 다른 speaker 간의 거리는 최대화&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678054-cb96eb00-0c04-11eb-9eb8-6e1a2c6ccb3a.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;query embedding의 크기와 prototype과 query의 cosine similarity를 distance metric으로 사용 (&lt;strong&gt;Normalized prototypical, NP&lt;/strong&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678059-d2bdf900-0c04-11eb-808e-efe28e67875f.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;kye et al.[16]은 speaker embedding을 보다 discriminative하게 만들기 위해 global classification loss와 함께 &lt;span style=&quot;background-color:#d2d8d8&quot;&gt;episodic training*&lt;/span&gt;을 사용
+(few-shot task와 유사한 형태의 훈련 task를 통해 모델 스스로 학습 규칙을 도출할 수 있게 함으로써 일반화 성능을 높일 수 있음 &lt;a href=&quot;https://www.kakaobrain.com/blog/106&quot;&gt;참조-kakaobrainBlog&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;global classification은 support와 query set 모두에 적용&lt;/li&gt;
+  &lt;li&gt;softmax classification loss를 통합하여 mini-batch에 있는 class뿐만 아니라 모든 class에 대해 discriminative하도록 embedding을 훈련 가능&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;최종적인 objective function&lt;/strong&gt;은 동일한 가중치를 적용한 &lt;strong&gt;NP와 softmax cross-entropy loss의 합&lt;/strong&gt;(단순 sum)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;22-instance-wise-aggregation&quot;&gt;&lt;strong&gt;2.2 Instance-wise aggregation&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;이상적인 utterance-level embedding은 frequency가 아닌 temporal 위치에 따라 달라져야함&lt;/li&gt;
+  &lt;li&gt;2D convolutional neural network는 2D activation map을 생성하기 때문에 frequency 축만 모두 연결되는 aggregation layer를 [1]에서 제안&lt;/li&gt;
+  &lt;li&gt;따라서 pooling layer에 들어가기 전 1xT feature map 생성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Temporal Average Pooling(TAP)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;단순하게 temporal domain에 대해 feature의 평균을 취함&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678556-70ff8e00-0c08-11eb-8d56-7d26175f42c7.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Self-Attentive Pooling(SAP)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 시간에 대한 frame 모두 같은 weight를 갖는 TAP와 달리, utterance-level에 더 많은 정보를 제공하는 frame-level에 attention함&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678562-7ceb5000-0c08-11eb-90d6-3498d822c878.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;frame-level 특징 $x_t$가 우선 parameter W와 b를 갖는 MLP의 입력으로 넣어 non-linear하게 projection(hidden representation으로 mapping)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;hidden vector $h_t$와 훈련되는 context vector $\mu$ 사이의 유사도를 계산하여 score(hidden feature의 상대적인 중요도)로 사용&lt;/li&gt;
+  &lt;li&gt;softmax function을 통해 나온 결과를 각 frame의 중요도(attention weight)로 사용&lt;/li&gt;
+  &lt;li&gt;context vector는 speaker recognition에 중요한 정보를 제공하는 high-level representation으로 볼 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678567-807ed700-0c08-11eb-8766-296995b8de48.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;utterance-level embedding $e$는 frame-level 특징과 frame-level의 attention weight와 가중합하여 얻을 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95678569-84aaf480-0c08-11eb-8291-24f23db5b892.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;23-pair-wise-aggregation&quot;&gt;&lt;strong&gt;2.3 Pair-wise aggregation&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;기존의 instance-wise aggregation과 달리 본 논문에서는 &lt;span style=&quot;background-color:#ffed54&quot;&gt;&lt;strong&gt;다른 utterance의 frame feature를 사용하여 frame-level feature를 모으는 방법&lt;/strong&gt;&lt;/span&gt;을 제안&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;training과 testing의 목표를 맞추기 위헤 metric기반의 meta-learning framework인 prototypical network 사용&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;이 framework에서 support와 query set pair를 사용하여 CAP를 훈련&lt;/li&gt;
+  &lt;li&gt;test 시, support set과 query set은 enrollment와 test utterance에 해당&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;query와 support set의 모든 utterance pair에 대해 frame-level representation $s={s_1, s_2,\dots, s_{T_s}}, q={q_1, q_2,\dots, q_{T_q}}$ 추출&lt;/li&gt;
+  &lt;li&gt;meta-projection layer $g_{\Phi}(·)$를 사용하여 frame-level에서 hidden feature 추출&lt;/li&gt;
+  &lt;li&gt;non-linear projection을 통해 임의의 frame에 빠르게 적응할 수 있으므로 frame pair의 유사도를 잘 측정할 수 있음&lt;/li&gt;
+  &lt;li&gt;이 layer는 MLP와 ReLU activation function으로 구성&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95679512-50d2cd80-0c0e-11eb-846c-fa3f1bfe0bde.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;meta-projection layer 이후, 모든 frame에 대한 hidden representation인 $S, Q$를 얻을 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$ S = {S_i}^{T_s}&lt;em&gt;{i=1}$&lt;br /&gt;
+$ Q = {Q_i}^{T_q}&lt;/em&gt;{i=1}$&lt;br /&gt;
+$S_i, Q_i$ 는 각각 $g_{\Phi}(s_i), g_{\Phi}(q_i)$&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Correlation matrix&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Correlation matrix(상관행렬) R은 가능한 모든 frame pair에 대한 similarity를 요약&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95679513-55978180-0c0e-11eb-8991-dc7ca123ddc4.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$R^Q = (R^S)^T$; 순서만 바뀌기 때문에 $R^S$의 transpose가 $R^Q$&lt;br /&gt;
+$R^S_{1, 1}$; support set의 1번째 frame hidden representation과 query set의 1번째 frame hidden representation의 similarity&lt;br /&gt;
+따라서 $R^S \in \mathbb{R}^{T_s \times T_q}$; [support set frame 수 x query set frame 수]&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Pair-adaptive attention&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;pair-adaptive context vector를 얻기 위해 다음과 같이 time축에 대해 correlation matrix를 평균&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95679520-5a5c3580-0c0e-11eb-9c92-c802e2e3bcd0.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;$\mu_s \in \mathbb{R}^{T_q}$&lt;/strong&gt; 이고, $\mathbb{R}^S_{i,*}$은 $i$번째 row vector&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;논문에서 $T_s$로 되어있는데, $T_s$가 아닌 $T_q$이 되어야 수식적으로 맞는 것 같음 (그림에서는 context vector의 size를 $T_q$로 표기)&lt;/li&gt;
+  &lt;li&gt;각 row vector는 다른 utterance의 모든 frame과의 유사도 정보가 있음&lt;/li&gt;
+  &lt;li&gt;따라서 다른 utterance의 각 frame에 대한 평균 상관관계를 $\mu$로 표시할 수 있고, 이는 다른 utterance와 얼마나 유사한지 계산하기 위해 context vector로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;attention weight는 모든 utterance에 대해 다음과 같이 계산&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95679528-60521680-0c0e-11eb-9a06-8745d6fa010b.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$\tau$ : temperature scaling (attention distribution의 선명도 조절) - $\tau \rightarrow \infty$이면 동일한 attention weight를 갖음&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95679531-647e3400-0c0e-11eb-9e6c-b9b0e4c58a0e.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Hou et al [22], utterance-level의 특징을 얻기 위해 residual attention mechanism을 사용&lt;/li&gt;
+  &lt;li&gt;다른 utterance에 대해서도 동일한 방법으로 utterance-level feature $q$로 $e_q$를 얻을 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;제안하는 방법의 procedure&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95680543-7a432780-0c15-11eb-80a4-709be1187867.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95680550-829b6280-0c15-11eb-93fc-0ac5babd0115.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅲ-experiments&quot;&gt;&lt;strong&gt;Ⅲ. Experiments&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;Model architecture&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95680589-cb531b80-0c15-11eb-9d17-c3ead5a27fd8.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Results&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95680595-d0b06600-0c15-11eb-8d5a-b8b7166ea620.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 13 Oct 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-10-13-Cross-Attentive-Pooling-for-SV</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-10-13-Cross-Attentive-Pooling-for-SV</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Metric Learning for Keyword Spotting</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction&quot; id=&quot;markdown-toc-ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-metric-learning-framework&quot; id=&quot;markdown-toc-ⅱ-metric-learning-framework&quot;&gt;&lt;strong&gt;Ⅱ. Metric Learning Framework&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#21-loss-functions&quot; id=&quot;markdown-toc-21-loss-functions&quot;&gt;&lt;strong&gt;2.1 Loss functions&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#22-pair-selection-strategy&quot; id=&quot;markdown-toc-22-pair-selection-strategy&quot;&gt;&lt;strong&gt;2.2 Pair selection strategy&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#23-prototypical-networks-with-fixed-target-classes&quot; id=&quot;markdown-toc-23-prototypical-networks-with-fixed-target-classes&quot;&gt;&lt;strong&gt;2.3 Prototypical networks with fixed target classes&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Jaesung Huh, Minjae Lee, Heesoo Heo, Seongkyu Mun, Joon Son Chung&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;목표 : Metric learning을 통해 keyword spotting(음성 입력 중에 특정 단어를 발화하였는지 검출)을 위한 효과적인 representations를 훈련하는 것&lt;/strong&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;기존 방법&lt;/strong&gt; : target/non-target keyword들이 모두 사전에 정의된 closed-set classification 문제만 다루기때문에 unseen non-target에 대해 성능이 저하되어 real-world에서 높은 FAR(False Alarm Rate)을 보임&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;keyword spotting은 다양한 unknown sound에서 사전에 정의된 target keyword를 detection하는 문제로, unseen/unknown non-target이 target keyworkd와 명확히 구별되어야 한다는 점이 metric learning과 유사한 점이 많음&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;주요 차이점은 &lt;strong&gt;target keyword가 알려져 있고, 이미 정의되어 있다는 점&lt;/strong&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;span style=&quot;background-color:#ffed54&quot;&gt;따라서 &lt;strong&gt;target keyword와 non-target keyword 사이의 거리를 최대화&lt;/strong&gt; 하고 분류 목표에 따라 &lt;strong&gt;target keyword에 대한 class 별 가중치를 학습&lt;/strong&gt; 하는 metric learning기반의 새로운 방법을 제안&lt;/span&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Goodle Speech Commands datasest으로 실험을 수행하였으며 전체적인 classification 정확도를 유지하면서 unseen non-target keyword들에 대한 FA(False Alarm)을 크게 감소시킴&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Keyword Spotting(KWS)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;다양한 mobile device를 동작시키는 단어(wake-up words, “OK Google”, “Hey Siri”, “Alexa”) 또는 자주 사용하는 짧은 명령과 같이 미리 정의된 작은 음성 신호 집합을 detection하는 작업&lt;/li&gt;
+  &lt;li&gt;최근 CNN기반의 architecture들이 이 분야에서 좋은 성능을 달성하였고, 주로 target keyword와 일반적인 음성이나 잡음같은 non-target sound를 구분하는 classifier를 기반함&lt;/li&gt;
+  &lt;li&gt;non-target class는 매우 다양할 수 있지만 이전 작업들에서는 제한된 수의 non-target class만 사용하여 실제 환경을 충분히 반영하지 못하였음 (전통적인 방법은 후처리를 통해 FA을 줄이려했지만 deep learning 접근법과 함께 사용되지 않았음)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;실제 keyword spotting은 사전에 정의된 keyword가 알려지지 않은 다양한 소리에서 발견되는 classification 문제가 아닌 detection 문제와 유사하지만 이전의 많은 작업에서는 non-target sound를 단일 class로 간주하였음&lt;/li&gt;
+  &lt;li&gt;본 논문에서는 &lt;strong&gt;target 발화를 accept하거나 reject&lt;/strong&gt;하는데 사용할 수 있는 &lt;strong&gt;discriminative한 embedding을 학습&lt;/strong&gt;하는 &lt;strong&gt;metric learning&lt;/strong&gt;에서 영감을 받았으며 화자검증과 유사하지만 keyword가 미리 정의되어 있다는 점이 다름&lt;/li&gt;
+  &lt;li&gt;metric learning 방법은 input signal을 embedding 공간에 mapping하여 class 간 분산을 크게하고, class 내의 분산은 작게 함 (“contrastive loss” - face recognition, speaker verification에서 주로 사용하는 방법)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;최근 metric learning 기술은 constrastive, triplet loss의 단점(pair 선택의 어려움)을 극복하기 위해 도입&lt;/li&gt;
+  &lt;li&gt;[17, 18]논문에서 훈련 중 여러개의 positive와 negative를 사용해 careful pair 선택이 필요하지 않은 훈련 방법을 제안하였으며, Siamese neural network(dynamic time wraping기반 speech recognition)에 사용되는 frame-wise embeding을 훈련하는 화자 검증에서 성능 향상을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ metric learning에서 영감을 받은 keyword spotting을 위한 여러 방법을 제안&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Network architecture 를 유지하면서 loss functions을 classification에서 다양한 metric learning으로 변경&lt;/li&gt;
+  &lt;li&gt;target class 내 거리를 최소화하기 위해 embedding을 훈련, non-target embedding과 거리는 사용하지 않음(실제 keyword spotting에서는 이 부분은 다루지 않기 때문)&lt;/li&gt;
+  &lt;li&gt;잠재적으로 무한한 non-target sound와 유사성을 비교하여 사용하는 classification과 대조적인 방법&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 기여한 바&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Google Speech Command Dataset사용, 제안하는 방법이 classification task에 대해 정확성은 유지하면서 detection에 대해 classification 기반 baseline system들 보다 우수한 성능을 보임&lt;/li&gt;
+  &lt;li&gt;1) keyword spotting이 이전 task와 달리 detection의 문제 중 하나로 정의&lt;/li&gt;
+  &lt;li&gt;2) non-target ketword의 정확도를 크게 높일 수 있는 mectirc learning 기반 방법 제안&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅱ-metric-learning-framework&quot;&gt;&lt;strong&gt;Ⅱ. Metric Learning Framework&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;metric learning에 사용되는 기존 loss fuction에 대해 설명하고, 전체적인 classification 정확도를 유지하면서 non-target의 정확도도 높이기 위한 수정된 방법을 제안&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;21-loss-functions&quot;&gt;&lt;strong&gt;2.1 Loss functions&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Triplet loss&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;가장 일반적인 ranking loss fuction 중 하나&lt;/li&gt;
+  &lt;li&gt;동일한 class의 embedding 사이 거리가 줄어들고, 동시에 다른 class의 embedding과는 거리가 멀어지게 학습됨&lt;/li&gt;
+  &lt;li&gt;$f(x;w) ∈ R^D$ : input을 embedding 공간으로 mapping하는 함수라고 가정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95653158-5a3a3800-0b31-11eb-94ce-6f077868a0f7.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$x_i, {x’}_i$ : 같은 class $i$으로부터 얻은 input samples&lt;br /&gt;
+$x_j$ : 다른 class $j(j{\neq}i)$로부터 얻은 sample&lt;br /&gt;
+$|{x-y}|$ : $x$와 $y$간 pairwise-distance&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;triplet $P_{i,j} = (x_i, {x’}_i, x_j)$일때, triplet loss L은 batch에 대해 minimized되어 훈련
+    &lt;blockquote&gt;
+      &lt;p&gt;여기서 $\alpha$는 constant margin (e.g. $\alpha=1$)&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;$|f(x_i)-f({x’}_j)| &amp;lt; |f(x_i)-f(x_j)| + \alpha$; “같은 class에서 나온 sample들의 거리가 다른 class의 sample보다 가까울 것이다.” 에서 발전된 loss&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Prototypical networks&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;open classification을 수행하기 위한 mectirc space를 학습하기 위해 제안&lt;/li&gt;
+  &lt;li&gt;각 class의 prototype representations(embedding) 간의 distance를 계산&lt;/li&gt;
+  &lt;li&gt;GE2E loss의 distance metric을 변형한 prototypical loss의 angular 변형을 실험에 사용&lt;/li&gt;
+  &lt;li&gt;각 mini-batch는 서로 다른 class N개당 M개의 발화가 있는 NxM을 input feature로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95653587-b0f54100-0b34-11eb-81a3-9df0ff078997.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$e_{j,M}$ : 각 batch에서 class $j$의 query(embedding)&lt;br /&gt;
+$c_k$ : class k의 centroid ($S$에서 target이 되는 utterance index(M)는 제외한 embedding의 평균)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;cosine을 기반의 Similarity metric을 사용하는 angular prototypical loss는 L2 distance보다 stable(안정적)하고, robust(강인함)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;learnable parameter $w &amp;gt; 0$와 $b$를 사용&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 batch에서 angular prototypical loss의 목적은 해당 embedding과 같은 class의 centroid와 유사성은 최대화하면서 다른 class의 centroid와는 최소화하는 것이므로 다음과 같이 정의하여 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95653779-3a594300-0b36-11eb-93b0-d7202056d818.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;22-pair-selection-strategy&quot;&gt;&lt;strong&gt;2.2 Pair selection strategy&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2.1에서 소개한 loss function을 사용하여 network를 훈련시키는 방법 소개&lt;/li&gt;
+  &lt;li&gt;‘target’ keyword와 unknown ‘non-target’ sound을 효과적으로 구별하기위해 positive, negative pair를 선택하는 방법을 주로 다룸&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;mectirc learning with an unknown cluster&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2.1의 baseline metric learning 접근법을 사용하는 방식&lt;/li&gt;
+  &lt;li&gt;이 접근 방법에서는 target keyword와 non-target keyword 모두 triplet 또는 prototypical loss를 사용하여 embedding space의 anchor 또는 centroid를 기반으로 각 class에 맞게 cluster됨
+(2개의 target/non-target class로 sample들을 분류함)&lt;/li&gt;
+  &lt;li&gt;target keyword와 non-target keyword를 단순하게 하나의 class로 취급하지만, non-target keyword의 variance는 매우 높을 수 밖에 없음(target은 특정되었는데 non-target은 매우 다른 sound들의 집합이기 때문에)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;본 논문에서는 classification을 목표로 두고 훈련하지 않기때문에 target/non-target인지 확인하기 위해 새로운 추론 방법을 제안&lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;background-color:#ffed54&quot;&gt;&lt;strong&gt;network를 훈련 시킨 후, 전체 training data의 embedding을 추출하여 평균으로 centroid를 계산&lt;/strong&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;background-color:#ffed54&quot;&gt;&lt;strong&gt;test 단계에서 마찬가지로 embedding을 추출하고 위에서 계산된 centroid들과 유사성을 계산하여 어떤 class에 속하는지 결정&lt;/strong&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;li&gt;실제 시나리오에서도 target이 이미 알려져 있으므로 각 class에 해당하는 centroid를 미리 계산하여 모델의 parameter로 사용할 수 있어, input이 주어졌을 때 훈련된 모델에서 embedding을 얻은 뒤 각 centroid와 거리를 계산해 어떤 class에 속하는지 분류할 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Metric learning without an unknown cluster&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;non-target keyword는 target keyword들을 제외한 모든 소리와 음성을 포함하기 때문에 범위가 훨씬 큼&lt;/li&gt;
+  &lt;li&gt;그러나 기존의 접근 방식에서는 non-target keyword를 하나의 단일 class로 두 때문에 다양한 non-target embedding들이 이 단일 class에 맞도록 훈련됨 (variance를 고려하지 않음)&lt;/li&gt;
+  &lt;li&gt;제한된 non-target keyword로 unseen word들을 일반화하는 것은 어렵기 때문에, &lt;strong&gt;학습 중 non-target keyword를 하나의 point(class)로 clustering하지 않도록 수정을 제안&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95654278-f2d4b600-0b39-11eb-9905-5a6b7c6c65a8.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;non-target인지 구별할 때, centroid를 사용할 수 없기 때문에(모든 sample들을 알 수 없어서) 추가적인 단계가 필요&lt;/li&gt;
+  &lt;li&gt;metric learning으로 embedding extractor를 훈련한 뒤, training data의 embedding으로 1대 나머지를 구분할 수 있도록 RBF(Radial Basis Function) kernel SVM을 훈련&lt;/li&gt;
+  &lt;li&gt;이 SVM을 사용하여 test set의 class를 결정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;23-prototypical-networks-with-fixed-target-classes&quot;&gt;&lt;strong&gt;2.3 Prototypical networks with fixed target classes&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;target keyword spotting을 위한 수정된 prototypical loss 제안&lt;/li&gt;
+  &lt;li&gt;prototypical network의 원래 framework에서 centroid는 few-shot learning setting의 inference동안 계산됨&lt;/li&gt;
+  &lt;li&gt;그러나 얼굴 및 화자 검증과 같은 prototypical network와 달리 target keyword가 고정되어 있다는 사실을 활용할 수 있음&lt;/li&gt;
+  &lt;li&gt;따라서 알려진 keyword의 경우 즉석에서 계산되는 각 class의 중심 $c_k$를 학습되는 class별 가중치 $W_k$로 대체&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;실험에 따르면 classifier기반의 keyword spotting system은  mectirc learning기반 system보다 target keyword에 대해 더 높은 정확도를 갖는 반면, non-target keyword에 대한 FAR이 더 낮았음&lt;/li&gt;
+  &lt;li&gt;제안된 방법은 학슬된 class별 weight를 사용하여 알려진 keyword를 감지함으로써 두 방법의 장점을 통합하는 동시, mectirc learning과 유사한 방식으로 non-target을 reject할 수 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#ffed54&quot;&gt;&lt;strong&gt;AP-FC(Angular Prototypical with Fixed Classes); 제안하는 방법&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95655613-9f676580-0b43-11eb-8598-233384fd1329.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$S_{i,j,k}$ : class $j$의 $i$번째 embedding과 centroid대신 사용되는 $k$번째 target keyword의 훈련되는 parameter $W_k$ 사이의 scaled cosine similarity&lt;br /&gt;
+$W_k$ : target keyword에 대해 학습되는 유일한 parameter&lt;br /&gt;
+classifier에서 output layer의 역할을 함($W_k$와 계산해서 나온 결과가 class 분류에 사용되므로)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95655621-a7270a00-0b43-11eb-9ece-3afd4ec1d84f.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$N’$ : 하나의 mini-batch에 포함된 non-target keyword의 sample 수&lt;br /&gt;
+eq.8에서 non-target의 class index는 N이라고 가정&lt;br /&gt;
+실험에서 $N’$의 값을 6으로 설정&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;모든 $k ∈ {target}$에 대한 학습되는 parameter $W_k$는 각 target keyword의 centroid 역할을 하도록 훈련되었을 것이라 기대&lt;/li&gt;
+  &lt;li&gt;하나의 mini-batch에는 target과 non-target의 균형을 조정하기 위해 각 target keyword에 대한 하나의 sample과 non-target keyword의 여러 sample을 포함&lt;/li&gt;
+  &lt;li&gt;L을 최소화하면 분자에 있는 값(k번째 class의 embedding과 parameter의 거리)이 작아지므로 해당 class에 속한 embedding과 parameter가 점점 가까워질 것&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sun, 06 Oct 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-10-06-Metric-Laerning-for-Keyword-Spotting</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-10-06-Metric-Laerning-for-Keyword-Spotting</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Attention-based Models For Text-dependent Speaker Verification</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction&quot; id=&quot;markdown-toc-ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-baseline-architecture&quot; id=&quot;markdown-toc-ⅱ-baseline-architecture&quot;&gt;&lt;strong&gt;Ⅱ. Baseline Architecture&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#te2e-model&quot; id=&quot;markdown-toc-te2e-model&quot;&gt;&lt;strong&gt;TE2E model&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅲ-attention-based-model&quot; id=&quot;markdown-toc-ⅲ-attention-based-model&quot;&gt;&lt;strong&gt;Ⅲ. Attention-based Model&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#31-basic-attention-layer&quot; id=&quot;markdown-toc-31-basic-attention-layer&quot;&gt;&lt;strong&gt;3.1 Basic attention layer&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#32-scoring-functions&quot; id=&quot;markdown-toc-32-scoring-functions&quot;&gt;&lt;strong&gt;3.2 Scoring functions&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#33-attention-layer-variants&quot; id=&quot;markdown-toc-33-attention-layer-variants&quot;&gt;&lt;strong&gt;3.3 Attention layer variants&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#34-weights-pooling&quot; id=&quot;markdown-toc-34-weights-pooling&quot;&gt;&lt;strong&gt;3.4 Weights pooling&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅳ-experiments&quot; id=&quot;markdown-toc-ⅳ-experiments&quot;&gt;&lt;strong&gt;Ⅳ. Experiments&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#41-datasets-and-basic-setup&quot; id=&quot;markdown-toc-41-datasets-and-basic-setup&quot;&gt;&lt;strong&gt;4.1 Datasets and basic setup&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#42-basic-attention-layer&quot; id=&quot;markdown-toc-42-basic-attention-layer&quot;&gt;&lt;strong&gt;4.2 Basic attention layer&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#43-variants&quot; id=&quot;markdown-toc-43-variants&quot;&gt;&lt;strong&gt;4.3 Variants&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#44-weights-pooling&quot; id=&quot;markdown-toc-44-weights-pooling&quot;&gt;&lt;strong&gt;4.4 Weights pooling&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅴ--conclusion&quot; id=&quot;markdown-toc-ⅴ--conclusion&quot;&gt;&lt;strong&gt;Ⅴ.  Conclusion&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;F A Rezaur Rahman Chowdhury, Quan Wang, Ignacio Lopez Moreno, Li Wan&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Attention 기반 모델 : 입력 sequence의 전체 길이를 요약할 수 있는 능력&lt;/li&gt;
+  &lt;li&gt;음성 인식, 기계 번역, 이미지 캡션과 같은 다양한 곳에서 뛰어난 성능을 보임&lt;/li&gt;
+  &lt;li&gt;End-to-End Text-dependent 화자 인식 시스템에서 attention mechanism 사용을 분석&lt;/li&gt;
+  &lt;li&gt;다양한 attention layer의 변형을 연구하고 attention weight에 대한 다양한 pooling방법을 비교&lt;/li&gt;
+  &lt;li&gt;Attention mechanism을 사용하지 않은 LSTM과 성능 비교&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Global Password Text-dependent Speaker Verification(SV) 시스템&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;등록 및 테스트 발화가 특정 단어로 제한 (Text-dependent)&lt;/li&gt;
+  &lt;li&gt;“Ok-Google”과 “Hey Google” 사용 ( Global password)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 현재 가장 많이 접근하고 있는 훈련 방법&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;등록 및 테스트하는 단계를 시뮬레이션하는 End-to-End 구조&lt;/li&gt;
+  &lt;li&gt;[6]논문 “i-vector+PLDA 시스템을 그대로 모방한 구조”의 경우, 더 나은 성능을 위해 모델을 규제하였으나 초기화를 위해 기존의 i-vector와 PLDA 모델이 필요&lt;/li&gt;
+  &lt;li&gt;[7] 논문, TD-SV task에서 LSTM 네트워크가 기존 End-to-End DNN보다 더 나은 성능을 보여줌&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔이전 논문에서의 문제점&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;묵음과 배경 잡음이 많이 없음&lt;/li&gt;
+  &lt;li&gt;본 논문에서는 keyword 검출에 의해 분할된 800ms의 짧은 frame이지만, 묵음과 잡음이 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔이상적인 Embedding 생성&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;음소에 해당하는 frame을 사용하여 제작&lt;/li&gt;
+  &lt;li&gt;입력 sequence 중 관련성이 높은 요소를 강조하기 위해 attention layer 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅱ-baseline-architecture&quot;&gt;&lt;strong&gt;Ⅱ. Baseline Architecture&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;te2e-model&quot;&gt;&lt;strong&gt;TE2E model&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  baseline end-to-end training architecture&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94424981-1573e000-01c6-11eb-8bf5-4890542a60db.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;훈련 단계에서, 하나의 평가용 발화 𝒙𝑗~와 N개의 등록 발화 𝒙𝑘𝑛 (𝑓𝑜𝑟 𝑛=1, …, 𝑁) tuple이 LSTM network의 입력으로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;${x_{j\tilde{}}, (x_{k_1}, …, x_{k_N})}$ ; input&lt;br /&gt;
+$x$ : 고정 길이의 log-mel fiterbank feature&lt;br /&gt;
+$j, k$ : 발화한 화자 ($j$와 $k$는 같을 수 있음)&lt;br /&gt;
+만약 $x_{j\tilde{}}$와 $M$ 개의 등록 발화가 같은 화자라면 tuple positive $(j=k)$, 다르면 negative&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;ℎ𝑡 : t번째 frame에서 LSTM의 마지막 layer의 출력 ( 고정 차원의 vector )&lt;/li&gt;
+  &lt;li&gt;마지막 frame의 output을 d-vector 𝝎 (ℎ𝑇) 로 정의&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;${\omega(j\tilde{}), (\omega(k_1), …, \omega(k_N))}$ ; output&lt;br /&gt;
+Tuple $(\omega(k_1), …, \omega(k_N))$을 평균내어 centroid 계산&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94425430-e447df80-01c6-11eb-9148-c79bd11b149b.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Cosine Similarity Function 정의&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94425434-e611a300-01c6-11eb-990c-2a6bc83ad06b.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Loss Function 정의&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94425445-e7db6680-01c6-11eb-9729-e41c138555a5.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅲ-attention-based-model&quot;&gt;&lt;strong&gt;Ⅲ. Attention-based Model&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;31-basic-attention-layer&quot;&gt;&lt;strong&gt;3.1 Basic attention layer&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Baseline system과 차이점&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;마지막 frame의 출력을 d-vector(𝝎)로 직접 사용&lt;/li&gt;
+  &lt;li&gt;Attention layer는 각 t frame 에서의 LSTM 출력 ℎ𝑡에 대한 스칼라 점수 𝑒𝑡 를 훈련하여 weighted sum한 결과로 d-vector(𝝎) 정의&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430186-76071b00-01ce-11eb-8ae9-0fdf5abcf182.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Normalized weight 𝛼𝑡와 weighted sum한 결과 d-vector는 다음과 같이 정의&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430336-ac449a80-01ce-11eb-8094-4fcf8644fec6.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430342-ae0e5e00-01ce-11eb-9395-90efff7c8674.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;aritecture로 보는 차이점&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430460-eca41880-01ce-11eb-9807-6a7dea6d97fa.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;32-scoring-functions&quot;&gt;&lt;strong&gt;3.2 Scoring functions&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Bias-only attention
+여기서 b𝑡는 scalar. LSTM 출력 h𝑡에 의존하지 않음.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430647-34c33b00-01cf-11eb-87f5-e43a51edc41a.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Linear attention
+여기서 w𝑡는 m차원 vector, b𝑡는 scalar. frame마다 다른 parameter가 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430651-368cfe80-01cf-11eb-85a2-d759801a1634.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Shared-parameter linear attention
+모든 frame에 대해 m차원 vector  w와 scalar b가 동일하게 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430653-37be2b80-01cf-11eb-95d0-af0d4afd142b.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Non-linear attention
+여기서 𝑾𝒕는 m’ X m matrix, 𝐛𝑡와 𝐯𝑡는 m’차원의 vector(차원 m’은 훈련 데이터 셋에서 조정)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430710-50c6dc80-01cf-11eb-8673-5af3e52f4b04.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Shared-parameter non-linear attention
+모든 프레임에 대해 동일한 parameter 𝐖, 𝐛, 𝐯 를 공유&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94430715-51f80980-01cf-11eb-9b90-9a302bca378a.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;33-attention-layer-variants&quot;&gt;&lt;strong&gt;3.3 Attention layer variants&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;기본적인 attention layer와 달리 두가지의 변형된 기법 Cross-layer attention와 Divided-layer attention 소개&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Cross-layer attention&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;기존의 방법 : 마지막 LSTM의 layer의 출력 h𝑡 (1≤𝑡≤𝑇)를 사용하여 score e𝑡와 weight α𝑡를 계산&lt;/li&gt;
+  &lt;li&gt;변형된 방법 : 중간 LSTM layer의 출력 h’𝑡(1≤𝑡≤𝑇)으로 계산 (그림 3.(a) output에서 마지막 2번째 layer를 사용하는 경우)&lt;/li&gt;
+  &lt;li&gt;d-vector 𝝎는 여전히 마지막 layer 출력 h𝑡와 weighted sum으로 계산&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94431728-9df77e00-01d0-11eb-83a4-7694a369266d.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Divided-layer attention&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;마지막 LSTM layer의 출력 h𝑡의 차원을 2배로 늘리고 그 차원을 part a와 part b 두 부분으로 균등하게 나눔&lt;/li&gt;
+  &lt;li&gt;part b를 사용하여 weight를 계산하고, 나머지 part a와 weighted sum하여 d-vector 생성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94431901-e1ea8300-01d0-11eb-80d9-464a2cafaf02.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;34-weights-pooling&quot;&gt;&lt;strong&gt;3.4 Weights pooling&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Basic attention layer의 또 다른 변화&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;LSTM의 output ℎ를 average하기 위해 normalized weight 𝛼𝑡 를 직접 사용하지 않고, maxpooling으로 선택적으로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 두 가지 maxpooling 방법 사용&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Sliding Window maxpooling : Sliding window안의 weight 중 큰 값만 두고, 나머지는 0으로 만듦&lt;/li&gt;
+  &lt;li&gt;Global top-K maxpooling : 가장 큰 K개의 값만 두고, 나머지는 0으로 만듦&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94432216-63421580-01d1-11eb-8235-ee4f90a727af.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;t번째 pixel : 가중치 $\alpha_t$&lt;br /&gt;
+밝을 수록 가중치가 큰 값을 의미&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅳ-experiments&quot;&gt;&lt;strong&gt;Ⅳ. Experiments&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;41-datasets-and-basic-setup&quot;&gt;&lt;strong&gt;4.1 Datasets and basic setup&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  사용한 Dataset&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;“Ok Google”과 “Hey Google”이 혼합된 발화 데이터&lt;/li&gt;
+  &lt;li&gt;약 630K 화자가 150M 발화 (테스트 데이터 : 665명 화자)&lt;/li&gt;
+  &lt;li&gt;평균적으로 enrollment는 4.5개, evaluation은 10개의 발화로 구성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Basic setup&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;기본 baseline은 3개의 layer로 이루어진 LSTM&lt;/li&gt;
+  &lt;li&gt;각 layer는 128차원이며, 64차원으로 projection하는 linear layer를 가지고 있음&lt;/li&gt;
+  &lt;li&gt;Global password만 포함하는 길이 T=80 frame(800ms)의 세그먼트로 분리하는 keyword detection 후 40차원의 log-mel-filterbank feature 생성&lt;/li&gt;
+  &lt;li&gt;MultiReader기법을 사용하여 두 개의 keyword를 혼합하여 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;42-basic-attention-layer&quot;&gt;&lt;strong&gt;4.2 Basic attention layer&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;다양한 점수 계산 함수를 사용하여 Basic attention layer과 비교&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94432416-b4eaa000-01d1-11eb-8141-99d48b30f3da.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Bias-only와 linear attention은 EER이 거의 개선되지 않음&lt;/li&gt;
+  &lt;li&gt;Non-linear 중 특히, shared-parameter의 경우 성능 향상이 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;43-variants&quot;&gt;&lt;strong&gt;4.3 Variants&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Basic attention layer와 두 가지 변형(cross-layer, divided-layer) 비교&lt;/li&gt;
+  &lt;li&gt;이전 실험에서 최고의 성능을 낸 shared-parameter non-linear scoring function을 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94432517-d8ade600-01d1-11eb-8325-50d593324e2b.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;cross-layer는 마지막에서 2번째 layer에서 score를 훈련&lt;/li&gt;
+  &lt;li&gt;divided-layer attention이 마지막 LSTM layer의 차원이 2배이지만, Basic attention과 cross-layer attention보다 약간 더 나은 성능을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;44-weights-pooling&quot;&gt;&lt;strong&gt;4.4 Weights pooling&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Attention weight를 다양한 pooling방법으로 사용한 것과 비교&lt;/li&gt;
+  &lt;li&gt;Shared-parameter non-linear scoring function과 divided-layer attention 사용&lt;/li&gt;
+  &lt;li&gt;Sliding window maxpooling : 10 frame window size와 5 frame step size&lt;/li&gt;
+  &lt;li&gt;Global top-K maxpooling : K = 5&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94432565-ea8f8900-01d1-11eb-856a-11c004b078e2.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Sliding window maxpooling이 EER이 약간 더 낮은 것을 확인&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 각 방법에서 attention weight를 visualization&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94433266-03e50500-01d3-11eb-8044-2e31658644e1.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Pooling이 없을 때, 4음소(O-kay-Goo-gle) 또는 3음소(Hey-Goo-gle) 패턴을 확인&lt;/li&gt;
+  &lt;li&gt;Pooling을 사용함으로써 시작부분 보다는 끝부분의 발화가 더 큰 attention weight를 가짐&lt;/li&gt;
+  &lt;li&gt;LSTM은 이전 상태 값을 누적하여 가지고 있기 때문에 마지막으로 갈수록 더 많은 정보를 가짐으로써 나오게 되는 현상으로 판단&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅴ--conclusion&quot;&gt;&lt;strong&gt;Ⅴ.  Conclusion&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;본 논문에서는 keyword 기반의 Text-dependent 화자 검증 시스템을 위한 다양한 Attention mechanism을 실험&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;가장 좋은 방법
+    &lt;ol&gt;
+      &lt;li&gt;shared-parameter non-linear scoring function 사용&lt;/li&gt;
+      &lt;li&gt;LSTM의 마지막 layer에 divided-layer attention 사용&lt;/li&gt;
+      &lt;li&gt;Sliding window maxpooling을 attention weight에 적용&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;위의 3가지를 결합하였을 때 기본 LSTM모델 EER 1.72%에서 14%의 상대적 성능 향상을 가져옴&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;color:#FF0000&quot;&gt;&lt;strong&gt;동일한 attention mechanism(특히, shared-parameter scoring function)은 Text-independent한 화자 검증 및 화자 식별을 개선하기 위해 사용될 수 있음&lt;/strong&gt;&lt;/span&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Tue, 30 Jul 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-07-30-Attention-based-models-for-TDSV</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-07-30-Attention-based-models-for-TDSV</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction-&quot; id=&quot;markdown-toc-ⅰ-introduction-&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt; 🌱&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-related-work-&quot; id=&quot;markdown-toc-ⅱ-related-work-&quot;&gt;&lt;strong&gt;Ⅱ. Related Work&lt;/strong&gt; 🌿&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅲ-proposed-approach-&quot; id=&quot;markdown-toc-ⅲ-proposed-approach-&quot;&gt;&lt;strong&gt;Ⅲ. Proposed Approach&lt;/strong&gt; 🌳&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅳ-experiments-and-results-&quot; id=&quot;markdown-toc-ⅳ-experiments-and-results-&quot;&gt;&lt;strong&gt;Ⅳ. Experiments and Results&lt;/strong&gt; 🌺&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅴ-conclusion-&quot; id=&quot;markdown-toc-ⅴ-conclusion-&quot;&gt;&lt;strong&gt;Ⅴ. Conclusion&lt;/strong&gt; 🌞&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Kai Liu, Huan Zhou&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;문제점:&lt;/strong&gt; Text-independent speaker verification은 짧은 발화 조건에서 심각한 성능 저하를 겪음
+&lt;strong&gt;해결방법:&lt;/strong&gt; short embedding을 enhanced embedding에 직접 매핑하여 판별력(discriminability)을 높이도록 adversarial하게 훈련된 embedding model 제안&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;특히, loss criteria(기준)이 많은 &lt;span style=&quot;background-color:#AED6F1&quot;&gt;&lt;strong&gt;Wasserstein GAN&lt;/strong&gt;&lt;/span&gt; 사용&lt;/li&gt;
+  &lt;li&gt;여러 loss function은 뚜렷하게 최적화하려는 목표를 가지고 있으나 그 중 일부는 화자 검증 연구에 도움이 되지 않음&lt;/li&gt;
+  &lt;li&gt;대부분의 이전 연구와 달리  &lt;span style=&quot;background-color:#AED6F1&quot;&gt;&lt;strong&gt;이 연구의 주요 목표&lt;/strong&gt; 는 &lt;strong&gt;수많은 ablation 연구&lt;/strong&gt; 로 부터 loss criteria의 효과를 검증&lt;/span&gt;
+　→ 위에서 말하는 SV에서 도움이 되지 않는 loss들을 제거하면서 loss에 따른 영향을 조사&lt;/li&gt;
+  &lt;li&gt;VoxCeleb dataset에 대한 실험에서 일부 criteria는 SV 성능에 이로운 반면 일부 criteria는 사소한 영향을 미친다는 것을 보여줌&lt;/li&gt;
+  &lt;li&gt;마지막으로, finetuning없이 사용한 Wasserstein GAN은 baseline을 넘어 의미 있는 성능 향상을 달성하며, EER에서는 4%의 상대적 개선과 2초간의 짧은 발화의 challenge한 시나리오에서는 7%의 minDCF를 달성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;ⅰ-introduction-&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt; 🌱&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;TI-SV: 등록된 화자와 테스트 음성(내용 제약 X)을 통해 화자의 신원을 검증&lt;/li&gt;
+  &lt;li&gt;중요한 단계: 임의의 지속시간을 갖는 음성을 고정 차원의 speaker representation으로 매핑하는 것 (acoustic feature → speaker feature)&lt;/li&gt;
+  &lt;li&gt;Baseline System: GhostVLAD-aggregated embedding(G-vector); 긴 발화, 짧은 발화에서 좋은 성능을 보였으며, 잡음 환경에서 x-vector보다 이점이 있어 SV 시스템에 더 유리&lt;/li&gt;
+  &lt;li&gt;NIST-SRE 2010 test set에서 &lt;strong&gt;full-duration이 5초로 단축&lt;/strong&gt;되었을 때 i-vector/PLDA system &lt;strong&gt;성능이 2.48%에서 24.78%&lt;/strong&gt; 로 감소, &lt;strong&gt;최근 딥러닝 기술 사용하여 이를 보완하는 연구가 많이 진행 중&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;본 논문에서는 Wasserstein GAN의 adversarial 학습을 이용하여 향상된 차별성을 가진 새로운 embedding을 제안
+(같은 화자의 짧은 발화와 긴 발화에서 추출한 G-vector를 활용하여)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;ⅱ-related-work-&quot;&gt;&lt;strong&gt;Ⅱ. Related Work&lt;/strong&gt; 🌿&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ GAN 이란&lt;/strong&gt;: 생성자(Generator)와 식별자(Discriminator)가 싸우면서 학습하는 모델&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Generator : Discriminator를 속이도록 학습&lt;/li&gt;
+  &lt;li&gt;Discriminator : real sample 𝑦와 noise 𝜂로부터 생성된 fake sample 𝑔의 차이를 학습&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&amp;lt;/br&amp;gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Adversarial Learning&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;minmax loss function이 교대로 최적화 과정을 수행 (두 모델의 loss가 같아지는 상태가 될 때까지)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101442311-735b3b80-395e-11eb-87da-130ab93a5834.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Gradients diminishing, exploding 문제로 훈련하기 어려운데 이를 Wasserstein GAN(WGAN)에서 수학적으로 다루었음&lt;/li&gt;
+  &lt;li&gt;Discriminator는 좋은 $𝑓_𝑤$를 찾도록 설계되었으며, 새로운 loss function은 Wasserstein 거리를 측정하도록 구성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101442322-76eec280-395e-11eb-8f23-77c965f91d6a.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;ⅲ-proposed-approach-&quot;&gt;&lt;strong&gt;Ⅲ. Proposed Approach&lt;/strong&gt; 🌳&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;제안하는 전급 방식은 아래의 구조와 같음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101442513-ccc36a80-395e-11eb-923b-4ca1aa2ac183.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$𝑥, 𝑦$ : 같은 speaker의 각각 짧고 긴 발화에 해당하는 D차원의 G-vector&lt;br /&gt;
+$𝑧$ : speaker ID label&lt;br /&gt;
+$𝐺_𝑓$ : embedding generator&lt;br /&gt;
+$𝐺_𝑐$ : speaker label predictor&lt;br /&gt;
+$𝐺_𝑑$ : Distance calculator&lt;br /&gt;
+$𝐷_𝑤$ : Wasserstein discriminator&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;제안된 방법의 &lt;strong&gt;핵심적인 task&lt;/strong&gt;는 &lt;strong&gt;discriminability이 향상된 embedding을 학습&lt;/strong&gt;하는 것&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#E4C4F0&quot;&gt;&lt;strong&gt;✔ loss functions&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;WGAN loss&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443118-02b51e80-3960-11eb-86ce-40b44aed35fc.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Conditional WGAN loss&lt;/strong&gt;: GAN에 Wasserstein 거리를 이용한 새로운 loss function 정의&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;$𝑥$ (짧은 발화 embedding)이 주어졌을 때, $𝐷_𝑤$와 $𝐺_𝑓$ 분포의 차이 ($𝑥$와 real sample, fake sample을 연결하여 학습)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443121-047ee200-3960-11eb-85e3-d6cdb120eb2f.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;⚡️ WGAGN loss / Conditional WGAN loss 중 하나만 사용하고, 그 차이를 성능 평가 실시&lt;/p&gt;
+
+&lt;p&gt;&amp;lt;/br&amp;gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;FID loss&lt;/strong&gt;: Fréchet Inception Distance&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Real sample과 fake sample의 벡터 사이의 거리 계산을 위한 metric&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443125-05b00f00-3960-11eb-83a1-b11abcfe6840.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;class loss&lt;/strong&gt;: Multi-class cross-entropy loss&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Speaker에 따른 embedding 차이를 위한 loss 정의&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443129-08126900-3960-11eb-98d6-16200989d2ff.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$𝑁$ : Batch size&lt;br /&gt;
+$𝑐$ : Class 수&lt;br /&gt;
+$𝑔_𝑖$ : i번째 생성된 embedding&lt;br /&gt;
+$𝑧_𝑖$ : 해당 label index&lt;br /&gt;
+$𝑊∈ℜ^(𝐷∗𝑐), 𝑏∈ℜ^𝑐$ : weight matrix, bias&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Triplet loss&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Class 분류 시 error에 대한 패널티&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443133-09dc2c80-3960-11eb-882f-caf3570671b9.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$\Gamma$ : training set에서 가능한 모든 embedding의 triplet $\gamma=(𝑔_𝑎, 𝑔_𝑝, 𝑔_𝑛)$의 set&lt;br /&gt;
+$𝑔_𝑎$ : anchor input&lt;br /&gt;
+$𝑔_𝑝$ : positive input&lt;br /&gt;
+$𝑔_𝑛$ : negative input&lt;br /&gt;
+$\Psi∈ℜ^+$ : positive와 negative 사이의 safety margin&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Center loss&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Class 내 variation 최소화&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443140-0c3e8680-3960-11eb-8896-37b5be81d367.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$𝑐_(𝑦_𝑖)$ : deep feature의 𝑦_𝑖번째 class center&lt;br /&gt;
+$𝑥_𝑖$ : $𝑦_𝑖$번째 class에 속하는 𝑖번째 deep feature&lt;br /&gt;
+$𝑚$ : mini-batch size&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Cosine distance loss&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Generator model로 얻은 향상된 embedding과 real sample(target) 사이의 유사도를 고려&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101443144-0ea0e080-3960-11eb-8437-04997a2f26bc.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$\bar 𝑒$: normalized embedding&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;:star: &lt;span style=&quot;background-color:#FFED81&quot;&gt;&lt;strong&gt;✔ Generator와 Discriminator의 최종 Loss&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;$G_f$&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101444427-d3ec7780-3962-11eb-8967-3f0ff2912fad.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;$D_w$&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101444430-d5b63b00-3962-11eb-97a0-807326d8a4a4.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;WGAN 훈련 후 generative model $𝐺_𝑓$ 유지&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Test 단계에서 짧은 발화 embedding $𝑥$를 $𝐺_𝑓$에 넣어 enhanced embedding($g$)를 얻음&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;ⅳ-experiments-and-results-&quot;&gt;&lt;strong&gt;Ⅳ. Experiments and Results&lt;/strong&gt; 🌺&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Experimental setup&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Train:&lt;/strong&gt;  VoxCeleb2의 subset (1,057명 화자의 164,716개 발화)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Test:&lt;/strong&gt;   VoxCeleb1의 subset (40명 화자의 13,265개 발화)&lt;/li&gt;
+  &lt;li&gt;짧은 발화를 위해 &lt;strong&gt;random하게 2초 잘라서&lt;/strong&gt; 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Baseline system&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;G-vector (VGG-Restnet34s)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Hyper Parameter&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Learning rate 0.0001&lt;/li&gt;
+  &lt;li&gt;Adam Optimizer&lt;/li&gt;
+  &lt;li&gt;Weight clipping -0.01 ~ 0.01 threshold ($𝐷_𝑤$)&lt;/li&gt;
+  &lt;li&gt;Batch size 128&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#AED6F1&quot;&gt;&lt;strong&gt;✔ 다양한 loss function의 영향 연구&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101445011-0d71b280-3964-11eb-8d77-389d6aa37ee3.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101445016-0f3b7600-3964-11eb-94f9-767587338bcc.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;center&gt; - FID loss은 긍정적인 영향 (v1 vs v2) &lt;/center&gt;
+&lt;center&gt; - Conditional WGAN이 WGAN보다 나음 (v3 vs v4) &lt;/center&gt;
+&lt;center&gt; - Triplet loss를 넣으면 조금 더 나은 결과를 보임 (v7 vs v2) &lt;/center&gt;
+&lt;center&gt; - Triplet b(fake)보다 Triplet a(real, fake 모두)가 크게 성능 향상 (v3 vs v8) &lt;/center&gt;
+&lt;center&gt; - Softmax는 긍정적인 영향 (v3 vs v5) &lt;/center&gt;
+&lt;center&gt; - Center loss은 부정적인 영향 (v6 vs v7) &lt;/center&gt;
+&lt;center&gt; - Cosine loss은 긍정적 영향 (v6 vs v8) &lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;추가적인 training function&lt;/strong&gt;(softmax, cosine, triplet)이 모두 &lt;strong&gt;훈련에 긍정적인&lt;/strong&gt; 영향을 미침&lt;/li&gt;
+  &lt;li&gt;SV시스템에 FID, conditional WGAN은 매우 유용, 추가 조사 가치가 있음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Baseline system과 비교&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;실험 중 가장 성능이 좋았던 v3 system과 G-vector baseline system 비교
+    &lt;ul&gt;
+      &lt;li&gt;EER과 minDCF&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/101445333-a6083280-3964-11eb-86af-900deb097f6e.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Baseline보다 짧은 duration에 대해 더 나은 성능을 보임
+    &lt;ul&gt;
+      &lt;li&gt;상대적으로 EER은 4.2% 개선하였으며, minDCF는 7.2% 개선 – 1초 task에서도 상대적 EER 3.8% 향상&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;시간 제약으로 FID loss는 최종 system에 추가하지 않았으며 hyper-parameter, loss weight($\alpha, \beta, \gamma, \lambda, \epsilon$)와 triplet margin $\Psi$에 대한 미세조정이 없었음
+    &lt;ul&gt;
+      &lt;li&gt;제안한 system의 개선될 여지가 많이 남아있음&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;ⅴ-conclusion-&quot;&gt;&lt;strong&gt;Ⅴ. Conclusion&lt;/strong&gt; 🌞&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;본 논문에서는 &lt;strong&gt;WGAN을 적용&lt;/strong&gt; 하여 &lt;strong&gt;발화가 짧은&lt;/strong&gt; speaker verification application의 &lt;strong&gt;향상된 embedding을 성공적으로 학습&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;제안된 WGAN 기반 커널 시스템 그리고 그 위에, GAN 훈련에서 &lt;strong&gt;많은 loss criteria의 효과를 검증&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;최종 제안 시스템은 도전적인 짧은 스피커 검증 시나리오에서 baseline system을 능가&lt;/li&gt;
+  &lt;li&gt;전반적으로, 상당한 진보와 연구가 진전되는 잠재적 방향을 보여줌&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Wed, 24 Jul 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Generalized End to End Loss For Speaker Verification</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction&quot; id=&quot;markdown-toc-ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#11--background&quot; id=&quot;markdown-toc-11--background&quot;&gt;&lt;strong&gt;1.1  Background&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#12-te2e&quot; id=&quot;markdown-toc-12-te2e&quot;&gt;&lt;strong&gt;1.2 TE2E&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-ge2e-model&quot; id=&quot;markdown-toc-ⅱ-ge2e-model&quot;&gt;&lt;strong&gt;Ⅱ. GE2E Model&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#21-training-method&quot; id=&quot;markdown-toc-21-training-method&quot;&gt;&lt;strong&gt;2.1 Training Method&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#22-comparison-between-te2e-and-ge2e&quot; id=&quot;markdown-toc-22-comparison-between-te2e-and-ge2e&quot;&gt;&lt;strong&gt;2.2 Comparison between TE2E and GE2E&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#23-training-with-multireader&quot; id=&quot;markdown-toc-23-training-with-multireader&quot;&gt;&lt;strong&gt;2.3 Training with MultiReader&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅲ-experiments&quot; id=&quot;markdown-toc-ⅲ-experiments&quot;&gt;&lt;strong&gt;Ⅲ. Experiments&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#31-td-sv&quot; id=&quot;markdown-toc-31-td-sv&quot;&gt;&lt;strong&gt;3.1 TD-SV&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#32-ti-sv&quot; id=&quot;markdown-toc-32-ti-sv&quot;&gt;&lt;strong&gt;3.2 TI-SV&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅳ--conclusion&quot; id=&quot;markdown-toc-ⅳ--conclusion&quot;&gt;&lt;strong&gt;Ⅳ.  Conclusion&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Li Wan, Quan Wang, Alan Papir, Ignacio Lopez Moreno&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;새로운 loss function(Generalized End-to-End, GE2E) 제안&lt;/li&gt;
+  &lt;li&gt;본 저자들이 이전 논문에서 제안하였던 Tuple-based End-to-End (TE2E) loss function보다 speaker verification 모델을 더 효율적으로 훈련&lt;/li&gt;
+  &lt;li&gt;EER을 10%이상 감소 시키면서, 동시에 훈련 시간을 60%까지 단축&lt;/li&gt;
+  &lt;li&gt;또한 다중 키워드 (“OK google”, “Hey google”)와 여러 방언을 지원하는 Domain 적응을 위한 MultiReader 기술을 소개
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;11--background&quot;&gt;&lt;strong&gt;1.1  Background&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Speaker Verfication&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;화자의 알려진 발화 (등록 발화, Enrollment)를 기반으로 테스트 발화가 특정 화자에 속하는지 확인&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ TD-SV / TI-SV&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;등록과 검증에 사용되는 발화의 제한에 따라 두 가지 카테고리로 나뉨&lt;/li&gt;
+  &lt;li&gt;TD-SV : Text-Dependent Speaker Verification (같은 내용을 발화)&lt;/li&gt;
+  &lt;li&gt;TI-SV : Text-Independent Speaker Verification (다른 내용을 발화)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ i-vector system&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;TD-SV와 TI-SV에서 모두 효과적인 접근 방식으로, 최근 Nerual Network를 이용하여 이를 대체하는데 집중&lt;/li&gt;
+  &lt;li&gt;Nerual Network를 이용해 추출한 vector를 embedding vector(d-vector) 라고 하며 i-vector와 유사하게 고정 차원으로 표현이 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;12-te2e&quot;&gt;&lt;strong&gt;1.2 TE2E&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  LSTM network&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94104922-2a254080-fe73-11ea-9685-5a2244dce1c9.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 훈련 단계에서, 하나의 테스트용 발화 𝒙𝑗~와 등록 발화 𝒙𝑘𝑚 tuple을 입력으로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$x$: 고정 길이의 log melfiterbank&lt;br /&gt;
+$j, k$: 발화한 화자&lt;br /&gt;
+($j$ 와 $k$ 는 같을 수 있음만약 $x_{𝑗\tilde{}}$와 𝑀개의 등록 발화가 같은 화자라면 tuple positive ($𝑗=𝑘$), 다르면 negative&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 tuple에 대해 LSTM output을 L2 정규화
+    &lt;blockquote&gt;
+      &lt;p&gt;${𝒆_𝑗~,(𝒆{k_1},…,𝒆_{k_M})}$  - $e$ : &lt;em&gt;embedding&lt;/em&gt;&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Tuple의 centroid는 M개의 발화로부터 생성한 voiceprint&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94106000-770a1680-fe75-11ea-9da3-ec0fb39d3869.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Cosine Simliarity Function&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94106049-91dc8b00-fe75-11ea-980c-5e7b6d001a22.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;𝑤,𝑏 는 학습되는 변수&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;TE2E loss&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94106059-93a64e80-fe75-11ea-8b31-a8b2629cfc6f.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94106117-ae78c300-fe75-11ea-8bfb-cff4fa7b2e8a.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$\sigma(𝑥) = 1/(1+𝑒^{−𝑥})$ : sigmoid function &lt;br /&gt;
+$\delta(j, k) = 1~&lt;del&gt;(𝑗=𝑘)&lt;/del&gt;or~~0~~~(𝑗≠𝑘)$&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅱ-ge2e-model&quot;&gt;&lt;strong&gt;Ⅱ. GE2E Model&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;21-training-method&quot;&gt;&lt;strong&gt;2.1 Training Method&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  GE2E training&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Fig. 1에 나타난 것과 같이 N( 화자 수 ) X 발화 수 batch 형태로 많은 수의 발화를 한번에 처리&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94107053-a588f100-fe77-11ea-9812-931dfe797405.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;$x_{ji}$: 화자 $j$ 의 $i$ 번째 발화를 추출한 특징 벡터&lt;br /&gt;
+$𝑓(𝒙_{ji}; 𝒘)$: LSTM 과 linear layer 를 거치고 나온 마지막 출력&lt;br /&gt;
+$e_{ji}$: L2 정규화 후 embedding 벡터&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94107148-d2d59f00-fe77-11ea-80f8-973a38b624f0.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94107170-dff28e00-fe77-11ea-87a5-be7ed870bfc8.png&quot; alt=&quot;img&quot; style=&quot;zoom:40%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Embedding vector $e_{ji}$, 모든 centroid $c_k$로계산 $(1≤𝑗,𝑘≤𝑁,1≤𝑖≤𝑀)$&lt;br /&gt;
+$𝑤 &amp;gt; 0$ : cosine similarity 값이 클수록 similarity 를 크게 하기 위하여 양수로 설정&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  TE2E와 GE2E의 차이점&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;TE2E의 similarity (equation 2 는 embedding vector 𝒆𝑗~와 하나의 tuple centroid 𝒄𝑘사이의 유사함을 계산 (scalar)&lt;/li&gt;
+  &lt;li&gt;GE2E (equation 5)는 각 embedding vector 𝒆𝑗𝑖와 모든 중심 𝒄𝑘의 유사함을 계산하여 행렬로 구축&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  목적&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;훈련동안 , 각 발화의 embedding 이 본인 발화의 centroid 와는 유사함과 동시에 다른 화자의 centroid 와의 거리는 멀게 (fig 1. 에서 색상의 값은 크고 회색의 값은 작게&lt;/li&gt;
+  &lt;li&gt;Fig. 2에서 파란색 embedding vector 가 그 화자의 centroid(파란색 삼각형)과 거리는 가까우며 , 다른 화자의 centroid(빨간색, 보라색 삼각형) 과는 거리가 멀도록&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94107458-7921a480-fe78-11ea-886e-a847186d8e93.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Softmax - Similarity matrix&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;$S_{ji,k}$에 softmax 를 적용하여 j 와 k 가 같은 화자 일 경우는 출력 값을 1, 다른 화자일 경우 0 이 되도록 함&lt;/li&gt;
+  &lt;li&gt;각 embedding vector 를 그 화자의 centroid 와는 가깝게 하고 , 다른 화자의 centroid 로
+부터는 멀어지게 함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94107622-d4539700-fe78-11ea-8d58-18bea7a203e9.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Contrast - Similarity matrix&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Contrast loss는 positive 쌍과 가장 negative 한 쌍으로 정의&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;모든 발화에 대해 두 가지 구성요소가 loss 에 추가&lt;/p&gt;
+
+    &lt;p&gt;(1) embedding vector와 그 화자의 voiceprint 사이의 positive 일치&lt;br /&gt;
+(2) 다른 화자들의 발화 중 가장 높은 유사성을 갖는 voiceprint 의 negative 일치&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94107626-d61d5a80-fe78-11ea-8640-b4e3f492149f.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Softmax&amp;amp;Contrast - Similarity matrix&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;TI-SV 의 경우 softmax loss 가 약간 더 나은 성능을,, TD SV 의 경우 contrast loss 가 더 나은 성능을 보여 두 가지 GE2E loss 의 구현이 모두 유용함을 발견&lt;/li&gt;
+  &lt;li&gt;$e_ji$제거 : 화자의 centroid 계산시 , 훈련이 안정되고 사소한 문제를 피할 수 있도록 도와줌&lt;/li&gt;
+  &lt;li&gt;j 와 k 가 같은 화자일 경우는 (1) 대신 (8) 을 사용하여 centroid 계산&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94108065-95721100-fe79-11ea-90cf-b8fe4dd86f1c.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Eq. 4, 6, 7, 9를 합하여 만든 최종 GE2E loss&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94108143-bc304780-fe79-11ea-9c40-d584284261bd.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;22-comparison-between-te2e-and-ge2e&quot;&gt;&lt;strong&gt;2.2 Comparison between TE2E and GE2E&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  모든 입력 𝒙𝑗𝑖에 대해 TE2E loss 에서 발생하는 tuple 의 수&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;(1) positive tuples : 화자 j 에서 무작위로 P 발화 선택&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94108310-09acb480-fe7a-11ea-9b77-bbc90e239545.png&quot; alt=&quot;img&quot; style=&quot;zoom:70%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;(2) negative tuples : 화자 j 와 다른 화자 k 의 발화에서 무작위로 P 발화 선택&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94108326-1204ef80-fe7a-11ea-9252-2f0510d28f49.png&quot; alt=&quot;img&quot; style=&quot;zoom:70%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;strong&gt;⭐ 총 TE2E loss의 tuple 수&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94108404-3365db80-fe7a-11ea-82b4-2674279c20ba.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  GE2E loss 의 tuple 수&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 화자의 모든 발화를 선택하여 centroid 로 계산하므로 P=M&lt;/li&gt;
+  &lt;li&gt;따라서 TE2E 의 최소 값 [2x(N-1)]과 동일&lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;background-color:#f2cfa5&quot;&gt;&lt;strong&gt;GE2E가 TE2E 보다 짧은 시간 내에 더 나은 모델로 수렴&lt;/strong&gt;&lt;/span&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;23-training-with-multireader&quot;&gt;&lt;strong&gt;2.3 Training with MultiReader&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  작은 데이터 셋 D1과 큰 데이터 셋 D2 존재&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;D1 domain model 에 관심이 있는데 , 동일한 domain 은 아니지만 더 큰 D2 dataset 이 있을 때 , &lt;strong&gt;D2 의 도움을 받아&lt;/strong&gt; dataset D1 에서 우수한 성능을 보이는 단일 모델을 교육하고자 함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94109181-9310b680-fe7b-11ea-82df-c7db9d057167.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Regularization 기법과 유사&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94109049-60ff5480-fe7b-11ea-9be6-929668d7d5b1.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;D1에 충분한 데이터가 없을 때 , D2 에서도 잘 수행할 수 있도록 함으로써 overfitting 이 발생하는 것을 방지&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  일반화&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;K 개의 다른 data source : 𝐷1,…,𝐷𝐾를 결합하기 위해 일반화&lt;/li&gt;
+  &lt;li&gt;각 data source 의 가중치 𝛼𝑘를 할당하여 해당 data source 의 중요성 표시&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94109317-c2272800-fe7b-11ea-88d3-dff6b42d6d0a.png&quot; alt=&quot;img&quot; style=&quot;zoom:90%;&quot; /&gt;&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅲ-experiments&quot;&gt;&lt;strong&gt;Ⅲ. Experiments&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  참조논문 [6]과 process 동일&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;100개 frame을 30 frame씩 (10 frame 옆으로 이동해가며 ) 사용&lt;/li&gt;
+  &lt;li&gt;40-dimensional log mel filterbank&lt;/li&gt;
+  &lt;li&gt;LSTM 3-layer + projection (d-vector size)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Hyper Parameter&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;N : 64 (speakers), M : 10 (utterances)&lt;/li&gt;
+  &lt;li&gt;Learning rate : 0.01 (30M 단계마다 절반씩 감소&lt;/li&gt;
+  &lt;li&gt;Optimizer : SGD&lt;/li&gt;
+  &lt;li&gt;Loss function의 좋은 초기 값 : (w, b) = (10, 5)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;31-td-sv&quot;&gt;&lt;strong&gt;3.1 TD-SV&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Keyword detection 과 speaker verification 같은 특징 사용&lt;/li&gt;
+  &lt;li&gt;Keyword detection 은 keyword 가 포함된 frame 만 SV system 으로 전달&lt;/li&gt;
+  &lt;li&gt;이 frame 은 고정 길이 segment 형성&lt;/li&gt;
+  &lt;li&gt;Hidden node : 128, Projection size : 64&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Multiple Keyword&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;사용자들이 동시에 여러 개의 키워드 지원을 더 선호하여, “Ok google”과 “Hey google” 지원&lt;/li&gt;
+  &lt;li&gt;하나의 구절로 제한되거나 완적히 제약되지는 않기 때문에 여러 keyword로 speaker verification하는 것은 TD-SV와 TI-SV 사이에 놓임&lt;/li&gt;
+  &lt;li&gt;여러 data source를 직접 혼합하는 것과 같은 단순한 접근 방식에 비해 MultiReader는 data source의 크기가 불균형한 경우에 사용할 수 있는 등 큰 이점을 갖음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;~150M 발화, ~630K 화자로 이루어진 “Ok google” set과 ~1.2M 발화와 ~18K로 이루어진 “Hey google” set을 비교하면 “Ok google”이 125배 발화 수가 더 많으며 35배 화자 수가 더 많음&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 평가 방법 및 결과&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;4가지 경우에 대해 EER 측정 (2개의 keyword로 나올 수 있는 조합)&lt;/li&gt;
+  &lt;li&gt;테스트 dataset : 665 명의 화자 / 평균 4.5 회 등록 발화 , 10 개의 테스트 발화&lt;/li&gt;
+  &lt;li&gt;MultiReader를 적용한 것이 4 가지 경우 모두에서 약 30% 의 상대적 성능 향상을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94112150-00264b00-fe80-11ea-9b21-fc9d738e90de.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 추가 실험&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;~83K 서로 다른 화자와 환경 조건의 대규모 dataset (평균 7.3회 등록, 5개 테스트 발화 사용)&lt;/li&gt;
+  &lt;li&gt;GE2E model은 TE2E보다 약 60% 더 적은 훈련 시간을 소모&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94112311-349a0700-fe80-11ea-8edf-f098ab62b9a8.png&quot; alt=&quot;img&quot; style=&quot;zoom:75%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;1 행 : 512 개의 hidden node 와 128 차원의 embedding vector 크기를 가진 단일 계층 LSTM&lt;br /&gt;
+2행  : 3 layer LSTM (TE2E)&lt;br /&gt;
+3 행 : 3 layer LSTM (GE2E)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;32-ti-sv&quot;&gt;&lt;strong&gt;3.2 TI-SV&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Hidden node : 768, Projection size : 256&lt;/li&gt;
+  &lt;li&gt;VAD(Voice Activity Detection) 후 고정 길이 segment로 나눔 ; partial utterances&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Train&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;각 데이터 batch 에 대해 𝑙𝑏,𝑢𝑏] = [140, 180] frame 내에 임의로 시간 길이 t 선택&lt;/li&gt;
+  &lt;li&gt;해당 batch 내 모든 발화의 길이는 t가 되어 고정 길이의 segment를 갖음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94110427-97d66a00-fe7d-11ea-94f6-7c3f2413e535.png&quot; alt=&quot;img&quot; style=&quot;zoom:80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ Test&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;window size만큼 고정 segment를 가져와 d-vector 추출&lt;/li&gt;
+  &lt;li&gt;window size를 50%만큼 겹치게 sliding하여 이동&lt;/li&gt;
+  &lt;li&gt;window마다 추출된 d-vector를 L2 정규화하고 average하여 최종 d-vector를 생성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94110496-b2104800-fe7d-11ea-96b1-41d04121b01d.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔ 실험 결과&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;훈련 dataset : 36M 발화와 18K 화자를 사용&lt;/li&gt;
+  &lt;li&gt;테스트 dataset : 1000 명의 화자 , 평균 6.3 개 등록 발화 , 평균 7.2 개의 테스트 발화 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/94113342-b8082800-fe81-11ea-9cde-7831829befa1.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Softmax : 훈련 데이터의 모든 화자에 대한 label 을 예측&lt;br /&gt;
+TE2E : TE2E 로 훈련된 모델&lt;br /&gt;
+GE2E : GE2E 로 훈련된 모델&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅳ--conclusion&quot;&gt;&lt;strong&gt;Ⅳ.  Conclusion&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Speaker Verification 을 위한 보다 효율적인 GE2E loss function 제안&lt;/li&gt;
+  &lt;li&gt;이론 및 실험적 결과 에서 모두 본 논문에서 제안한 모델의 장점 을 입증&lt;/li&gt;
+  &lt;li&gt;다양한data source 를 결합하는 MultiReader 기법을 도입하여 여러 키워드와 언어를 지원 할 수 있도록 함&lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;color:#FF0000&quot;&gt;&lt;strong&gt;두 가지 기법을 결합하여 보다 정확한 Speaker Verification Model 구축&lt;/strong&gt;&lt;/span&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Wed, 10 Jul 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-07-10-GE2E-loss-for-SV</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-07-10-GE2E-loss-for-SV</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction&quot; id=&quot;markdown-toc-ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-domain-adaption-with-gans&quot; id=&quot;markdown-toc-ⅱ-domain-adaption-with-gans&quot;&gt;&lt;strong&gt;Ⅱ. Domain Adaption with GANs&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅲ-generative-adversarial-speaker-embedding-networks&quot; id=&quot;markdown-toc-ⅲ-generative-adversarial-speaker-embedding-networks&quot;&gt;&lt;strong&gt;Ⅲ. Generative Adversarial Speaker Embedding Networks&lt;/strong&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#31-auxiliary-classifier-gan&quot; id=&quot;markdown-toc-31-auxiliary-classifier-gan&quot;&gt;3.1. Auxiliary Classifier GAN&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#32-gan-variants&quot; id=&quot;markdown-toc-32-gan-variants&quot;&gt;3.2. GAN Variants&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅳ--experiments-and-results&quot; id=&quot;markdown-toc-ⅳ--experiments-and-results&quot;&gt;&lt;strong&gt;Ⅳ.  Experiments and Results&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅴ--conclusion&quot; id=&quot;markdown-toc-ⅴ--conclusion&quot;&gt;&lt;strong&gt;Ⅴ.  Conclusion&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Gautam Bhattacharya, Joao Monteiro, Jahangir Alam, Patrick Kenny&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;GANs를 이용한 domain invariant speaker embedding을 위한 새로운 접근 방식 제안
+  - source data와 target data로 generator가 embedding을 생성
+  - 생성된 embedding이 source인지 target인지 discriminator가 식별&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;이러한 framework를 사용하여 여러 가지 GAN 변형을 훈련하고 화자 검증에 적용&lt;/strong&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Angular Margin loss를 사용하여 End-to-End model 최적화&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92461324-1e474680-f204-11ea-91bc-e748da169035.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h1 id=&quot;ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/h1&gt;
+&lt;p&gt;- 화자 embedding : 개인의 identity와 관련된 정보를 포함하는 저차원 벡터 표현&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Neural Network기반 화자 embedding&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;음성 인식, 합성 및 source 분리, 화자 검증 적용 등 다양하게 적용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  End-to-End system speaker verification&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;두 개의 음성 파일에서 embedding을 추출한 뒤 embedding 사이의 cosine distance 등을 사용하여 score 계산&lt;/li&gt;
+  &lt;li&gt;모델이 견고하기 위해서 일반적으로 거리 측정 기준을 직접 최적화해야 함 (End-to-End)&lt;/li&gt;
+  &lt;li&gt;그러나, 화자 검증에서 훈련하기 어려운 것으로 판단&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  I-vector system과 동일하게 사용&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;차원 감소에는 LDA(Linear Discriminant Analysis) 사용&lt;/li&gt;
+  &lt;li&gt;검증 시 PLDA(Probabilistic Linear Discriminant Analysis) 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  NIST SRE 2016 dataset 사용&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;훈련 데이터(영어)와 테스트 데이터(광둥어 및 타갈로그어) 사이의 mismatch를 도입 (Domain or Covariate shift)&lt;/li&gt;
+  &lt;li&gt;domain 보상을 위한 적은 양의 label이 없는 target 데이터 제공&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  본 논문 저자의 최근 연구에서, End-to-End의 cosine score를 사용하는 domain adversarial 훈련을 이용한 domain 불변 화자 embedding 훈련 제안 (Domain Adversarial Neural Speaker Embeddings, DANSE)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Gradient reversal을 사용하여 domain 불변성 및 adversarial grame의 최소화 목표를 달성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#f4d451&quot;&gt;&lt;strong&gt;✔  본 논문에서는 GANs를 사용하여 unsupervised domain adaptation/invariant로 이전 연구 확장&lt;/strong&gt;&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;&amp;lt; 장점&amp;gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;gradient reversal보다 불변성 mapping을 학습하는데 더 나은 gradients 제공&lt;/li&gt;
+  &lt;li&gt;GAN framework는 gradient reversal보다 더 일반적이고 확장 가능&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  다양한 GAN 변형&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;특징 공간의 다른 변형을 생성&lt;/li&gt;
+  &lt;li&gt;이러한 특징 공간을 결합이 성능 향상을 가져옴&lt;/li&gt;
+  &lt;li&gt;Auxiliary Classifier GAN(AuxGAN)의 수정을 제안&lt;/li&gt;
+  &lt;li&gt;GAN 모델이 DNASE 모델의 성능을 능가&lt;/li&gt;
+  &lt;li&gt;다양한 GAN 모델의 score를 평균함으로써 x-vector의 성능보다 향상됨&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅱ-domain-adaption-with-gans&quot;&gt;&lt;strong&gt;Ⅱ. Domain Adaption with GANs&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  GAN&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Generator : target data를 source data의 domain으로 mapping&lt;/li&gt;
+  &lt;li&gt;Discriminator : source data와 target data의 domain을 구별&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92464311-ecd07a00-f207-11ea-8527-64991f1f261d.png&quot; alt=&quot;img&quot; style=&quot;zoom: 70%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;여러 GAN 변형에 해당하는 다른 discriminator의 구성이 특징 공간의 다른 변환을 가져온다는 것을 발견&lt;/li&gt;
+  &lt;li&gt;vanilla GAN에서 discriminator는 binary cross-entropy(BCE) loss를 최적화하여 훈련&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  GAN game (기존 GAN loss)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92464831-af202100-f208-11ea-9c86-bb4318bebe00.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;E, D : Embedding(generator), Discriminator 함수&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92472815-fc09f480-f214-11ea-9b00-1274915072c1.png&quot; alt=&quot;img&quot; style=&quot;zoom: 70%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Gradients reversal model&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92472846-01673f00-f215-11ea-8f18-c267f86a118d.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅲ-generative-adversarial-speaker-embedding-networks&quot;&gt;&lt;strong&gt;Ⅲ. Generative Adversarial Speaker Embedding Networks&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  본 논문의 목표&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;화자 embedding model이 특징 추출기(generator)와 domain 식별자(discriminator) 사이의 GAN game을 통해 domain 불변적 특징을 학습&lt;/li&gt;
+  &lt;li&gt;GAN이 domain 불변성을 갖으며, embedding이 화자를 구분할 수 있어야 함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Loss function (AM-softmax/GAN loss)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;class간 cosine similarity를 직접 최적화&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92466967-d7f5e580-f20b-11ea-9b8b-ae4db11acd0b.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;C, E : Classifier, Embedding(generator)  함수&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92467164-17243680-f20c-11ea-83c2-adb068c4d9df.png&quot; alt=&quot;img&quot; style=&quot;zoom: 40%;&quot; /&gt;&lt;/center&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;s, m : scale factor, margin&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;BCE loss를 사용하여 domain discriminator를 훈련&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92467390-7d10be00-f20c-11ea-9136-515c58c834d9.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;마지막으로, 아래의 loss를 사용하여 discriminator를 속이기 위해 generator(embedding) 훈련&lt;/li&gt;
+&lt;/ul&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92467437-9580d880-f20c-11ea-9aa0-c336bf2bd007.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;embedding 함수는 task loss와 함께 그 다음 adversarial loss 총 2번 학습&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;31-auxiliary-classifier-gan&quot;&gt;3.1. Auxiliary Classifier GAN&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  AuxGAN(ACGAN)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;조건(conditional) 이미지 생성을 위해 보조(Auxiliary) loss를 사용하여 GAN을 보완&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;side 정보(class label 등)을 예측하는 것이 목표&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;D (discriminator) : 2개의 classifier
+ - 데이터가 진짜(real) 인지 가짜(fake) 인지 판별
+ - 해당 데이터의 범주(category)를 분류&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;G (generator) : label정보와 z(noise)로 가짜 데이터 생성&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92468316-ec3ae200-f20d-11ea-882d-0045ffc0cd5c.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  원래 ACGAN의 object fuction&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;source의 log-likelihood $L_s$, class의 log-likelihood $L_c$
+    &lt;blockquote&gt;
+      &lt;p&gt;$L_s$ : 기존 GAN의 목적 함수와 같음 (real/fake 판별)&lt;br /&gt;
+$L_c$ : 해당 데이터의 class를 판단 (conditional-GAN, CGAN과 유사)&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;D(discriminator)는 $L_s + L_c$를 최대화&lt;/li&gt;
+  &lt;li&gt;G(generator)는 $L_c - L_s$를 최대화&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92473528-b699f700-f215-11ea-8256-b66f1ff59f9b.png&quot; alt=&quot;img&quot; style=&quot;zoom: 70%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  논문에서 사용한 ACGAN의 object function&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92469327-9a935700-f20f-11ea-8183-b78231d799d4.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;32-gan-variants&quot;&gt;3.2. GAN Variants&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;🔹  다양한 GAN의 변형 사용&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;표준 GAN&lt;/li&gt;
+  &lt;li&gt;Least-Squares GAN&lt;/li&gt;
+  &lt;li&gt;Relativistic GAN&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;🔹  각 변형이 특징 공간을 다른 방식으로 변형&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;모든 모델은 거의 비슷한 성능을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;🔹 모든 GAN 모델의 성능을 결합&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;평균 점수(cosine distance score)를 결합한 것이 최고의 성능을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅳ--experiments-and-results&quot;&gt;&lt;strong&gt;Ⅳ.  Experiments and Results&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Training data(source)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;제안한 DANSE 모델과 x vector, i vector 의 baseline 을 훈련하기 위해 NIST SRE 2004 2010 및 Switchboard Cellular audio 사용&lt;/li&gt;
+  &lt;li&gt;잡음 및 잔향으로 데이터 증강 (128K의 noisy data추가하여, 220K개 사용)&lt;/li&gt;
+  &lt;li&gt;Adversarial 모델을 훈련시키기 위해 , 5 개 이하의 발화인 화자는 걸러내고 약 6000 명의 화자를 사용&lt;/li&gt;
+  &lt;li&gt;x-vector, i-vector 는 Kaldi toolkit 사용&lt;/li&gt;
+  &lt;li&gt;대부분이 영어 사용자 이며 , 전화를 통해 녹음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Model&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Embedding(generator) 함수는 3X 2 3 input 의 Convolutional layer, 4 개의 residual block, attentive statistics layer, 2 개의 fully connected layer (512, 512) 로 구성&lt;/li&gt;
+  &lt;li&gt;Classifier는 fully connected layer (64) 와 AM softmax output layer 로 구성 (fully connected layer 가 최종 domain 불편 화자 embedding)&lt;/li&gt;
+  &lt;li&gt;Discriminator는 2 개의 fully connected layer (256, 256) 와 binary cross entropy output layer 로 구성&lt;/li&gt;
+  &lt;li&gt;ELU(Exponential Linear Units)를 모든 계층에 사용&lt;/li&gt;
+  &lt;li&gt;Batch normalization은 attentive statistics layer 를 사용한 계층에 사용&lt;/li&gt;
+  &lt;li&gt;AMsoftmax loss 의 s 와 m parameter 는 각각 30 과 0.6 으로 설정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Optimization&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;cross entropy 훈련을 사용하여 embedding 특징을 사전 훈련&lt;/li&gt;
+  &lt;li&gt;세 가지 네트워크 (embedding 특징 , Classifier, 를 서로 다른 optimizer 사용&lt;/li&gt;
+  &lt;li&gt;Discriminator는 lr = 0.003 의 RMSprop , Classifier 와 embedding 은lr 0.001 의 SGD 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Data sampling&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;훈련 중 훈련 set 의 각 녹음에서 무작위로 audio chunk sampling&lt;/li&gt;
+  &lt;li&gt;각 음성을 10 번 sampling (epoch)&lt;/li&gt;
+  &lt;li&gt;Source data의 mini batch 에 대해 GAN 훈련을 위한 label 이 없는 adaption data 도 동일하게 무작위로 mini batch 를 sampling&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Speaker Verification&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Test시 embedding 추출에 필요하지 않은 domain discriminator 를 없앰&lt;/li&gt;
+  &lt;li&gt;64차원의 마지막 hidden layer 가 최종 화자 embedding&lt;/li&gt;
+  &lt;li&gt;Verification실험은 cosine distance 를 사용하여 score 계산&lt;/li&gt;
+  &lt;li&gt;성능의 지표는 EER 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  Model block&lt;/strong&gt;&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92470103-e5fa3500-f210-11ea-8ca4-58b5d1bcf508.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92470119-ebf01600-f210-11ea-8d0b-bab531d6d72d.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;✔  제안한 adversarial 화자 embedding과 baseline system 성능 비교&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Baseline시스템 중에서는 DNN 기반의 x vector 시스템이 LDA 차원 감소 추가하는 것 만으로도 i-vector 의 성능보다 향상&lt;/li&gt;
+  &lt;li&gt;모든 GAN 기반의 모델이 DANSE 보다 더 나은 성능을 보임&lt;/li&gt;
+  &lt;li&gt;AuxGAN(ACGAN), LSGAN, RelGAN embedding 의 score 를 평균한 것이 가장 성능을 크게 개선함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/92470359-3d98a080-f211-11ea-8d38-75adaeb55df0.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅴ--conclusion&quot;&gt;&lt;strong&gt;Ⅴ.  Conclusion&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;GANs를 이용한 domain 불변 화자 embedding 학습을 위한 새로운 framework 제안&lt;/li&gt;
+  &lt;li&gt;여러 가지 GAN 의 변형을 학습하여 score 를 결합함으로써 크게 향상된 성능을 얻음&lt;/li&gt;
+  &lt;li&gt;End-to-End model 에 최적화되어 있으며 간단한 cosine distance 를 사용하여 score 를 계산&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;향후 특징 공간과 데이터 공간 GAN 의 결합 및 GAN 기반 특징 공간 증강 방법과 같이 다른 adversarial 전략을 고려할 것&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 03 Jun 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅰ-introduction&quot; id=&quot;markdown-toc-ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅱ-database-and-baseline-systems&quot; id=&quot;markdown-toc-ⅱ-database-and-baseline-systems&quot;&gt;&lt;strong&gt;Ⅱ. Database and Baseline Systems&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅲ-proposed-end-to-end-dnn-architecture&quot; id=&quot;markdown-toc-ⅲ-proposed-end-to-end-dnn-architecture&quot;&gt;&lt;strong&gt;Ⅲ. Proposed End-to-End DNN Architecture&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅳ--results-and-discussion&quot; id=&quot;markdown-toc-ⅳ--results-and-discussion&quot;&gt;&lt;strong&gt;Ⅳ.  Results and Discussion&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#ⅴ--conclusion&quot; id=&quot;markdown-toc-ⅴ--conclusion&quot;&gt;&lt;strong&gt;Ⅴ.  Conclusion&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Johan Rohdin, Anna Silnova , Mireia Diez, Oldrich Plchot , Pavel Matejka , Lukas Burget&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;최근 text-dependent뿐만 아니라 짧은 발화에서의 text-independent task에서도 DNN 기반 End-to-End 시스템의 경쟁력을 입증&lt;/li&gt;
+  &lt;li&gt;그러나 &lt;strong&gt;긴 발화 text-independent의 경우 아직 i-vector + PLDA 기반 시스템이 더 좋은 성능&lt;/strong&gt;을 보임&lt;/li&gt;
+  &lt;li&gt;&lt;span style=&quot;background-color:#fff6dd&quot;&gt;i-vector + PLDA baseline을 모방한 speaker verification system을 제안&lt;/span&gt;
+&lt;strong&gt;(End-to-End 방식으로 훈련되지만 baseline system에 멀리 벗어나지 않도록 정규화)&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;이러한 방식으로 overfitting으로 발생하는 성능 저하를 해결하였으며, 긴 발화와 짧은 발화에서 모두 i-vector + PLDA baseline system보다 성능이 향상된 것을 확인&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅰ-introduction&quot;&gt;&lt;strong&gt;Ⅰ. Introduction&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;[ 이전에 소개된 DNN 기반의 speaker recognition system 특징 ]&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;i-vector + PLDA system의 구성요소&lt;/strong&gt;(feature extraction, calculation of sufficient statistics, i-vector extraction or PLDA) 중 &lt;strong&gt;하나를 NN&lt;/strong&gt;(Neural Network)로 &lt;strong&gt;대체&lt;/strong&gt;하거나 &lt;strong&gt;개선&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;MFCC feature 대신 bottleneck feature 사용&lt;/li&gt;
+      &lt;li&gt;sufficient statistics 계산 시 GMM-UBM 대신 NN acoustic model 사용&lt;/li&gt;
+      &lt;li&gt;PLDA를 보완하거나 대체하는 NN 사용&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Speaker ID를 분류하여 훈련한 NN&lt;/strong&gt;을 통해 &lt;strong&gt;speaker embedding 추출&lt;/strong&gt; - 대표적인 특징 : d-vector, x-vector와 같은 embedding
+    &lt;ul&gt;
+      &lt;li&gt;acoustic feature를 입력으로 넣어서 speaker label과 loss를 계산한 뒤, NN 모델의 일부(hidden layer, TDNN + fully-connected DNN 중 DNN)을 utterance-level의 feature로 사용&lt;/li&gt;
+      &lt;li&gt;text-dependent, 짧은 발화 text-independent에서 효과적&lt;/li&gt;
+      &lt;li&gt;비교적 긴 발화 text-independent에서는 i-vector + PLDA보다 성능이 낮음&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#dee03f&quot;&gt;Proposed Method : i-vector + PLDA baseline을 모방한 End-to-End speaker verification 시스템&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. f2s&lt;/strong&gt; (sufficient statistics 추출을 위한 NN 모듈)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. s2i&lt;/strong&gt; (i-vector 추출을 위한 NN 모듈)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3. DPLDA&lt;/strong&gt; (점수 계산을 위한 Discriminative PLDA 모듈)&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;세 개의 모듈이 개별적으로 baseline을 모방하고, 훈련되며 이후 결합한 뒤 짧은 발화와 긴 발화 모두에 대해 End-to-End 방식으로 추가 훈련을 진행함&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;이때, 추가 훈련 시 개별적으로 훈련하여 얻은 파라미터가 너무 많이 수정되지 않도록 정규화를 실시 (baseline과 너무 달라지는 것을 방지하고 overfitting의 위험을 줄이는 장점이 존재)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;NIST SRE에서 파생된 3개의 다른 데이터 셋에 대해 시스템을 평가 (다양한 언어의 음성을 포함하고, 2분 미만의 긴 발화와 40초 미만의 짧은 발화 모두에 대해 성능을 테스트)&lt;/p&gt;
+
+    &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅱ-database-and-baseline-systems&quot;&gt;&lt;strong&gt;Ⅱ. Database and Baseline Systems&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;훈련 및 테스트는 PRISM  dataset 기반, 3가지 평가 셋
+(1) NIST SRE 2005~2010년 데이터 원본(긴) 전화 발화 중 여성
+(2) (1) 음원을 여러 짧은 발화로 생성(등록 : 20~50초, 테스트 30~40초)
+(3) NIST SRE 2016 평가 세트 (남/여 모두, 단일 등록)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Generative(PLDA) and Discriminative(DPLDA) Baseline
+    &lt;ul&gt;
+      &lt;li&gt;특징 : 60dimension-MFCC (20차원, ∆, ∆∆)&lt;/li&gt;
+      &lt;li&gt;훈련 데이터 중 전화 데이터만 사용 (짧은 발화 시간은 10~60초 사이 균일 분포를 따르며 총 85,858개 중 짧은 발화는 22,766개)&lt;/li&gt;
+      &lt;li&gt;PLDA/DPLDA : 2048개 component를 갖는 UBM, 400차원 i-vector&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#f4d451&quot;&gt;PLDA&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;i-vector의 평균(모든 훈련 데이터의 i-vector 평균) 과 길이를 정규화&lt;/li&gt;
+  &lt;li&gt;추가적인 domain 적응이나 score normalization은 수행하지 않음&lt;/li&gt;
+  &lt;li&gt;각 화자가 6개의 발화를 갖도록 훈련 데이터를 68,994개로 줄여서 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#f4d451&quot;&gt;DPLDA&lt;/span&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;LBFGS optimizer로 binary cross-entropy를 최적화 (모델 훈련 시, 초기화로 PLDA를 사용)&lt;/li&gt;
+  &lt;li&gt;i-vector의 평균과 길이를 정규화&lt;/li&gt;
+  &lt;li&gt;LDA를 수행하여 i-vector의 차원을 250차원으로 축소&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅲ-proposed-end-to-end-dnn-architecture&quot;&gt;&lt;strong&gt;Ⅲ. Proposed End-to-End DNN Architecture&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Feature to Sufficient statistics : f2s [특징 벡터 → 충분 통계량]&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;입력 발화의 각 frame에 대해 GMM responsibilities (posteriors, 사후 확률)을 예측
+    &lt;ul&gt;
+      &lt;li&gt;60차원의 MFCC를 전처리(preprocessing) 하여 input으로 사용&lt;/li&gt;
+      &lt;li&gt;현재 frame을 기준으로 ±15 frame을 고려 (총 31개 frame) → 6개 사용&lt;/li&gt;
+      &lt;li&gt;6 * 60 → 360차원&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Hidden layer : 4개 (activation function : sigmoid, node : 1500개)&lt;/li&gt;
+  &lt;li&gt;Output : 2048개 (GMM-UBM baseline의 component 수) - softmax&lt;/li&gt;
+  &lt;li&gt;Optimizer : SGD(stochastic gradient descent)&lt;/li&gt;
+  &lt;li&gt;Loss : categorical cross-entropy (label : GMM-UBM의 사후 확률)&lt;/li&gt;
+  &lt;li&gt;frame을 충분 통계량으로 pooling (전체 frame에 걸쳐 softmax layer에서 나온 사후 확률, 전처리하지 않은 MFCC)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Sufficient statistics to i-vectors : s2i [충분 통계량 → i-vector]&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;f2s에서 나온 충분 통계량을 input으로 사용 (2048x60차원)&lt;/li&gt;
+  &lt;li&gt;MAP 적응된 supervector로 변환 (112880 차원) - 차원 수를 줄이기 위해 PCA를 사용하여 4000차원으로 축소&lt;/li&gt;
+  &lt;li&gt;Hidden layer : 3개 (activation function : tanh, 1-2 layer node : 600개, 3 layer node : 250개) - 마지막 layer에서 i-vector 길이 정규화&lt;/li&gt;
+  &lt;li&gt;NN의 output과 LDA를 사용하여 250차원으로 줄이고 길이를 정규화한 reference i-vector의 average cosine distance&lt;/li&gt;
+  &lt;li&gt;Optimizer : SGD, L1-regularization&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89503150-1e1ceb00-d801-11ea-9660-b2255b35a32f.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;3. i-vector to scores (DPLDA)&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;두 i-vector(ϕ 표기)가 주어졌을 때, PLDA 모델의 Log-Likelihood Ratio(LLR)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89503158-1fe6ae80-d801-11ea-9705-f8eeb4eefac9.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;DPLDA는 위의 식에서 파라미터 (Λ, Γ, c, k)를 훈련하여 구하는 것&lt;/li&gt;
+  &lt;li&gt;두 i-vector가 같은 화자 인지 판단 (Binary cross-entropy 혹은 SVM 최적화를 통해 얻어짐)&lt;/li&gt;
+  &lt;li&gt;모든 훈련 데이터를 기반 계산 (전체 batch를 사용) 하나, End-to-End 시스템 훈련 시에는 너무 많은 메모리와 시간이 필요하여 훈련 데이터 중 무작위로 subset을 선택한 Minibatch 기반&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&amp;lt; Minibatch 선택 rule &amp;gt;&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;각 화자에 대해 랜덤하게 발화를 쌍으로 만든다
+    &lt;ul&gt;
+      &lt;li&gt;만약 어떤 화자의 발화가 하나라면 동일한 발화를 쌍으로 만들어서 사용&lt;/li&gt;
+      &lt;li&gt;만약 어떤 화자의 발화가 균등한 개수가 아니라면 발화의 쌍 중 하나는 세 개의 발화를 가짐&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;각 Minibatch에 대해 임의로 N 개의 발화를 선택하여 선택된 발화로 형성될 수 있는 모든 실험에 사용(마지막 쌍을 선택한 경우 다시 1로 돌아감)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;4. End-to-End System&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;앞서 개별적으로 훈련한 뒤 결합하여 End-to-End로 추가 훈련&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;메모리가 굉장히 많이 필요하는 문제점이 존재&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;PCA : f2s와 s2i를 연결하기 위해 network의 일부가 되어야 하는데, 122800x4000개의 파라미터가 필요
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;전체 End-to-End 훈련 전에, s2i NN과 DPLDA 모델만 공동으로 훈련&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;s2i의 개별 훈련 시, f2s가 업데이트되지 않는 이상 입력이 고정이므로 PCA를 거친 특징을 입력으로 사용할 수 있음&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;f2s : DPLDA 모듈을 훈련하기 위해 여러 가지 다양한 발화의 모든 frame을 한 번에 처리해야 함
+    &lt;ul&gt;
+      &lt;li&gt;중간 결과를 메모리에 덜 유지하도록 훈련과정을 수정&lt;/li&gt;
+      &lt;li&gt;하나의 발화에 대해 충분 통계량을 계산하고 block A의 모든 layer의 출력을 없앰&lt;/li&gt;
+      &lt;li&gt;block A의 파라미터는 전체 frame(nf) x (1500+1500+1500+1500+2048) 개 변수가 메모리에 저장&lt;/li&gt;
+      &lt;li&gt;충분 통계량 F, N으로 pooling 한 뒤 파라미터 : 2048x60&lt;/li&gt;
+      &lt;li&gt;Optimizer : ADAM&lt;/li&gt;
+      &lt;li&gt;Training rate를 epoch에서 $C^{prm}_{min}$이 개선되지 않을 때  마다 절반으로 줄임&lt;/li&gt;
+      &lt;li&gt;훈련 데이터는 DPLDA와 같음&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅳ--results-and-discussion&quot;&gt;&lt;strong&gt;Ⅳ.  Results and Discussion&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Baseline의 일부만 NN으로 대체된 시스템, End-to-End 결과 표&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89503694-df3b6500-d801-11ea-80f2-beb566897aa9.png&quot; alt=&quot;img&quot; /&gt;&lt;/center&gt;
+
+&lt;center&gt;
+
+&amp;gt; 1,2행 : PLDA와 DPLDA baseline의 성능  
+&amp;gt; 3행 : UBM이 f2s NN으로 대체되었을 때 성능  
+&amp;gt; 4행 : i-vector 추출기가 s2i NN으로 대체되었을 때 성능  
+&amp;gt; 5행 : UBM의 충분 통계량 대신 f2s 모듈의 출력으로 s2i 훈련 한 성능  
+&amp;gt; 6행 : PLDA 대신 DPLDA를 사용하였을 때 성능  
+&amp;gt; 7행 : s2i와 DPLDA만 공동으로 훈련될 때의 성능  
+&amp;gt; 8행 : 모든 모듈이 공동으로 훈련될 때의 성능  
+
+&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;3개의 모듈이 공동으로 훈련될 때의 성능(8행)과 2개의 모듈이 공동으로 훈련되었을 때 성능(7행)이 큰 차이가 없었음&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;span style=&quot;background-color:#ceddf2&quot;&gt;&amp;lt; 3가지 가능성 &amp;gt;&lt;/span&gt;&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Minibatch가 안정적인 훈련을 하기에 너무 작을 수 있다. (3개의 모듈을 공동으로 훈련 시, N=75 최대)&lt;/li&gt;
+  &lt;li&gt;모델이 local minimum으로 고정될 수 있다. (f2s의 출력에 따라 후속 모델들도 훈련이 되기 때문)&lt;/li&gt;
+  &lt;li&gt;f2s의 설계가 상당히 제약적이다. (사후 확률만 추정 할 뿐 통계 계산에 사용되는 특징을 수정할 수 없기 때문)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;ⅴ--conclusion&quot;&gt;&lt;strong&gt;Ⅴ.  Conclusion&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;다양한 언어와 긴 발화, 짧은 발화를 모두 포함하는 세 개의 서로 다른 데이터셋에 대한 i-vector + PLDA baseline을 능가하는 End-to-End 화자 검증 시스템 개발&lt;/li&gt;
+  &lt;li&gt;i-vector + PLDA 시스템과 비슷하게 동작하도록 제한함으로써 End-to-End 시스템의 성능을 저하시키는 overfitting을 완화&lt;/li&gt;
+  &lt;li&gt;시스템 3개의 서브 모듈 중 3개의 모듈의 공동 훈련은 성능이 좋았지만, 모두 공동 훈련하였을 때 효과적이지 않았음
+    &lt;ul&gt;
+      &lt;li&gt;세가지 모듈을 공동으로 훈련하였을 때 더 나은 성능이 나오도록 개발할 것&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;단일 등록을 사용하도록 설계, 여러 등록을 처리하도록 확장할 것&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Wed, 22 May 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Attentive Statistics Pooling for Deep Speaker Embedding</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#-abstract&quot; id=&quot;markdown-toc--abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#-introduction&quot; id=&quot;markdown-toc--introduction&quot;&gt;📌 &lt;strong&gt;Introduction&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#-deep-speaker-embedding&quot; id=&quot;markdown-toc--deep-speaker-embedding&quot;&gt;📌 &lt;strong&gt;Deep speaker embedding&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#-high-order-pooling-with-attention&quot; id=&quot;markdown-toc--high-order-pooling-with-attention&quot;&gt;📌 &lt;strong&gt;High-order pooling with attention&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#-experimental-settings&quot; id=&quot;markdown-toc--experimental-settings&quot;&gt;📌 &lt;strong&gt;Experimental settings&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Koji Okabe, Takafumi Koshinaka, Koichi Shinoda&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-abstract&quot;&gt;📌 &lt;strong&gt;Abstract&lt;/strong&gt;&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;span style=&quot;background-color:#FFE49B&quot;&gt;&lt;strong&gt;Text-independent&lt;/strong&gt;(문장 독립 : 발화 내용이 동일하지 하지 않음)한 &lt;strong&gt;Speaker Verification&lt;/strong&gt;(화자 검증 : 등록된 화자인지 아닌지 판단, SV)에서 &lt;strong&gt;Deep speaker embedding을 위한 attentive statistics pooling&lt;/strong&gt; 제안&lt;/span&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;기존의 speaker embedding에서는 단일 발화의 모든 frame에서 frame-level의 특징을 모두 평균 내어 utterance-level의 특징을 형성&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;제안하는 방법은 attention mechanism을 사용하여 각 frame마다 다른 weight(가중치)를 부여하고, weighted mean(가중 평균)과 weighted standard deviations(가중 표준 편차)를 생성&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;✔  &lt;span style=&quot;background-color:#FFE49B&quot;&gt;NISE SRE 2012 및 VoxCeleb data set에서 기존 방법에 비해 EER이 각각 7.5%, 8.1% 감소&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-introduction&quot;&gt;📌 &lt;strong&gt;Introduction&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;화자 인식은 지난 10년동안 i-vector paradigm과 진화&lt;/strong&gt;하였고, i-vector는 고정된 저차원의 특징 벡터 형태로 음성 발화 혹은 화자를 표현&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;다양한 기계학습을 통해 Deep learning이 성능 향상에 크게 기여하며, 화자 인식을 위한 특징 추출에 Deep learning을 도입이 증가&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;초기 연구에서는 ASR(Automatic Speech Recognition)의 음향 모델에서 도출된 DNN을 UBM으로 사용하여 기존의 GMM기반 UBM보다 우수한 성능을 보였지만 언어 의존성 단점과 훈련을 위해 음소 transcription이 필요&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;최근 &lt;strong&gt;DNN은 이러한 i-vector framework와 독립적&lt;/strong&gt;으로 &lt;strong&gt;화자 마다 고유한 특징 벡터를 추출하는데 유용&lt;/strong&gt;하다고 밝혀짐 (특히, 짧은 발화 조건에서 더 나은 성능을 보임)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Text-dependent(문장 종속 : 발화 내용이 동일함) SV에서 LSTM(마지막 frame에서 하나의 출력을 갖는 구조)을 사용하여 utterance-level의 특징을 얻는 End-to-End Neural Network기반의 방법이 제안되었으며, 기존의 i-vector보다 좋은 성능을 보임&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Text-independent SV는 입력으로 다양한 길이의 발화를 갖으므로 average pooling layer가 도입되어 frame-level의 화자 특징 벡터를 일정한차원을 갖는 speaker embedding 벡터를 얻음&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;대부분 최근 연구에서 DNN이 i-vector보다 더 나은 정확도를 갖는 것을 보여주며 Snyder 외는 average pooling를 확장한 statistics pooling (평균 및 표준 편차 계산)을 채택&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;그러나 아직 정확도 향상에 대한 표준 편차 pooling의 효율성은 보고하지 않음&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;최근 다른 연구에서는 이전에 기계 번역에서 상당한 성능 향상을 가져온 &lt;strong&gt;attention mechanism과 통합&lt;/strong&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;화자 인식에서도 중요도 계산 시, speaker embedding 추출하는 network의 일부로 작동하는 작은 attention network 사용&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;계산된 중요도는 frame-level의 특징 벡터의 weighted mean 계산할 때 사용하여 speaker embedding이 중요한 frame에 초점을 맞춤&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;그러나 이전 연구에서는 고정 길이의 text-independent 혹은 text-dependent 화자 인식과 같은 제한된 작업에서만 수행&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;- 본 논문에서 attention mechanism으로 계산된 중요도로 importance-weighted standard deviation과 weighted mean사용한 새로운 pooling방법인 attentive statistics pooling를 제안&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;가변 길이의 text-independent한 환경에서 attentive statisitics pooling을 사용하는 첫 번째 시도 이며, 다양한 pooling layer 비교를 통해 표준 편차가 화자 특성에 미치는 효과를 실험적으로 보여줌&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-deep-speaker-embedding&quot;&gt;📌 &lt;strong&gt;Deep speaker embedding&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;기존의 DNN을 사용한 speaker embedding 추출 방법&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;input : acoustic feature (MFCC, filter-bank 등)&lt;br /&gt;
+frame-level의 특징 추출을 위해 TDNN, CNN, LSTM 등의 Neural Network&lt;br /&gt;
+가변 길이의 frame-level 특징을 고정 차원의 벡터로 변환하기 위한 pooling layer&lt;br /&gt;
+utterance-level의 특징을 추출하기 위한 fully-connected layer(hidden layer 중 하나의 node 수를 작게 하여 bottleneck feature로 사용)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165519-a443f200-d5b3-11ea-8009-d34a68859aa4.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-high-order-pooling-with-attention&quot;&gt;📌 &lt;strong&gt;High-order pooling with attention&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&amp;lt; Statistics pooling - 기존에 사용하던 pooling 방법 &amp;gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;frame-level 특징에 대해 평균(mean)과 표준 편차(standard deviation) 계산 (⊙ : Hadamard 곱)하여 concatenation&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165568-b160e100-d5b3-11ea-9a93-2a31b6530b2b.png&quot; alt=&quot;img&quot; style=&quot;zoom: 45%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&amp;lt; Attention mechanism &amp;gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;기계 번역에서 긴 문장의 성능 저하를 해결하기 위해 모델이 출력 단어를 예측할 때 &lt;strong&gt;특정 단어를 집중&lt;/strong&gt;해서 보는 방법을 도입&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165571-b1f97780-d5b3-11ea-91e3-8fa3f49000fc.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165573-b1f97780-d5b3-11ea-9545-3a591f97f98d.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165553-aefe8700-d5b3-11ea-9e0a-c4c8d5fc14a0.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;decoder의 &lt;span style=&quot;color:#a5cbf0&quot;&gt;&lt;strong&gt;시간 i(현재)에서 hidden state 벡터&lt;/strong&gt;&lt;/span&gt;는 &lt;span style=&quot;color:#a5cbf0&quot;&gt;&lt;strong&gt;시간 i-1(이전)의 hidden state 벡터&lt;/strong&gt;&lt;/span&gt;와 &lt;span style=&quot;color:#ffaddf&quot;&gt;&lt;strong&gt;시간 i-1(이전)에서 decoder의 output&lt;/strong&gt;&lt;/span&gt;, 그리고 &lt;span style=&quot;color:#7cbfb6&quot;&gt;&lt;strong&gt;시간 i(현재)에서의 context 벡터&lt;/strong&gt;&lt;/span&gt;를 입력으로 계산&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165558-af971d80-d5b3-11ea-84c7-8f0478e8e680.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;span style=&quot;color:#7cbfb6&quot;&gt;&lt;strong&gt;context 벡터&lt;/strong&gt;&lt;/span&gt;는 &lt;strong&gt;시간 i에서 입력 x에 대한 길이 T&lt;/strong&gt; 전체에 대한 &lt;strong&gt;&lt;span style=&quot;color:#f9d877&quot;&gt;encoder hidden state 벡터&lt;/span&gt;&lt;/strong&gt;의 &lt;strong&gt;가중합&lt;/strong&gt;으로 계산&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165559-b02fb400-d5b3-11ea-9ad9-a8383a6810d6.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;span style=&quot;color:#33558c&quot;&gt;&lt;strong&gt;시간 i에서 j번째 단어의 energy&lt;/strong&gt;&lt;/span&gt;는 &lt;strong&gt;&lt;span style=&quot;color:#a5cbf0&quot;&gt;시간 i-1(이전)에서 decoder hidden state&lt;/span&gt;&lt;/strong&gt;와&lt;strong&gt;&lt;span style=&quot;color:#f9d877&quot;&gt; j번째 encoder hidden state&lt;/span&gt;&lt;/strong&gt;가 입력인 &lt;strong&gt;aligment model(a)&lt;/strong&gt; 결과값 (alignment model은 tanh, ReLU 등 activation function)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165560-b02fb400-d5b3-11ea-8753-68026664a442.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&amp;lt; Attentive statistics pooling &amp;gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165563-b0c84a80-d5b3-11ea-9590-62c129a447e4.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165564-b0c84a80-d5b3-11ea-8a2f-c887055c76d8.png&quot; alt=&quot;img&quot; style=&quot;zoom: 50%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;attention mechanism을 사용하여 계산한 &lt;strong&gt;가중치를 통해 mean과 standard deviation을 갱신&lt;/strong&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/89165566-b160e100-d5b3-11ea-9625-41ccb0db4353.png&quot; alt=&quot;img&quot; style=&quot;zoom: 67%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;-experimental-settings&quot;&gt;📌 &lt;strong&gt;Experimental settings&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;strong&gt;i-vector&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;input : 60차원 MFCC&lt;br /&gt;
+UBM : 2048 mixture&lt;br /&gt;
+TV matrix, i-vector : 400차원&lt;br /&gt;
+Similarity score : PLDA&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Deep speaker embedding&lt;/strong&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;input : 20차원(SRE 12), 40차원(VoxCeleb) MFCC&lt;br /&gt;
+hidden layer : 5-layer TDNN(activation function : ReLU, node : 512)&lt;br /&gt;
+pooling dimension : 1500차원&lt;br /&gt;
+acoustic feature vector(MFCC) 15개 frame으로 frame-level 특징 생성&lt;br /&gt;
+2 fully-connected layer (1st : bottleneck feature - 512, activation function : ReLU, batch   normalization)&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Wed, 01 May 2019 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2019-05-01-Attentive-Statistics-Pooling-for-Deep-Speaker-Embedding</link>
+        <guid isPermaLink="true">http://localhost:4000/2019-05-01-Attentive-Statistics-Pooling-for-Deep-Speaker-Embedding</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+  </channel>
+</rss>

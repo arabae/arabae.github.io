@@ -26,7 +26,7 @@ icon: book
 
 # **Ⅰ. Introduction**
 
-### <span style="background-color:#aee4ff">**1.1  Background**</span>
+### **1.1  Background**
 
 **✔ Speaker Verfication**
 
@@ -48,7 +48,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**1.2 TE2E**</span>
+### **1.2 TE2E**
 
 **✔  LSTM network**
 
@@ -98,7 +98,7 @@ icon: book
 
 # **Ⅱ. GE2E Model**
 
-### <span style="background-color:#aee4ff">**2.1 Training Method**</span>
+### **2.1 Training Method**
 
 **✔  GE2E training**
 
@@ -181,7 +181,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**2.2 Comparison between TE2E and GE2E**</span>
+### **2.2 Comparison between TE2E and GE2E**
 
 **✔  모든 입력 𝒙𝑗𝑖에 대해 TE2E loss 에서 발생하는 tuple 의 수**
 
@@ -206,7 +206,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**2.3 Training with MultiReader**</span>
+### **2.3 Training with MultiReader**
 
 **✔  작은 데이터 셋 D1과 큰 데이터 셋 D2 존재**
 
@@ -250,7 +250,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**3.1 TD-SV**</span>
+### **3.1 TD-SV**
 
 - Keyword detection 과 speaker verification 같은 특징 사용
 - Keyword detection 은 keyword 가 포함된 frame 만 SV system 으로 전달
@@ -292,7 +292,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**3.2 TI-SV**</span>
+### **3.2 TI-SV**
 
 - Hidden node : 768, Projection size : 256
 - VAD(Voice Activity Detection) 후 고정 길이 segment로 나눔 ; partial utterances

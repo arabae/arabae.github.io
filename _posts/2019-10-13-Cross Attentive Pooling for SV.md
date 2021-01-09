@@ -63,7 +63,7 @@ icon: book
 
 # **Ⅱ. Methods**  
 
-### <span style="background-color:#aee4ff">**2.1 Few-shot learning framwork**</span>
+### **2.1 Few-shot learning framwork**
 
 - Speaker recognition을 위한 embedding을 훈련하기 위해 few-shot learning framework인 prototypical network 사용
 
@@ -111,7 +111,7 @@ $Q = {(\tilde{x_i}, \tilde{y_i})}^{N \times (M-1)}_{i=1}$
 
 <br/>
 
-### <span style="background-color:#aee4ff">**2.2 Instance-wise aggregation**</span>
+### **2.2 Instance-wise aggregation**
 
 - 이상적인 utterance-level embedding은 frequency가 아닌 temporal 위치에 따라 달라져야함
 - 2D convolutional neural network는 2D activation map을 생성하기 때문에 frequency 축만 모두 연결되는 aggregation layer를 [1]에서 제안
@@ -147,7 +147,7 @@ $Q = {(\tilde{x_i}, \tilde{y_i})}^{N \times (M-1)}_{i=1}$
 
 <br/>
 
-### <span style="background-color:#aee4ff">**2.3 Pair-wise aggregation**</span>
+### **2.3 Pair-wise aggregation**
 
 - 기존의 instance-wise aggregation과 달리 본 논문에서는 <span style="background-color:#ffed54">**다른 utterance의 frame feature를 사용하여 frame-level feature를 모으는 방법**</span>을 제안
 - training과 testing의 목표를 맞추기 위헤 metric기반의 meta-learning framework인 prototypical network 사용

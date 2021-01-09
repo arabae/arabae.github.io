@@ -81,7 +81,7 @@ icon: book
 - metric learning에 사용되는 기존 loss fuction에 대해 설명하고, 전체적인 classification 정확도를 유지하면서 non-target의 정확도도 높이기 위한 수정된 방법을 제안
 
 
-### <span style="background-color:#aee4ff">**2.1 Loss functions**</span>  
+### **2.1 Loss functions**
 
 **Triplet loss**
 
@@ -125,7 +125,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**2.2 Pair selection strategy**</span>
+### **2.2 Pair selection strategy**
 
 - 2.1에서 소개한 loss function을 사용하여 network를 훈련시키는 방법 소개
 - 'target' keyword와 unknown 'non-target' sound을 효과적으로 구별하기위해 positive, negative pair를 선택하는 방법을 주로 다룸
@@ -162,7 +162,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**2.3 Prototypical networks with fixed target classes**</span>
+### **2.3 Prototypical networks with fixed target classes**
 
 - target keyword spotting을 위한 수정된 prototypical loss 제안
 - prototypical network의 원래 framework에서 centroid는 few-shot learning setting의 inference동안 계산됨

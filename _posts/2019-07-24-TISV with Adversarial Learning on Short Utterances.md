@@ -64,7 +64,7 @@ icon: book
 ---
 
 
-# **Ⅲ. Proposed Approach** :deciduous_tree:
+# **Ⅲ. Proposed Approach** 🌳
 
 - 제안하는 전급 방식은 아래의 구조와 같음
 

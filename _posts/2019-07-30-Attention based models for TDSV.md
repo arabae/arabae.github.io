@@ -65,7 +65,7 @@ icon: book
 
 # **Ⅱ. Baseline Architecture**
 
-### <span style="background-color:#aee4ff">**TE2E model**</span>
+### **TE2E model**
 
 **✔  baseline end-to-end training architecture**
 
@@ -110,7 +110,7 @@ icon: book
 
 # **Ⅲ. Attention-based Model**
 
-### <span style="background-color:#aee4ff">**3.1 Basic attention layer**</span>
+### **3.1 Basic attention layer**
 
 **✔  Baseline system과 차이점**
 
@@ -133,7 +133,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**3.2 Scoring functions**</span>
+### **3.2 Scoring functions**
 
 - Bias-only attention
 여기서 b𝑡는 scalar. LSTM 출력 h𝑡에 의존하지 않음.
@@ -162,7 +162,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**3.3 Attention layer variants**</span>
+### **3.3 Attention layer variants**
 
 - 기본적인 attention layer와 달리 두가지의 변형된 기법 Cross-layer attention와 Divided-layer attention 소개
 
@@ -185,7 +185,7 @@ icon: book
 
 <br/>
 
-### <span style="background-color:#aee4ff">**3.4 Weights pooling**</span>
+### **3.4 Weights pooling**
 
 **✔ Basic attention layer의 또 다른 변화**
 
@@ -209,7 +209,7 @@ icon: book
 
 # **Ⅳ. Experiments**
 
-### <span style="background-color:#aee4ff">**4.1 Datasets and basic setup**</span>
+### **4.1 Datasets and basic setup**
 
 **✔  사용한 Dataset**
 
@@ -224,7 +224,7 @@ icon: book
 - Global password만 포함하는 길이 T=80 frame(800ms)의 세그먼트로 분리하는 keyword detection 후 40차원의 log-mel-filterbank feature 생성
 - MultiReader기법을 사용하여 두 개의 keyword를 혼합하여 사용  
 
-### <span style="background-color:#aee4ff">**4.2 Basic attention layer**</span>
+### **4.2 Basic attention layer**
 
 - 다양한 점수 계산 함수를 사용하여 Basic attention layer과 비교
 
@@ -233,7 +233,7 @@ icon: book
 - Bias-only와 linear attention은 EER이 거의 개선되지 않음
 - Non-linear 중 특히, shared-parameter의 경우 성능 향상이 있음  
 
-### <span style="background-color:#aee4ff">**4.3 Variants**</span>
+### **4.3 Variants**
 
 - Basic attention layer와 두 가지 변형(cross-layer, divided-layer) 비교
 - 이전 실험에서 최고의 성능을 낸 shared-parameter non-linear scoring function을 사용
@@ -243,7 +243,7 @@ icon: book
 - cross-layer는 마지막에서 2번째 layer에서 score를 훈련
 - divided-layer attention이 마지막 LSTM layer의 차원이 2배이지만, Basic attention과 cross-layer attention보다 약간 더 나은 성능을 보임  
 
-### <span style="background-color:#aee4ff">**4.4 Weights pooling**</span>
+### **4.4 Weights pooling**
 
 - Attention weight를 다양한 pooling방법으로 사용한 것과 비교
 - Shared-parameter non-linear scoring function과 divided-layer attention 사용

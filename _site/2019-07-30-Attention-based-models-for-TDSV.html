@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <title>Attention-based Models For Text-dependent Speaker Verification</title>
+	<meta name="description" content="">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/style/image/favicon.png"/>
+    <link href="/style/css/highlight.min.css" rel="stylesheet">
+    <link href="/style/css/style.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+</head>
+
+<body class="bg-grey" gtools_scp_screen_capture_injected="true">
+
+    <header id="header" class="header bg-white">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">
+            <img src="/style/image/logo.png" alt="ARa's DevBlog" />
+            <span>ARa's DevBlog</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="/archives">Archives</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="navbar-mobile-menu" onclick="">
+            <span class="icon-menu cross"><span class="middle"></span></span>
+            <ul>
+                <li><a href="/archives">Archives</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+    <article class="main-content page-page" itemscope itemtype="http://schema.org/Article">
+    <div class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            Attention-based Models For Text-dependent Speaker Verification
+        </h1>
+        <div class="post-data">
+            <time itemprop="datePublished">Jul 30, 2019</time>
+        </div>
+    </div>
+</article>
+<div class="main-container">
+    <div class="post-container">
+        <div class="navigation" id="navigation">
+            <h1>Contents</h1>
+            <div class="nav sidenav">
+	    </div>
+        </div>
+        <article class="post-content">
+            <ul id="markdown-toc">
+  <li><a href="#-abstract" id="markdown-toc--abstract">📌 <strong>Abstract</strong></a></li>
+  <li><a href="#ⅰ-introduction" id="markdown-toc-ⅰ-introduction"><strong>Ⅰ. Introduction</strong></a></li>
+  <li><a href="#ⅱ-baseline-architecture" id="markdown-toc-ⅱ-baseline-architecture"><strong>Ⅱ. Baseline Architecture</strong></a>    <ul>
+      <li><a href="#te2e-model" id="markdown-toc-te2e-model"><strong>TE2E model</strong></a></li>
+    </ul>
+  </li>
+  <li><a href="#ⅲ-attention-based-model" id="markdown-toc-ⅲ-attention-based-model"><strong>Ⅲ. Attention-based Model</strong></a>    <ul>
+      <li><a href="#31-basic-attention-layer" id="markdown-toc-31-basic-attention-layer"><strong>3.1 Basic attention layer</strong></a></li>
+      <li><a href="#32-scoring-functions" id="markdown-toc-32-scoring-functions"><strong>3.2 Scoring functions</strong></a></li>
+      <li><a href="#33-attention-layer-variants" id="markdown-toc-33-attention-layer-variants"><strong>3.3 Attention layer variants</strong></a></li>
+      <li><a href="#34-weights-pooling" id="markdown-toc-34-weights-pooling"><strong>3.4 Weights pooling</strong></a></li>
+    </ul>
+  </li>
+  <li><a href="#ⅳ-experiments" id="markdown-toc-ⅳ-experiments"><strong>Ⅳ. Experiments</strong></a>    <ul>
+      <li><a href="#41-datasets-and-basic-setup" id="markdown-toc-41-datasets-and-basic-setup"><strong>4.1 Datasets and basic setup</strong></a></li>
+      <li><a href="#42-basic-attention-layer" id="markdown-toc-42-basic-attention-layer"><strong>4.2 Basic attention layer</strong></a></li>
+      <li><a href="#43-variants" id="markdown-toc-43-variants"><strong>4.3 Variants</strong></a></li>
+      <li><a href="#44-weights-pooling" id="markdown-toc-44-weights-pooling"><strong>4.4 Weights pooling</strong></a></li>
+    </ul>
+  </li>
+  <li><a href="#ⅴ--conclusion" id="markdown-toc-ⅴ--conclusion"><strong>Ⅴ.  Conclusion</strong></a></li>
+</ul>
+
+<p><span style="font-size:13pt">F A Rezaur Rahman Chowdhury, Quan Wang, Ignacio Lopez Moreno, Li Wan</span></p>
+
+<h1 id="-abstract">📌 <strong>Abstract</strong></h1>
+
+<ul>
+  <li>Attention 기반 모델 : 입력 sequence의 전체 길이를 요약할 수 있는 능력</li>
+  <li>음성 인식, 기계 번역, 이미지 캡션과 같은 다양한 곳에서 뛰어난 성능을 보임</li>
+  <li>End-to-End Text-dependent 화자 인식 시스템에서 attention mechanism 사용을 분석</li>
+  <li>다양한 attention layer의 변형을 연구하고 attention weight에 대한 다양한 pooling방법을 비교</li>
+  <li>Attention mechanism을 사용하지 않은 LSTM과 성능 비교</li>
+</ul>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅰ-introduction"><strong>Ⅰ. Introduction</strong></h1>
+
+<p><strong>✔ Global Password Text-dependent Speaker Verification(SV) 시스템</strong></p>
+
+<ul>
+  <li>등록 및 테스트 발화가 특정 단어로 제한 (Text-dependent)</li>
+  <li>“Ok-Google”과 “Hey Google” 사용 ( Global password)</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔ 현재 가장 많이 접근하고 있는 훈련 방법</strong></p>
+
+<ul>
+  <li>등록 및 테스트하는 단계를 시뮬레이션하는 End-to-End 구조</li>
+  <li>[6]논문 “i-vector+PLDA 시스템을 그대로 모방한 구조”의 경우, 더 나은 성능을 위해 모델을 규제하였으나 초기화를 위해 기존의 i-vector와 PLDA 모델이 필요</li>
+  <li>[7] 논문, TD-SV task에서 LSTM 네트워크가 기존 End-to-End DNN보다 더 나은 성능을 보여줌</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔이전 논문에서의 문제점</strong></p>
+
+<ul>
+  <li>묵음과 배경 잡음이 많이 없음</li>
+  <li>본 논문에서는 keyword 검출에 의해 분할된 800ms의 짧은 frame이지만, 묵음과 잡음이 있음</li>
+</ul>
+
+<p><br /></p>
+
+<p><strong>✔이상적인 Embedding 생성</strong></p>
+
+<ul>
+  <li>음소에 해당하는 frame을 사용하여 제작</li>
+  <li>입력 sequence 중 관련성이 높은 요소를 강조하기 위해 attention layer 사용</li>
+</ul>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅱ-baseline-architecture"><strong>Ⅱ. Baseline Architecture</strong></h1>
+
+<h3 id="te2e-model"><strong>TE2E model</strong></h3>
+
+<p><strong>✔  baseline end-to-end training architecture</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94424981-1573e000-01c6-11eb-8bf5-4890542a60db.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>훈련 단계에서, 하나의 평가용 발화 𝒙𝑗~와 N개의 등록 발화 𝒙𝑘𝑛 (𝑓𝑜𝑟 𝑛=1, …, 𝑁) tuple이 LSTM network의 입력으로 사용</li>
+</ul>
+
+<blockquote>
+  <p>${x_{j\tilde{}}, (x_{k_1}, …, x_{k_N})}$ ; input<br />
+$x$ : 고정 길이의 log-mel fiterbank feature<br />
+$j, k$ : 발화한 화자 ($j$와 $k$는 같을 수 있음)<br />
+만약 $x_{j\tilde{}}$와 $M$ 개의 등록 발화가 같은 화자라면 tuple positive $(j=k)$, 다르면 negative</p>
+</blockquote>
+
+<ul>
+  <li>ℎ𝑡 : t번째 frame에서 LSTM의 마지막 layer의 출력 ( 고정 차원의 vector )</li>
+  <li>마지막 frame의 output을 d-vector 𝝎 (ℎ𝑇) 로 정의</li>
+</ul>
+
+<blockquote>
+  <p>${\omega(j\tilde{}), (\omega(k_1), …, \omega(k_N))}$ ; output<br />
+Tuple $(\omega(k_1), …, \omega(k_N))$을 평균내어 centroid 계산</p>
+</blockquote>
+
+<p><br /></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94425430-e447df80-01c6-11eb-9148-c79bd11b149b.png" alt="img" style="zoom:80%;" /></center>
+
+<p><br /></p>
+
+<p><strong>✔  Cosine Similarity Function 정의</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94425434-e611a300-01c6-11eb-990c-2a6bc83ad06b.png" alt="img" style="zoom:80%;" /></center>
+
+<p><br /></p>
+
+<p><strong>✔  Loss Function 정의</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94425445-e7db6680-01c6-11eb-9729-e41c138555a5.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅲ-attention-based-model"><strong>Ⅲ. Attention-based Model</strong></h1>
+
+<h3 id="31-basic-attention-layer"><strong>3.1 Basic attention layer</strong></h3>
+
+<p><strong>✔  Baseline system과 차이점</strong></p>
+
+<ul>
+  <li>마지막 frame의 출력을 d-vector(𝝎)로 직접 사용</li>
+  <li>Attention layer는 각 t frame 에서의 LSTM 출력 ℎ𝑡에 대한 스칼라 점수 𝑒𝑡 를 훈련하여 weighted sum한 결과로 d-vector(𝝎) 정의</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430186-76071b00-01ce-11eb-8ae9-0fdf5abcf182.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Normalized weight 𝛼𝑡와 weighted sum한 결과 d-vector는 다음과 같이 정의</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430336-ac449a80-01ce-11eb-8094-4fcf8644fec6.png" alt="img" style="zoom: 80%;" /></center>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430342-ae0e5e00-01ce-11eb-9395-90efff7c8674.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<ul>
+  <li><strong>aritecture로 보는 차이점</strong></li>
+</ul>
+<center><img src="https://user-images.githubusercontent.com/46676700/94430460-eca41880-01ce-11eb-9807-6a7dea6d97fa.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<h3 id="32-scoring-functions"><strong>3.2 Scoring functions</strong></h3>
+
+<ul>
+  <li>Bias-only attention
+여기서 b𝑡는 scalar. LSTM 출력 h𝑡에 의존하지 않음.</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430647-34c33b00-01cf-11eb-87f5-e43a51edc41a.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Linear attention
+여기서 w𝑡는 m차원 vector, b𝑡는 scalar. frame마다 다른 parameter가 사용</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430651-368cfe80-01cf-11eb-85a2-d759801a1634.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Shared-parameter linear attention
+모든 frame에 대해 m차원 vector  w와 scalar b가 동일하게 사용</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430653-37be2b80-01cf-11eb-95d0-af0d4afd142b.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Non-linear attention
+여기서 𝑾𝒕는 m’ X m matrix, 𝐛𝑡와 𝐯𝑡는 m’차원의 vector(차원 m’은 훈련 데이터 셋에서 조정)</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430710-50c6dc80-01cf-11eb-8673-5af3e52f4b04.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Shared-parameter non-linear attention
+모든 프레임에 대해 동일한 parameter 𝐖, 𝐛, 𝐯 를 공유</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94430715-51f80980-01cf-11eb-9b90-9a302bca378a.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<h3 id="33-attention-layer-variants"><strong>3.3 Attention layer variants</strong></h3>
+
+<ul>
+  <li>기본적인 attention layer와 달리 두가지의 변형된 기법 Cross-layer attention와 Divided-layer attention 소개</li>
+</ul>
+
+<p><strong>✔ Cross-layer attention</strong></p>
+
+<ul>
+  <li>기존의 방법 : 마지막 LSTM의 layer의 출력 h𝑡 (1≤𝑡≤𝑇)를 사용하여 score e𝑡와 weight α𝑡를 계산</li>
+  <li>변형된 방법 : 중간 LSTM layer의 출력 h’𝑡(1≤𝑡≤𝑇)으로 계산 (그림 3.(a) output에서 마지막 2번째 layer를 사용하는 경우)</li>
+  <li>d-vector 𝝎는 여전히 마지막 layer 출력 h𝑡와 weighted sum으로 계산</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94431728-9df77e00-01d0-11eb-83a4-7694a369266d.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<p><strong>✔ Divided-layer attention</strong></p>
+
+<ul>
+  <li>마지막 LSTM layer의 출력 h𝑡의 차원을 2배로 늘리고 그 차원을 part a와 part b 두 부분으로 균등하게 나눔</li>
+  <li>part b를 사용하여 weight를 계산하고, 나머지 part a와 weighted sum하여 d-vector 생성</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94431901-e1ea8300-01d0-11eb-80d9-464a2cafaf02.png" alt="img" style="zoom: 80%;" /></center>
+
+<p><br /></p>
+
+<h3 id="34-weights-pooling"><strong>3.4 Weights pooling</strong></h3>
+
+<p><strong>✔ Basic attention layer의 또 다른 변화</strong></p>
+
+<ul>
+  <li>LSTM의 output ℎ를 average하기 위해 normalized weight 𝛼𝑡 를 직접 사용하지 않고, maxpooling으로 선택적으로 사용</li>
+</ul>
+
+<p><strong>✔ 두 가지 maxpooling 방법 사용</strong></p>
+
+<ul>
+  <li>Sliding Window maxpooling : Sliding window안의 weight 중 큰 값만 두고, 나머지는 0으로 만듦</li>
+  <li>Global top-K maxpooling : 가장 큰 K개의 값만 두고, 나머지는 0으로 만듦</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94432216-63421580-01d1-11eb-8235-ee4f90a727af.png" alt="img" style="zoom: 80%;" /></center>
+
+<blockquote>
+  <p>t번째 pixel : 가중치 $\alpha_t$<br />
+밝을 수록 가중치가 큰 값을 의미</p>
+</blockquote>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅳ-experiments"><strong>Ⅳ. Experiments</strong></h1>
+
+<h3 id="41-datasets-and-basic-setup"><strong>4.1 Datasets and basic setup</strong></h3>
+
+<p><strong>✔  사용한 Dataset</strong></p>
+
+<ul>
+  <li>“Ok Google”과 “Hey Google”이 혼합된 발화 데이터</li>
+  <li>약 630K 화자가 150M 발화 (테스트 데이터 : 665명 화자)</li>
+  <li>평균적으로 enrollment는 4.5개, evaluation은 10개의 발화로 구성</li>
+</ul>
+
+<p><strong>✔  Basic setup</strong></p>
+
+<ul>
+  <li>기본 baseline은 3개의 layer로 이루어진 LSTM</li>
+  <li>각 layer는 128차원이며, 64차원으로 projection하는 linear layer를 가지고 있음</li>
+  <li>Global password만 포함하는 길이 T=80 frame(800ms)의 세그먼트로 분리하는 keyword detection 후 40차원의 log-mel-filterbank feature 생성</li>
+  <li>MultiReader기법을 사용하여 두 개의 keyword를 혼합하여 사용</li>
+</ul>
+
+<h3 id="42-basic-attention-layer"><strong>4.2 Basic attention layer</strong></h3>
+
+<ul>
+  <li>다양한 점수 계산 함수를 사용하여 Basic attention layer과 비교</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94432416-b4eaa000-01d1-11eb-8141-99d48b30f3da.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Bias-only와 linear attention은 EER이 거의 개선되지 않음</li>
+  <li>Non-linear 중 특히, shared-parameter의 경우 성능 향상이 있음</li>
+</ul>
+
+<h3 id="43-variants"><strong>4.3 Variants</strong></h3>
+
+<ul>
+  <li>Basic attention layer와 두 가지 변형(cross-layer, divided-layer) 비교</li>
+  <li>이전 실험에서 최고의 성능을 낸 shared-parameter non-linear scoring function을 사용</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94432517-d8ade600-01d1-11eb-8325-50d593324e2b.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>cross-layer는 마지막에서 2번째 layer에서 score를 훈련</li>
+  <li>divided-layer attention이 마지막 LSTM layer의 차원이 2배이지만, Basic attention과 cross-layer attention보다 약간 더 나은 성능을 보임</li>
+</ul>
+
+<h3 id="44-weights-pooling"><strong>4.4 Weights pooling</strong></h3>
+
+<ul>
+  <li>Attention weight를 다양한 pooling방법으로 사용한 것과 비교</li>
+  <li>Shared-parameter non-linear scoring function과 divided-layer attention 사용</li>
+  <li>Sliding window maxpooling : 10 frame window size와 5 frame step size</li>
+  <li>Global top-K maxpooling : K = 5</li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94432565-ea8f8900-01d1-11eb-856a-11c004b078e2.png" alt="img" style="zoom: 80%;" /></center>
+
+<ul>
+  <li>Sliding window maxpooling이 EER이 약간 더 낮은 것을 확인</li>
+</ul>
+
+<p><strong>✔ 각 방법에서 attention weight를 visualization</strong></p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/94433266-03e50500-01d3-11eb-8044-2e31658644e1.png" alt="img" /></center>
+
+<ul>
+  <li>Pooling이 없을 때, 4음소(O-kay-Goo-gle) 또는 3음소(Hey-Goo-gle) 패턴을 확인</li>
+  <li>Pooling을 사용함으로써 시작부분 보다는 끝부분의 발화가 더 큰 attention weight를 가짐</li>
+  <li>LSTM은 이전 상태 값을 누적하여 가지고 있기 때문에 마지막으로 갈수록 더 많은 정보를 가짐으로써 나오게 되는 현상으로 판단</li>
+</ul>
+
+<p><br /></p>
+
+<hr />
+
+<p><br /></p>
+
+<h1 id="ⅴ--conclusion"><strong>Ⅴ.  Conclusion</strong></h1>
+
+<ul>
+  <li>
+    <p>본 논문에서는 keyword 기반의 Text-dependent 화자 검증 시스템을 위한 다양한 Attention mechanism을 실험</p>
+  </li>
+  <li>가장 좋은 방법
+    <ol>
+      <li>shared-parameter non-linear scoring function 사용</li>
+      <li>LSTM의 마지막 layer에 divided-layer attention 사용</li>
+      <li>Sliding window maxpooling을 attention weight에 적용</li>
+    </ol>
+  </li>
+  <li>
+    <p>위의 3가지를 결합하였을 때 기본 LSTM모델 EER 1.72%에서 14%의 상대적 성능 향상을 가져옴</p>
+  </li>
+  <li><span style="color:#FF0000"><strong>동일한 attention mechanism(특히, shared-parameter scoring function)은 Text-independent한 화자 검증 및 화자 식별을 개선하기 위해 사용될 수 있음</strong></span></li>
+</ul>
+
+        </article>
+        <div class="post-content">
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+
+<script data-no-instant type="text/javascript">
+const gitalk = new Gitalk({
+  clientID: '5304ae17c5ba0ce3b2aa',
+  clientSecret: '22801b52c86101ff074072faa1631475954d2936',
+  repo: 'arabae.github.io',
+  owner: 'arabae',
+  admin: ['arabae'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: true  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+        </div>
+    </div>
+</div>
+
+    
+    <footer id="footer" class="footer bg-white">
+    <div class="footer-social">
+        <div class="footer-container clearfix">
+            <div class="social-list">
+                <a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+                <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
+                <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-meta">
+        <div class="footer-container">
+            <div class="meta-item meta-copyright">
+                <div class="meta-copyright-info">
+                    <a href="https://github.com/arabae" class="info-logo">
+                        <img src="/style/image/logo.png" alt="wonder">
+                    </a>
+                    <div class="info-text">
+                        <p>Copyright &copy; 2021 - 2021 <a href="https://github.com/arabae"><code>ARa Bae</code></a></p>
+                        <p>Powered by <a href="http://jekyllrb.com" target="_blank" rel="nofollow"><code>jekyll</code></a>，theme is <a href="https://github.com/lightfish-zhang/pinghsu-jekyll" target="_blank" rel="nofollow"><code>pinghsu</code></a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-item meta-posts">
+                <h3 class="meta-title">RECENT POSTS</h3>
+                
+                    <li>
+                        <a href="/2019-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-30-Attention-based-models-for-TDSV">Attention-based Models For Text-dependent Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances">Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV">Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA">End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA</a>
+                    </li>
+                
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<!-- #end -->
+<script src="//cdn.bootcss.com/jquery/1.10.1/jquery.min.js"></script>
+<script>
+	!window.jQuery && document.write(unescape('%3Cscript src="/style/js/jquery.min.js"%3E%3C/script%3E'))
+</script>
+<script src="/style/js/headroom.min.js"></script>
+<script src="/style/js/nav.min.js"></script>
+<script type="text/javascript">
+    var header = new Headroom(document.getElementById("header"), {
+        tolerance: 10,
+        offset : 80,
+        classes: {
+            initial: "animated",
+            pinned: "slideDown",
+            unpinned: "slideUp"
+        }
+    });
+    header.init();
+</script>
+
+<script>window.SmoothScrollOptions = { stepSize: 36 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.8/SmoothScroll.min.js"></script>
+<script>
+	!window.SmoothScroll && document.write(unescape('%3Cscript src="/style/js/SmoothScroll.min.js"%3E%3C/script%3E'))
+</script>
+
+
+
+
+  </body>
+</html>
