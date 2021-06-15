@@ -37,7 +37,7 @@ title: About Me
 </head>
 <body>
   <div id="btn_group">
-    <button id="test_btn1" onclick="window.open('http://impress.inu.ac.kr/')'">IMPRESS Lab</button>
+    <button id="test_btn1" onclick="window.open('http://impress.inu.ac.kr/')">IMPRESS Lab</button>
     <button id="test_btn2" onclick="window.open('https://github.com/arabae/arabae.github.io')">GitHub</button>
     </div>
 </body>
