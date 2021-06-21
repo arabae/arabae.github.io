@@ -4,6 +4,7 @@ title: "Attentive Statistics Pooling for Deep Speaker Embedding"
 date: 2019-05-01
 category: review
 thumbnail: /style/image/ASP.png
+use_math: true
 icon: book
 ---
 

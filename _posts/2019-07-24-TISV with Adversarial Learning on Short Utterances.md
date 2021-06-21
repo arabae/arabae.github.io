@@ -4,6 +4,7 @@ title: "Text-Independent Speaker Verification with Adversarial Learning on Short
 date: 2019-07-24
 category: review
 thumbnail: /style/image/GAN_shortutt.png
+use_math: true
 icon: book
 ---
 

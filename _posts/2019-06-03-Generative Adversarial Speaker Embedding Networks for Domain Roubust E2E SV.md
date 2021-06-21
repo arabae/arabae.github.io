@@ -4,6 +4,7 @@ title: "Generative Adversarial Speaker Embedding Networks for Domain Robust End-
 date: 2019-06-03
 category: review
 thumbnail: /style/image/GAN_SE.png
+use_math: true
 icon: book
 ---
 

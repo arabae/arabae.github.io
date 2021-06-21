@@ -4,6 +4,7 @@ title: "Metric Learning for Keyword Spotting"
 date: 2019-10-06
 category: review
 thumbnail: /style/image/metric_keyword.png
+use_math: true
 icon: book
 ---
 

@@ -4,6 +4,7 @@ title: "Cross attentive pooling for speaker verification"
 date: 2019-10-13
 category: review
 thumbnail: /style/image/CAP.png
+use_math: true
 icon: book
 ---
 

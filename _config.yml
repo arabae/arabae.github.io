@@ -13,6 +13,9 @@ paginate_path: "/page/:num/"
 exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile', 'vendor/bundle/', 'vendor/cache/', 'vendor/gems/', 'vendor/ruby/']
 highlighter: rouge
 markdown: kramdown
+lsi: false
+excerpt_separator: "\n\n"
+incremental: false
 comments :
   gitalk :
     clientID : 5304ae17c5ba0ce3b2aa

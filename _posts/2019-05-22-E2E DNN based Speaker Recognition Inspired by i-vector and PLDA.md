@@ -4,6 +4,7 @@ title: "End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA"
 date: 2019-05-22
 category: review
 thumbnail: /style/image/inspired_ivec.png
+use_math: true
 icon: book
 ---
 

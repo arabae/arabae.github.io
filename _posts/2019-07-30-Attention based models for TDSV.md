@@ -4,6 +4,7 @@ title: "Attention-based Models For Text-dependent Speaker Verification"
 date: 2019-07-30
 category: review
 thumbnail: /style/image/attention_TDSV.png
+use_math: true
 icon: book
 ---
 

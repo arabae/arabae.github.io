@@ -4,6 +4,7 @@ title: "Generalized End to End Loss For Speaker Verification"
 date: 2019-07-10
 category: review
 thumbnail: /style/image/GE2E.png
+use_math: true
 icon: book
 ---
 
