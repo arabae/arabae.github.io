@@ -1,10 +1,12 @@
-# **Speech/Speaker Recognition** 🗣
+# **Ara's DevBlog** 🤓
 
-음성인식과 화자인식에 대해 공부하고, 정리하는 블로그입니다.
+여러가지 공부하고, 정리하는 블로그입니다.
 
 ## Preview
 
 [ARa's DevBlog](https://arabae.github.io/arabae.github.io/)
+
+</br>
 
 ## How to start
 
