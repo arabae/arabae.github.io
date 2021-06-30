@@ -1,6 +1,8 @@
-# **Ara's DevBlog** 🤓
+![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=Ara's_DevBlog🤓&fontSize=70&animation=fadeIn)
 
-여러가지 공부하고, 정리하는 블로그입니다.
+여러가지 공부하고, 정리하는 블로그입니다.  
+
+<img src="https://img.shields.io/badge/Python-3766AB?style=flat-square&logo=Python&logoColor=white"/></a> <img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=Pytorch&logoColor=white"/></a>
 
 ## Preview
 
