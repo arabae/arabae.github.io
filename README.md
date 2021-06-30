@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=Ara's_DevBlog🤓&fontSize=70&animation=fadeIn)
+![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=Ara's%20DevBlog🤓&fontSize=70&animation=fadeIn)
 
 여러가지 공부하고, 정리하는 블로그입니다.  
 
