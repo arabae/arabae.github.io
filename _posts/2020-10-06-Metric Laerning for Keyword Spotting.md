@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Metric Learning for Keyword Spotting"
-date: 2019-10-06
+date: 2020-10-06
 category: review
 thumbnail: /style/image/metric_keyword.png
 use_math: true
