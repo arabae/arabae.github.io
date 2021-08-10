@@ -1,84 +1,23 @@
 ![header](https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=250&section=header&text=Ara's%20DevBlog🤓&fontSize=70&animation=fadeIn)
 
 여러가지 공부하고, 정리하는 블로그입니다.  
+_Speech Recognition • Speaker Recognition • NLP_  
 
 <img src="https://img.shields.io/badge/Python-3766AB?style=flat-square&logo=Python&logoColor=white"/></a> <img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=Pytorch&logoColor=white"/></a>
 
-## Preview
-
-[ARa's DevBlog](https://arabae.github.io/arabae.github.io/)
-
-</br>
-
-## How to start
-
-- _config.yml example
-
-```yaml
-name: A Blog
-author: Lightfish Zhang
-url: https://lightfish-zhang.github.io
-resume_site: https://lightfish-zhang.github.io
-baseurl:
-description: you website desc
-github_username: lightfish-zhang
-github: https://github.com/lightfish-zhang
-plugins: [jekyll-paginate]
-permalink: /:year-:month-:day-:title
-paginate: 12
-paginate_path: "/page/:num/"
-exclude: ['README.md', 'Gemfile.lock', 'Gemfile', 'Rakefile']
-highlighter: rouge
-markdown: kramdown
-comments :
-  gitalk :
-    clientID : xxx
-    clientSecret : xxx
-    repo : lightfish-zhang.github.io
-    owner : lightfish-zhang
-    admin : lightfish-zhang
-
-```
-
-- add your post in path `./_post`, format :
-
-```md
----
-layout: post
-title: A Example Post
-date:   1970-01-01 00:00:00 +0800
-category: tutorial
-thumbnail: /style/image/thumbnail.jpg
-icon: book
 ---
 
+# 📚 Paper Review 📚
 
-* content
-{:toc}
+  
+- [X] [2014/09] [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arabae.github.io/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition)  
+- [X] [2017/10] [End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA](https://arabae.github.io/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA)
+- [X] [2017/10] [Generalized End to End Loss For Speaker Verification](https://arabae.github.io/2019-07-10-GE2E-loss-for-SV)  
+- [X] [2017/10] [Attention-based Models For Text-dependent Speaker Verification](https://arabae.github.io/2019-07-30-Attention-based-models-for-TDSV)  
+- [X] [2018/03] [Attentive Statistics Pooling for Deep Speaker Embedding](https://arabae.github.io/2019-05-01-Attentive-Statistics-Pooling-for-Deep-Speaker-Embedding)    
+- [X] [2018/11] [Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification](https://arabae.github.io/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV)  
+- [X] [2020/05] [Text-Independent Speaker Verification with Adversarial Learning on Short Utterances](https://arabae.github.io/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances)  
+- [X] [2020/05] [Metric Learning for Keyword Spotting](https://arabae.github.io/2019-10-06-Metric-Laerning-for-Keyword-Spotting)  
+- [X] [2020/05] [Conformer: Convolution-augmented Transformer for Speech Recognition](https://arabae.github.io/2021-08-03-Conformer)  
+- [X] [2020/08] [Cross attentive pooling for speaker verification](https://arabae.github.io/2019-10-13-Cross-Attentive-Pooling-for-SV)  
 
-## sub title
-
-page...
-
-## about thumbnail
-
-add the thumbnail url
-
-## about icon
-
-such as book, code, web, chat, note, game, link, design, image
-```
-
-some config about gitalk, please reference to [gitalk](https://github.com/gitalk/gitalk)
-
-run `bundle install` and `jekyll server` to preview site on you computer, more question about jekyll, reference to [jekyll](http://jekyllrb.com)
-
-## Thanks
-
-- [jekyll](http://jekyllrb.com) git page engine
-- [pinghsu](https://github.com/chakhsu/pinghsu), a typecho theme, it's a great design.
-- [gitalk](https://github.com/gitalk/gitalk) git page comment engine, it depends on github issue.
-- [smoothscroll](https://www.smoothscroll.net/mac/) SmoothScroll will give your mouse wheel (Finder, Safari, Chrome, etc.) buttery smooth scrolling
-
-- [chakhsu](https://github.com/chakhsu)
-- [lightfish-zhang](https://github.com/lightfish-zhang)
