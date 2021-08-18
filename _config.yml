@@ -1,7 +1,7 @@
 name: ARa's DevBlog
 author: ARa Bae
 url: https://arabae.github.io/
-baseurl: 
+baseurl:
 resume_site: https://github.com/arabae
 description: Speech/Speaker Recognition Study
 github_username: arabae
@@ -23,3 +23,6 @@ comments :
     repo : arabae.github.io
     owner : arabae
     admin : arabae
+google:
+  tracking_id : "G-WFYXX17J4G"
+  anonymize_ip : false
