@@ -23,6 +23,9 @@ comments :
     repo : arabae.github.io
     owner : arabae
     admin : arabae
-google:
-  tracking_id : "G-WFYXX17J4G"
-  anonymize_ip : false
+analytics:
+  provider: "google-gtag"
+  google:
+    tracking_id : "UA-180957529-1"
+    measurement_id : "G-WFYXX17J4G"
+    anonymize_ip : # true, false (default)
