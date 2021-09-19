@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <title>Very Deep Convolutional Networks for Large-Scale Image Recognition</title>
+	<meta name="description" content="">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/style/image/favicon.png"/>
+    <link href="/style/css/highlight.min.css" rel="stylesheet">
+    <link href="/style/css/style.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+	
+	  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    TeX: {
+      equationNumbers: {
+        autoNumber: "AMS"
+      }
+    },
+    tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$'] ],
+    processEscapes: true,
+  }
+});
+MathJax.Hub.Register.MessageHook("Math Processing Error",function (message) {
+	  alert("Math Processing Error: "+message[1]);
+	});
+MathJax.Hub.Register.MessageHook("TeX Jax - parse error",function (message) {
+	  alert("Math Processing Error: "+message[1]);
+	});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+	
+</head>
+
+<body class="bg-grey" gtools_scp_screen_capture_injected="true">
+
+    <header id="header" class="header bg-white">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">
+            <img src="/style/image/logo.png" alt="ARa's DevBlog" />
+            <span>ARa's DevBlog</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="/archives">Archives</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="navbar-mobile-menu" onclick="">
+            <span class="icon-menu cross"><span class="middle"></span></span>
+            <ul>
+                <li><a href="/archives">Archives</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+    <article class="main-content page-page" itemscope itemtype="http://schema.org/Article">
+    <div class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            Very Deep Convolutional Networks for Large-Scale Image Recognition
+        </h1>
+        <div class="post-data">
+            <time itemprop="datePublished">Jan 25, 2021</time>
+        </div>
+    </div>
+</article>
+<div class="main-container">
+    <div class="post-container">
+        <div class="navigation" id="navigation">
+            <h1>Contents</h1>
+            <div class="nav sidenav">
+	    </div>
+        </div>
+        <article class="post-content">
+            <ul id="markdown-toc">
+  <li><a href="#abstact" id="markdown-toc-abstact">Abstact</a></li>
+  <li><a href="#1-introduction" id="markdown-toc-1-introduction">1. Introduction</a></li>
+  <li><a href="#2-convnet-configurations" id="markdown-toc-2-convnet-configurations">2. ConvNet Configurations</a>    <ul>
+      <li><a href="#21-architecture" id="markdown-toc-21-architecture">2.1 Architecture</a></li>
+      <li><a href="#22-confiurations" id="markdown-toc-22-confiurations">2.2 Confiurations</a></li>
+      <li><a href="#23-discussion" id="markdown-toc-23-discussion">2.3 Discussion</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-classification-framework" id="markdown-toc-3-classification-framework">3. Classification Framework</a>    <ul>
+      <li><a href="#31-training" id="markdown-toc-31-training">3.1 Training</a></li>
+      <li><a href="#32-testing" id="markdown-toc-32-testing">3.2 <strong>Testing</strong></a></li>
+    </ul>
+  </li>
+</ul>
+
+<p><span style="font-size:13pt">Karen Simonyan, Andrew Zisserman</span></p>
+
+<h1 id="abstact">Abstact</h1>
+
+<ul>
+  <li><strong>본 논문에서는 large-scale image recognition setting에서 CNN의 깊이가 accuarcy에 미치는 영향에 관한 연구 진행</strong></li>
+  <li><strong>주요 기여</strong>: 매주 작은 (3x3) convolution filter를 사용해서 깊이를 증가시키면서 network를 평가 (16-19 weight layer를 쌓아서 이전 보다 상당히 개선함)</li>
+  <li>다른 데이터 셋에서도 일반화되어 가장 좋은 성능을 얻을 수 있었고, 두 가지 최고 성능의 ConvNet 모델을 공개</li>
+</ul>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<ul>
+  <li>Convolutional Networks (ConvNets)은 최근 large-scale 이미지 및 비디오 인식에서 아주 좋은 성능을 보임
+    <ul>
+      <li>deep ConvNets(2012)을 개선하기 위한 여러 시도를 진행
+        <ol>
+          <li>첫 번째 convolutional layer의 strid와 window size를 더 작게 사용하는 것(2013)</li>
+          <li>전체 이미지와 여러  크기에 걸쳐 조밀하게 network를 훈련하고 테스트하는 것(2014)</li>
+        </ol>
+      </li>
+    </ul>
+  </li>
+  <li>본 논문에서는 ConvNet architecture 설계의 또 다른 중요한 측면인 “<strong>깊이, depth</strong>“에 대해 다룸
+    <ul>
+      <li>이를 위해 <strong>모든 layer에서 (3x3)의 매주 작은 convolution filter를 사용</strong>하여 network의 깊이를 계속 증가시킴
+  — parameter 수를 줄임으로써 일반화가 더 용이, overfitting을 막고, 연산량을 줄임</li>
+      <li>결과적으로 classification과 <strong>localisation tasks</strong>에 대한 가장 좋은 정확도 뿐만 아니라 다른 이미지 인식 데이터 셋에도 적용할 수 있는 훨씬 더 정확한 ConvNet architecture를 개발</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>localisation tasks</strong>
+object가 있는 위치를 찾아 그 주위에 bounding box를 그리는 것</p>
+
+<p>❓❓❓</p>
+
+<p><strong>large public image repositories</strong>
+기존에는 이미지 많지 않아서 훈련이 크게, 많이 할 수 없었는데 ImageNet(image database)과 같은 저장소가 생겨서 이러한 문제점을 해결할 수 있었음
+<strong>high-dimensional shallow feature</strong>
+높은 차원의 데이터를 학습 계층을 적게 사용해서도 학습을 가능하게 했다? — 딥러닝이 유행하기 전에는 자동으로 네트워크를 훈련하는게 아니라, 필터를 수동으로 손으로 만들어 사용했는데 상대적으로 dimension이 크고 복잡한데 예전 모델을 일컫는 것 같음</p>
+
+<p><strong>testbed</strong>
+image를 활용해서 내가 가지고 있는 문제나 모델을 테스트하는 장소</p>
+
+<p><strong>used as a part of a relatively simple pipelines</strong></p>
+
+<p>다른 모델과 합쳐서 사용할 때 앞단에 많이 사용됨</p>
+
+<h1 id="2-convnet-configurations">2. ConvNet Configurations</h1>
+
+<h3 id="21-architecture">2.1 Architecture</h3>
+
+<blockquote>
+  <p><strong>Conv layer</strong></p>
+</blockquote>
+
+<ul>
+  <li><strong>feature extractor</strong></li>
+  <li>input: fixed-size 224x224 RGB (preprocessing: 각 channel에 대해 mean빼는 것 — data centering)
+    <ul>
+      <li>음수~양수로 값의 범위를 맞춤</li>
+    </ul>
+  </li>
+  <li>(3x3) filter를 사용하는 convolutional layer를 쌓은 구조
+    <ul>
+      <li>3x3 filter: 위/아래, 왼쪽/오른쪽, 중앙의 정보를 수집할 수 있는 가장 작은 크기</li>
+    </ul>
+  </li>
+  <li>1x1 convolution filter도 사용
+    <ul>
+      <li>input channels의 linear transformation을 위해</li>
+    </ul>
+  </li>
+  <li>stride: 1, padding 적용 O</li>
+</ul>
+
+<blockquote>
+  <p><strong>Spatial Pooling layer</strong></p>
+</blockquote>
+
+<ul>
+  <li>conv layer 이후 적용 (모든 conv 이후에 사용되지는 않음)</li>
+  <li>총 5개의 max poolinhg layer 사용
+    <ul>
+      <li>2x2 size, stride: 2</li>
+    </ul>
+  </li>
+</ul>
+
+<p>❓❓❓</p>
+
+<p><strong>Spatial Pooling layer = Spatial Pyramid Pooling? No!</strong></p>
+
+<p><del>만약 두개가 같다면 이미지 인식에서 일정한 크기로 자르거나 축소해서 모델에 넣은게 아니라 통채로 넣고 pooling을 이용해서 일정한 크기로 맞추서 FC 입력으로 넣는 것 같은데 뒤에서 훈련할 때 특정 차원으로 맞추는 것 같은데 왜 이 방법은 사용하는 것인지?</del></p>
+
+<p>→ 10x10이 있으면 이걸 줄여서 stride에 맞춰 5x5로 줄이는 것 (일반적인 pooling이랑 같음)</p>
+
+<blockquote>
+  <p><strong>Fully-connected layer (FC)</strong></p>
+</blockquote>
+
+<ul>
+  <li><strong>conv에서 나온 feature로 확률값을 이용해 classification</strong></li>
+  <li>3개의 FC 사용 + softmax layer
+    <ul>
+      <li>1-2 layer: 4096개 node, 3 layer: 1000 (classification을 위해)</li>
+    </ul>
+  </li>
+  <li>activation function: ReLU</li>
+  <li>Local Response Normalization (LRN) 정규화 포함X (하나 제외하고)
+    <ul>
+      <li>ReLU를 사용하면 양수값은 자기 자신이 나오게 되어, 매우 큰 값을 갖는 경우(outlier) 다른 값들이 기능을 못할 수 있음</li>
+      <li>ReLU 이후에 나오는 값을 주변 값을 이용해 normalize해줌으로써 이러한 것을 완화</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="22-confiurations">2.2 Confiurations</h3>
+
+<ul>
+  <li>깊이가 더 깊어짐에도 불구하고 본 논문에서 제안하는 network에 있는 가중치의 수는 더 얕고 큰 conv를 갖는 모델의 가중치 수보다 크지 않음
+    <ul>
+      <li>Sermanet et al., 2014: 144M weights</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/124697233-67018600-df21-11eb-86c6-962f45358b86.png" alt="img" style="zoom: 80%;" /></center>
+
+<h3 id="23-discussion">2.3 Discussion</h3>
+
+<blockquote>
+  <p><strong>차별점</strong></p>
+</blockquote>
+
+<ul>
+  <li>stride=4 11x11 filter, stride=2 7x7 filter와 같이 큰 filter를 사용하는 이전 모델들과 달리 <strong>3x3의 매우 작은 size의 filter를 사용</strong></li>
+</ul>
+
+<blockquote>
+  <p><strong>3x3 filter를 사용하는 이유</strong></p>
+</blockquote>
+
+<p>Table1에서 중간에 spatial pooling이 없는 경우 여러 개의 conv가 stack되어 있는 것을 알 수 있음</p>
+
+<ul>
+  <li>2개를 사용하게되면 5x5 filter를 사용하는 것과 같은 기능을 수행할 수 있음 (= effective receptive field가 같음)
+    <ul>
+      <li>3개 사용: 7x7</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>→ 얻는 이점은?</strong></p>
+
+<ol>
+  <li>activation function을 더 많이 거치면서 non-linear한 문제를 더 잘 풀 수 있게 됨</li>
+  <li>parameter의 수를 줄임
+    <ul>
+      <li>C채널의 3x3 convolution이 3 layer인 경우: $3(3^2C^2) = 27C^2$</li>
+      <li>C채널 7x7 convolution이 1 layer인 경우: $7^2(C^2)=49C^2$</li>
+    </ul>
+  </li>
+</ol>
+
+<ul>
+  <li>decision function의 비선형성을 증가시키기 위해 1x1 conv를 사용
+— 비선형성을 증가시키면 좀 더 복잡한 문제를 풀 수 있게 됨</li>
+</ul>
+
+<blockquote>
+  <p><strong>유사한 task</strong></p>
+</blockquote>
+
+<ul>
+  <li>
+    <p>Lin et al.(2014)
+— “Network in Network”에서 1x1 conv가 활용됨, 그러나 본 논문의 구조보다 깊지 않으며 ILSVRC 데이터 셋에서 평가하지 않음</p>
+  </li>
+  <li>
+    <p>Goodfellow et al.(2014)
+— 거리 번호 인식에서 깊은 ConvNets을 적용했고 깊이가 증가함에 따라 성능이 향상됨을 보여줌</p>
+  </li>
+  <li>
+    <p>Szegedy et al.(2014)
+—”GoogLeNet” 매우 깊은 ConvNet(22 layer)와 작은 convolution을 기반한다는 점에서 유사함 (1x1, 5x5 사용), 본 논문보다 network topology가 복잡하고 단일 네트워크 분류에서 본 논문 성능이 더 우수</p>
+  </li>
+</ul>
+
+<h1 id="3-classification-framework">3. Classification Framework</h1>
+
+<h3 id="31-training">3.1 Training</h3>
+
+<blockquote>
+  <p><strong>hyperparameter</strong></p>
+</blockquote>
+
+<ul>
+  <li>cost function: Cross Entropy</li>
+  <li>mini-batch size: 256</li>
+  <li>optimizer: Momentum=0.9</li>
+  <li>regularization: L2 regularization($5 · 10^{−4}$), Dropout(0.5)</li>
+  <li>learning rate: $10^{-2}$ (validation accuarcy의 증가가 멈추면 0.1씩 감소 — 3배 감소)</li>
+  <li>370L iterations (74 epochs)</li>
+  <li>pre-initialization: A model의 일부(처음 4개 conv+마지막 3개 FC)를 훈련한 뒤 가져와서 초기값으로 사용</li>
+</ul>
+
+<blockquote>
+  <p><strong>Training image size</strong></p>
+</blockquote>
+
+<p><strong>isotropically-rescaled</strong></p>
+
+<ul>
+  <li>image를 VGG model input size(224x224)에 맞도록 변경해줘야 함</li>
+  <li><strong>S를 이용</strong>해서 <strong>비율은 그대로</strong> 두고 size를 바꾼 뒤 <strong>crop하여 사용</strong></li>
+</ul>
+
+<p><strong>training scale S</strong></p>
+
+<ol>
+  <li>S를 고정시키는 것
+    <ul>
+      <li>S=256으로 두어 먼저 network를 훈련하고, S=384로 훈련할 때는 256으로 훈련한 파라미터로 가중치를 초기화하여 사용하고, 더 작은 learning rate 사용 ($10^{-3}$)</li>
+    </ul>
+  </li>
+  <li>256~512 중 random하게 S값 사용 (multi-scale)
+    <ul>
+      <li>object가 모두 다른 size를 갖으면서 학습효과가 더 좋아질 수 있음</li>
+      <li>data augmentation 효과(= scale jittering)</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="32-testing">3.2 <strong>Testing</strong></h3>
+
+<p>train에 사용된 S와 같은 역할을 하는 <strong>Q</strong> 를 사용하여 <strong>image rescaling</strong> 적용</p>
+
+<ul>
+  <li>$Q \ne S$</li>
+</ul>
+
+<p><strong>구조 변경</strong> (crop하지 않은 전체 이미지에 적용할 수 있음)</p>
+
+<ul>
+  <li>FC layer → conv
+    <ul>
+      <li>first: <strong>7x7 conv</strong></li>
+      <li>last two: <strong>1x1 conv</strong></li>
+    </ul>
+  </li>
+</ul>
+
+<p>→ class 수와 동일한 channel 수와 input image size에 따라 가변 공간 해상도를 갖는 class score map</p>
+
+<p><strong>고정 크기의 벡터</strong></p>
+
+<ul>
+  <li>class score를 얻기 위해 pooling 진행(spatially averaged)</li>
+  <li>image를 수평으로 뒤집어서, 원본 이미지와 뒤집힌 이미지의 softmax 결과를 평균내 최종 score로 사용</li>
+</ul>
+
+<hr />
+
+<p><strong>Reference</strong></p>
+
+<ul>
+  <li>paper [<a href="https://arxiv.org/pdf/1409.1556.pdf">📑</a>]</li>
+  <li>CNN의 parameter 개수와 tensor 사이즈 계산하기 [<a href="https://seongkyun.github.io/study/2019/01/25/num_of_parameters/">👆</a>]</li>
+</ul>
+
+        </article>
+        <div class="post-content">
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+
+<script data-no-instant type="text/javascript">
+const gitalk = new Gitalk({
+  clientID: '5304ae17c5ba0ce3b2aa',
+  clientSecret: '22801b52c86101ff074072faa1631475954d2936',
+  repo: 'arabae.github.io',
+  owner: 'arabae',
+  admin: ['arabae'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: true  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+        </div>
+    </div>
+</div>
+
+    
+    <footer id="footer" class="footer bg-white">
+    <div class="footer-social">
+        <div class="footer-container clearfix">
+            <div class="social-list">
+		<a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+                <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
+                <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-meta">
+        <div class="footer-container">
+            <div class="meta-item meta-copyright">
+                <div class="meta-copyright-info">
+                    <a href="https://github.com/arabae" class="info-logo">
+                        <img src="/style/image/logo.png" alt="wonder">
+                    </a>
+                    <div class="info-text">
+                        <p>Copyright &copy; 2021 - 2021 <a href="https://github.com/arabae"><code>ARa Bae</code></a></p>
+                        <p>Powered by <a href="http://jekyllrb.com" target="_blank" rel="nofollow"><code>jekyll</code></a>，theme is <a href="https://github.com/lightfish-zhang/pinghsu-jekyll" target="_blank" rel="nofollow"><code>pinghsu</code></a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-item meta-posts">
+                <h3 class="meta-title">RECENT POSTS</h3>
+                
+                    <li>
+                        <a href="/2021-08-03-Conformer">Conformer: Convolution-augmented Transformer for Speech Recognition</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition">Very Deep Convolutional Networks for Large-Scale Image Recognition</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2020-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2020-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-30-Attention-based-models-for-TDSV">Attention-based Models For Text-dependent Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances">Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
+                    </li>
+                
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<!-- #end -->
+<script src="//cdn.bootcss.com/jquery/1.10.1/jquery.min.js"></script>
+<script>
+	!window.jQuery && document.write(unescape('%3Cscript src="/style/js/jquery.min.js"%3E%3C/script%3E'))
+</script>
+<script src="/style/js/headroom.min.js"></script>
+<script src="/style/js/nav.min.js"></script>
+<script type="text/javascript">
+    var header = new Headroom(document.getElementById("header"), {
+        tolerance: 10,
+        offset : 80,
+        classes: {
+            initial: "animated",
+            pinned: "slideDown",
+            unpinned: "slideUp"
+        }
+    });
+    header.init();
+</script>
+
+<script>window.SmoothScrollOptions = { stepSize: 36 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.8/SmoothScroll.min.js"></script>
+<script>
+	!window.SmoothScroll && document.write(unescape('%3Cscript src="/style/js/SmoothScroll.min.js"%3E%3C/script%3E'))
+</script>
+
+
+
+
+  </body>
+</html>

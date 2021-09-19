@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <title>Conformer: Convolution-augmented Transformer for Speech Recognition</title>
+	<meta name="description" content="">
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/style/image/favicon.png"/>
+    <link href="/style/css/highlight.min.css" rel="stylesheet">
+    <link href="/style/css/style.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+	
+	  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    TeX: {
+      equationNumbers: {
+        autoNumber: "AMS"
+      }
+    },
+    tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$'] ],
+    processEscapes: true,
+  }
+});
+MathJax.Hub.Register.MessageHook("Math Processing Error",function (message) {
+	  alert("Math Processing Error: "+message[1]);
+	});
+MathJax.Hub.Register.MessageHook("TeX Jax - parse error",function (message) {
+	  alert("Math Processing Error: "+message[1]);
+	});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+	
+</head>
+
+<body class="bg-grey" gtools_scp_screen_capture_injected="true">
+
+    <header id="header" class="header bg-white">
+    <div class="navbar-container">
+        <a href="/" class="navbar-logo">
+            <img src="/style/image/logo.png" alt="ARa's DevBlog" />
+            <span>ARa's DevBlog</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="/archives">Archives</a>
+            <a href="/about">About</a>
+        </div>
+        <div class="navbar-mobile-menu" onclick="">
+            <span class="icon-menu cross"><span class="middle"></span></span>
+            <ul>
+                <li><a href="/archives">Archives</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+    <article class="main-content page-page" itemscope itemtype="http://schema.org/Article">
+    <div class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            Conformer: Convolution-augmented Transformer for Speech Recognition
+        </h1>
+        <div class="post-data">
+            <time itemprop="datePublished">Aug 03, 2021</time>
+        </div>
+    </div>
+</article>
+<div class="main-container">
+    <div class="post-container">
+        <div class="navigation" id="navigation">
+            <h1>Contents</h1>
+            <div class="nav sidenav">
+	    </div>
+        </div>
+        <article class="post-content">
+            <ul id="markdown-toc">
+  <li><a href="#abstract" id="markdown-toc-abstract"><strong><em>Abstract</em></strong></a></li>
+  <li><a href="#1-introduction" id="markdown-toc-1-introduction"><strong><em>1. Introduction</em></strong></a></li>
+  <li><a href="#2-conformerencoder" id="markdown-toc-2-conformerencoder"><em>2. ConformerEncoder</em></a>    <ul>
+      <li><a href="#21-multi-headed-self-attention-module" id="markdown-toc-21-multi-headed-self-attention-module">2.1. Multi-Headed Self-Attention Module</a></li>
+      <li><a href="#22-convolution-module" id="markdown-toc-22-convolution-module">2.2. Convolution Module</a></li>
+      <li><a href="#23-feedforward-module" id="markdown-toc-23-feedforward-module">2.3. FeedForward Module</a></li>
+      <li><a href="#24-conformer-block" id="markdown-toc-24-conformer-block">2.4. Conformer Block</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-experiments" id="markdown-toc-3-experiments"><em>3. Experiments</em></a>    <ul>
+      <li><a href="#31-data" id="markdown-toc-31-data">3.1 Data</a></li>
+      <li><a href="#32-conformer-tranducer" id="markdown-toc-32-conformer-tranducer">3.2 Conformer Tranducer</a></li>
+      <li><a href="#33-results-on-librispeech" id="markdown-toc-33-results-on-librispeech">3.3 Results on LibriSpeech</a></li>
+      <li><a href="#34-ablation-studies" id="markdown-toc-34-ablation-studies">3.4 Ablation Studies</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-conclusion" id="markdown-toc-4-conclusion"><em>4. Conclusion</em></a>    <ul>
+      <li><a href="#further-reading" id="markdown-toc-further-reading"><strong>Further reading</strong></a></li>
+    </ul>
+  </li>
+</ul>
+
+<p><span style="font-size:13pt">Anmol Gulati, James Qin, Chung-Cheng Chiu, Niki Parmar, Yu Zhang, Jiahui Yu, Wei Han, Shibo Wang, Zhengdong Zhang, Yonghui Wu, Ruoming Pang</span></p>
+
+<h1 id="abstract"><strong><em>Abstract</em></strong></h1>
+
+<p>최근 Transformer 및 Convolution neural network(CNN) 기반 모델은 Automatic Speech Recognition(ASR)에서 Recurrent neural networks (RNNs)보다 성능이 좋아 기대되는 결과를 보임</p>
+
+<p>Transformer 모델은 content-based global interaction을 잘 포착하는 반면 CNN은 local feature를 효과적으로 활용함</p>
+<ul>
+  <li>parameter-efficient 방식으로 audio sequence의 local 및 global dependency를 모두 모델링하기 위해 CNN과 Transformer를 결합하는 방법을 연구하여 두 세계의 장점을 모두 달성</li>
+</ul>
+
+<p><strong>⇒ Conformer라는 음성 인식을 위한 Convolution-Augmented Transformer를 제안</strong></p>
+
+<p>Conformer는 SOTA 정확도를 달성하는 이전 Transformer 및 CNN 기반 모델보다 훨씬 뛰어난 성능을 가져옴</p>
+
+<p>LibriSpeech 벤치마크 사용</p>
+<ul>
+  <li>WER 2.1% / 4.3% (language model X) - test/testother</li>
+  <li>WER 1.9% / 3.9% (language model O)</li>
+  <li>WER 2.7% / 6.3% (small model, only 10M parameter)</li>
+</ul>
+
+<h1 id="1-introduction"><strong><em>1. Introduction</em></strong></h1>
+
+<p>NN기반의 End-to-End ASR system은 최근 몇 년 동안 크게 개선됨</p>
+
+<p>RNN은 audio sequence의 temproal dependency를 효과적으로 모델링할 수 있기 때문에 ASR에 대해 사실상 일반적인 선택</p>
+
+<p>최근 self-attention에 기반의 <strong>transformer 구조</strong>는 <strong>long distance interaction을 capture</strong>하는 능력과 <strong>high training efficiency</strong>로 sequence 모델링에 주로 사용됨</p>
+
+<p>더불어, CNN도 <strong>local receptive field layer</strong>를 통해 <strong>점진적으로 local context를 capture</strong>하여 ASR에서도 성공적</p>
+
+<p>그러나 self-attention 또는 CNN 모델은 각각 한계점이 존재</p>
+
+<blockquote>
+  <p><strong><em>Transformers</em></strong></p>
+</blockquote>
+
+<ul>
+  <li>long-range global context pattern에 효과적</li>
+  <li>세분화된 local feature pattern을 추출하는 능력은 떨어짐</li>
+</ul>
+
+<blockquote>
+  <p><strong><em>CNN</em></strong></p>
+</blockquote>
+
+<ul>
+  <li>local 정보를 활용하고, vision에서 사실상 computational block으로 사용됨</li>
+  <li><a href="#further-reading">translation equivariance</a>를 유지하고 edge와 shape과 같은 feature를 capture할 수 있는 local window를 통해 shared position-based kernel을 학습</li>
+  <li>local connectivity를 사용하는 것은 global information을 capture하기 위해선 더 많은 layer와 parameter가 필요하다는 제한이 존재</li>
+</ul>
+
+<p>이러한 문제점을 해결하기 위해 동시에 연구된 <strong>contextnet</strong>은 더 긴 context를 capture 하기 위해 <strong>각 residual block에 squeeze-and-excitation module을 둚</strong></p>
+<ul>
+  <li>그러나 전체 sequence에 대해 <strong>global average만 적용</strong>하기 때문에 <strong>dynamic한 global context</strong>를 capture하기엔 여전히 <strong>제한적</strong>임</li>
+</ul>
+
+<p>최근 연구에 따르면 CNN과 self-attention을 결합하면 개별적으로 사용하는 것보다 향상되었음</p>
+
+<ul>
+  <li>position-wise local feature를 모두 학습하고 content-based global interaction을 사용할 수 있음</li>
+  <li>동시에 [15, 16]과 같은 논문은 equivariance을 유지하는 상대적 위치 기반 정보로 self-attention을 강화함</li>
+  <li>Wu et al. [17]은 입력을 self-attention과 convolution의 두 가지 branch로 분할하고 출력을 연결하는 multi-branch architecture를 제안
+    <ul>
+      <li>이 task는 mobile application을 대상으로 했으며, machine translation task의 개선을 보여줌</li>
+    </ul>
+  </li>
+</ul>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/128826541-f87104f7-5b5e-41c9-9081-29db15b294bf.png" alt="img" style="zoom:40%;" /></center>
+
+<p>본 논문에서는 ASR에서 CNN과 self-attention을 유기적(organically)으로 결합하는 방법을 연구
+global과 local interaction이 parameter 효율성을 위해 중요하다고 가정
+→ 이를 달성하기 위해 self-attention과 convolution의 새로운 조합이 두개의 장점을 모두 달성할 것이라고 제안</p>
+
+<p>self-attention은 global interation을 학습하는 반면 convolution은 relative-offset-based local correlation를 효율적으로 capture함</p>
+<ul>
+  <li>Wu et al. [17, 18],에서 영감을 받았고, 그림 1과 같이 한 쌍의 feedforward module 사이에 끼워진 self-attention과 convolution의 새로운 조합을 소개!</li>
+</ul>
+
+<blockquote>
+  <p><strong><em>Conformer</em></strong></p>
+</blockquote>
+
+<p>이전 SOTA Transformer Transducer[7]와 비교</p>
+<ul>
+  <li>LibriSpeech dataset 사용 (외부 language model이 있는 testother 데이터 셋에서 상대적으로 15% 향상)</li>
+</ul>
+
+<p>10M, 30M, 118M parameter 크기를 갖는 모델 비교</p>
+<ul>
+  <li>10M: test/testother에서 2.7%/6.3%로 유사한 크기의 다른 모델[10]과 비교했을 때 개선됨</li>
+  <li>30M: 139M parameter를 사용하는 transformer transducer[7]보다 개선됨</li>
+  <li>118M: 언어 모델을 사용하지 않고 2.1%/4.3%, 사용하면 1.9%/3.9% 성능을 보임</li>
+</ul>
+
+<p>➕ attention head 수, convolution kernel size, activation fuction, feedforward layer 배치, convolution module을 transformer기반 network에 추가하는 다양한 방법의 효과에 대해 깊이 연구하고, 각각이 어떻게 정확도를 향상시키는지 초점을 둚</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128826558-cf9ff480-0a20-4313-804d-569ac4c39e3e.png" alt="img" style="zoom:60%;" /></p>
+
+<h1 id="2-conformerencoder"><em>2. ConformerEncoder</em></h1>
+
+<p>audio encoder는 먼저 convolution subsampling layer을 사용해 입력을 처리하고, 다음에 fig1과 같이 여러 conformer block을 거침</p>
+
+<p>본 논문 model의 구별되는 특징은 [7, 19]에서 transformer block 부분이 conformer block으로 사용됨</p>
+
+<p>conformer block은 4개의 module(feed-forward module, self-attention module, convolution module, second feed-forward module)이 함께 쌓여 구성됨</p>
+
+<p>section 2.1, 2 and 2.3에서는 각각 self-attention, convolution, feed-forward module을 소개하고, 마지막으로 2.4에서는 이러한 하위 block이 어떻게 결합되는지 설명</p>
+
+<h3 id="21-multi-headed-self-attention-module">2.1. Multi-Headed Self-Attention Module</h3>
+
+<p>relative sinusoidal(sin 곡선) positional encoding 방식인 Transformer-XL의 중요한 기술을 통합하면서 multi-head self-attention (MHSA)를 사용</p>
+
+<p><strong>💡 relative positional encoding</strong></p>
+<ul>
+  <li>self-attention module이 다른 입력 길이에 대해 더욱 잘 일반화할 수 있도록 함</li>
+  <li>resulting encoder는 발화 길이의 변화에 대해 더 강인함</li>
+</ul>
+
+<p>더 깊은 모델을 훈련하고, 정규화하는데 도움이 되는 dropout과 함께 pre-norm residual unit을 사용함</p>
+
+<p>아래의 그림 3은 multi-head self-attention module block을 나타냄</p>
+
+<center><img src="https://user-images.githubusercontent.com/46676700/128826564-520cebdc-c97e-45b1-8349-2842c44f6ca0.png" alt="img" style="zoom:40%;" /></center>
+
+<h3 id="22-convolution-module">2.2. Convolution Module</h3>
+
+<p>[17]에서 영감을 받아 convolution module은 pointwise convolution과 gated linear unit(glu)인 gating mechanism으로 시작</p>
+
+<p>그 다음 1D depthwise convolution layer가 이어지고, Batchnorm은 deep 모델 훈련을 돕기 위해 convolution 직후에 위치함</p>
+
+<p>그림 2는 convolution block을 나타냄</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128827668-4697e2e9-3d33-49e7-9968-28a8af2a70e8.png" alt="img" style="zoom:60%;" /></p>
+
+<h3 id="23-feedforward-module">2.3. FeedForward Module</h3>
+
+<p>[6]에서 제안된 Transformer 구조는 MHSA layer 이후 feed-forward module이 이어지고, two linear transformation 사이에 nonlinear activation이 존재함</p>
+
+<p>residual connectiondms feed-forward layer 위에 추가되고 layer normalization이 이어짐</p>
+
+<p>이 구조는 Transformer ASR model [7, 24]에도 적용됨</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128826571-ee6a4944-a20c-4625-98ba-99df6b0fc53c.png" alt="img" style="zoom:60%;" /></p>
+
+<p>pre-norm residual unit[21, 22]을 따르고, residual unit안에 첫 번째 linear layer 이전 입력에서 layer normalization을 적용함</p>
+
+<p>또한, Swish activation 및 dropout을 적용하여 network를 정규화하는데 도움을 줌</p>
+
+<p>그림 4는 Feed-Forward Network(FFN) module을 나타냄</p>
+
+<h3 id="24-conformer-block">2.4. Conformer Block</h3>
+
+<p>제안한 conformer block에는 그림 1과 같이 <strong>multi-head self-attention module과 convolution module 사이에 2개의 feed-forward module</strong>이 포함됨</p>
+<ul>
+  <li>이 샌드위치 구조는 transformer block의 원래 feed-forward layer를 2개의 half-step feed-forwar layer(attention layer 전 후로 배치)로 대체한 Macaron-Net[18]에서 영감을 얻었음</li>
+  <li>Macron-Net에서와 같이 본 논문의 feed-forward layer에서 half-step residual weight를 사용함</li>
+</ul>
+
+<p>두번째 feed-forward module 다음에 최종 layernorm layer가 옴</p>
+
+<p>수학적으로 conformer block i에 대한 입력 $x_i$에 대해 block의 출력 $y_i$가 다음과 같다는 것을 의미함</p>
+
+<p>$\tilde{x_i} = x_i + \frac{1}{2}FFN(x_i)$
+$x’_i = \tilde{x_i} + MHSA(\tilde{x_i})$</p>
+
+<p>$x’‘_i = x’_i + Conv(x’_i)$</p>
+
+<p>$y_i = Layernorm(x’‘_i + \frac{1}{2}FFN(x’‘_i))$</p>
+
+<p>section 3.4.3에서 이전 작업에서 사용된 <strong>vanilla FFN과 Macron-style의 half-step FFN을 비교</strong>함</p>
+
+<ul>
+  <li>2개의 macaron-net style feed-forward layer 사이에 attention module과 convolution module을 끼워넣는 half-step residual connection이 있는게 conformer architecture에서 단일 feed-forward module을 사용하는 것보다 <strong>상당히 개선</strong>된다는 것을 발견함</li>
+</ul>
+
+<p>convolution과 self-attention의 조합은 이전에 연구되었으며 이를 달성하는 많은 방법을 상상할 수 있었음
+self-attention으로 convolution을 증가시키는 다양한 옵션은 section 3.4.2에 작성</p>
+
+<p>⇒ <strong>self-attention module 뒤에 쌓인 convolution module</strong>이 음성 인식에 가장 잘 작동하는 것을 발견</p>
+
+<h1 id="3-experiments"><em>3. Experiments</em></h1>
+
+<h3 id="31-data">3.1 Data</h3>
+
+<p>970시간 labeled speech와 language model 구축을 위한 추가 800M word token text전용 corpus로 구성된 LibriSpeech dataset에서 제안된 모델을 평가</p>
+<ul>
+  <li>25ms window, 10ms stride</li>
+  <li>80-channel filterbank feature</li>
+</ul>
+
+<p>SpecAugment [27, 28] with mask parameter (F=27)와 최대 time-mask ratio(ps=0.05)를 가진 10개 time mask 사용</p>
+<ul>
+  <li>time msak의 최대 size는 발화 길이 * ps로 설정</li>
+</ul>
+
+<h3 id="32-conformer-tranducer">3.2 Conformer Tranducer</h3>
+
+<p>network 깊이, model dimension, attention head 수의 다양한 조합을 스위핑하고, model parameter size 제약 내에서 가장 성능이 좋은 모델을 선택해 10M, 30M, 118M  parameter를 사용하여 소, 중, 대 세가지 모델을 식별</p>
+<ul>
+  <li>모든 모델에서 single-LSTM layer decoder를 사용</li>
+</ul>
+
+<p>표 1은 architecture hyperparameter를 보여줌</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128827078-593e8915-0585-42e0-b603-f3974ec64f4d.png" alt="img" style="zoom:60%;" /></p>
+
+<ul>
+  <li><strong>dropout</strong>: module 입력에 추가되기 전에 conformer의 각 residual unit, 즉 각 module의 출력에 적용 (비율 $P_{drop}$ = 0.1)</li>
+  <li><strong>Variational noise</strong>[5, 30]</li>
+  <li><strong>L2 regularization</strong>: 1e-6 weight (모든 학습 가능한 wight에 추가)</li>
+  <li><strong>Adam</strong> optimizer(β1 = 0.9, β2 = 0.98, ε = 10−9)</li>
+  <li><strong>transformer</strong> <strong>learning rate schedule</strong> (10k warm-up step, 최대 learning rate $\frac{0.05}{\sqrt{d}}$ (d: model dimension)</li>
+  <li><strong>3-layer LSTM LM</strong> (width 4096)
+    <ul>
+      <li>LibriSpeech 960h에서 구축된 1k Words Per Minute(WPM)으로 tokenized LibriSpeech960h transcript가 추가된 LibriSpeech language model corpus에서 훈련</li>
+      <li>LM은 dev-set transcript의 word-level perplexity(혼란도)가 63.9</li>
+      <li>shallow fusion에 대한 LM weigth λ는 grid search를 통해 dev-set에서 조정</li>
+    </ul>
+  </li>
+</ul>
+
+<p>⇒ 모든 모델은 <strong>Lingvo toolkit</strong>으로 구현</p>
+
+<h3 id="33-results-on-librispeech">3.3 Results on LibriSpeech</h3>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128827091-238c5479-203d-4918-b555-655df0c6614a.png" alt="img" style="zoom:60%;" /></p>
+
+<p>표 2는 LibriSpeech test-clean/test-other에 대한 모델의 WER 결과를 ContextNet, Transformer transducer 및 QuartzNet을 포함한 몇 가지 최신 모델과 비교</p>
+<ul>
+  <li>모든 평가 결과는 소수점 이하 1자리로 반올림</li>
+</ul>
+
+<p><strong>언어 모델 X</strong></p>
+<ul>
+  <li>중간 모델의 성능은 test/testother에서 이미 가장 잘 알려진 Transformer, LSTM 기반 모델 또는 유사한 크기의 convolution 모델을 능가하는 2.3/5.0로 경쟁력 있는 결과를 달성</li>
+</ul>
+
+<p><strong>언어 모델 O</strong></p>
+<ul>
+  <li>모든 기존 모델 중 가장 낮은 WER</li>
+  <li>single NN에서 Transformer와 convolution을 결합하는 것의 효율성을 분명히 보여줌</li>
+</ul>
+
+<h3 id="34-ablation-studies">3.4 Ablation Studies</h3>
+
+<blockquote>
+  <p><strong><em>3.4.1. Conformer Block vs Transformer Block</em></strong></p>
+</blockquote>
+
+<p>Conformer block은 여러 방면에서 Transformer block과 다름</p>
+
+<p>특히, macaron-style의 convolution block과 이를 둘러싼 FFN pair가 존재
+⇒ 총 parameter 수를 변경하지 않고, conformer block을 transformer block으로 변경하여 차이를 확인</p>
+
+<p>표 3는 conformer block에 대한 각 변형의 영향을 나타냄</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128827098-dde8d71e-599e-405c-b83e-ad70b5fe9e0e.png" alt="img" style="zoom:60%;" /></p>
+
+<p>모든 차이점 중에서 <strong>convolution sub-block</strong>이 가장 중요한 feature이지만 macaron-style의 FFN pair를 갖는 것이 동일한 수의 parameter를 갖는 single FFN보다 더 효과적</p>
+
+<p>swish activation을 사용하면 Conformer 모델에서 더 빠른 수렴이 이루어짐</p>
+
+<blockquote>
+  <p><strong><em>3.4.2 Combinations of Convolution and Transformer Modules</em></strong></p>
+</blockquote>
+
+<p>MHSA module과 convolution module을 결합하는 다양한 방법의 효과를 연구</p>
+
+<ol>
+  <li>convolution module의 depthwise convolution을 lightweight convolution[35]으로 교체 시도
+    <ul>
+      <li>특히, dev-other dataset에서 성능이 크게 떨어지는 것을 볼 수 있음</li>
+    </ul>
+  </li>
+  <li>Conformer 모델에서 MHSA module 앞에 convolution module을 배치
+    <ul>
+      <li>dev-other에서 0.1만큼 결과가 저하시키는 것을 발견</li>
+    </ul>
+  </li>
+  <li>[17]에서 제안한 대로 output이 연결된 multi-head self-attention module과 convolution module의 parallel branch로 input을 분할
+    <ul>
+      <li>제안한 architecture와 비교할 때 성능을 악화시킨다는 것을 발견</li>
+    </ul>
+  </li>
+</ol>
+
+<p>⇒ 표 4는 Conformer block에서 self-attention module 뒤에 convolution module을 배치하는 이점을 시사함</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128826577-dfee6a64-4c88-426e-8652-9ea83a8a39de.png" alt="img" style="zoom:60%;" /></p>
+
+<blockquote>
+  <p><strong><em>3.4.3. Macaron Feed Forward Modules</em></strong></p>
+</blockquote>
+
+<p>Transformer 모델에서와 같이 attention block 이후 single FFN 대신 Conformer block에는 self-attention 및 convolution module 사이에 macaron과 같은 한 쌍의 feed-forward module이 있음</p>
+
+<p>또한, Conformer feed-forward module은 half-step residule과 함께 사용됨</p>
+
+<p>표 5는 single FFN 또는 전체 full-step residual을 사용해 Conformer block을 변경할 때 결과를 나타냄</p>
+<ul>
+  <li>차이가 많이 없지만, macaron style feed-forward module이 가장 좋은 성능을 보임</li>
+</ul>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128827103-fde4055b-51d1-48d7-a372-6e8e0624c306.png" alt="img" style="zoom:60%;" /></p>
+
+<blockquote>
+  <p><strong><em>3.4.4. Number of Attention Heads</em></strong></p>
+</blockquote>
+
+<p>self-attention에서 각 attention head는 입력의 다른 부분에 초점을 맞추어 학습하여 단순한 weighted average 이상으로 predict를 개선할 수 있음</p>
+
+<p>large 모델에서 모든 layer에서 4~32까지 동일한 수의 attention head를 변경하면서 사용해 효과를 연구하기 위해 실험을 수행</p>
+
+<p>표 6에서 볼 수 있듯이 특히 dev-other dataset에 대해 attention head를 최대 16까지 증가시키면 정확도가 향상된다는 것을 발견</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128826587-7f85fcb1-4ec0-4660-8df9-5d54144b5562.png" alt="img" style="zoom:60%;" /></p>
+
+<blockquote>
+  <p><strong><em>3.4.5. Ablation study on depthwise convolution kernel sizes</em></strong></p>
+</blockquote>
+
+<p>depthwise convolution에서 kernel size의 영향을 연구하기 위해 모든 layer에 대해 동일한 kernel size를 사용해 large 모델에서 kernel size를 {3, 7, 17, 32, 65}로 스윕하여 실험</p>
+
+<p>kernel size 17과 32까지 size가 클수록 성능이 향상되지만, 표 7에서 볼 수 있듯이 size 65의 경우에는 성능이 악화된다는 것을 발견</p>
+
+<p>dev WER에서 소수 둘째자리를 비교하면 비교하면 나머지보다 size 32가 더 나은 성능을 보임</p>
+
+<p><img src="https://user-images.githubusercontent.com/46676700/128826596-fede2ba9-ac3d-4a18-b5ac-0c2a6196592e.png" alt="img" style="zoom:60%;" /></p>
+
+<h1 id="4-conclusion"><em>4. Conclusion</em></h1>
+
+<p>본 몬문에서는 End-to-End speech recognition을 위해 <strong>CNN 및 Transformer의 구성 요소를 통합</strong>하는 architecture인 <strong>Conformer를 도입</strong></p>
+
+<p>각 구성 요소의 중요성을 연구해 Convolution module을 포함하는 것이 Conformer 성능에 중요하다는 것을 보여줌</p>
+
+<p>LibriSpeech dataset에 대한 이전 model보다 더 적은 parameter로 향상된 정확도를 보임</p>
+<ul>
+  <li><strong>test/test-other에 대해 1.9%/3.9%로 SOTA 달성</strong></li>
+</ul>
+
+<hr />
+
+<h3 id="further-reading"><strong>Further reading</strong></h3>
+<p><strong>💡 translation equivariance</strong><br />
+<a href="https://chriswolfvision.medium.com/what-is-translation-equivariance-and-why-do-we-use-convolutions-to-get-it-6f18139d4c59">What is translation equivariance, and why do we use convolutions to get it?</a></p>
+
+<p><strong>💡 Transformer와 구조적으로 비교</strong><br />
+<a href="https://github.com/kakaobrain/nlp-paper-reading/blob/master/notes/conformer.md">kakaobrain/nl-paper-reading</a></p>
+
+        </article>
+        <div class="post-content">
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+
+<script data-no-instant type="text/javascript">
+const gitalk = new Gitalk({
+  clientID: '5304ae17c5ba0ce3b2aa',
+  clientSecret: '22801b52c86101ff074072faa1631475954d2936',
+  repo: 'arabae.github.io',
+  owner: 'arabae',
+  admin: ['arabae'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: true  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+        </div>
+    </div>
+</div>
+
+    
+    <footer id="footer" class="footer bg-white">
+    <div class="footer-social">
+        <div class="footer-container clearfix">
+            <div class="social-list">
+		<a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+                <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
+                <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-meta">
+        <div class="footer-container">
+            <div class="meta-item meta-copyright">
+                <div class="meta-copyright-info">
+                    <a href="https://github.com/arabae" class="info-logo">
+                        <img src="/style/image/logo.png" alt="wonder">
+                    </a>
+                    <div class="info-text">
+                        <p>Copyright &copy; 2021 - 2021 <a href="https://github.com/arabae"><code>ARa Bae</code></a></p>
+                        <p>Powered by <a href="http://jekyllrb.com" target="_blank" rel="nofollow"><code>jekyll</code></a>，theme is <a href="https://github.com/lightfish-zhang/pinghsu-jekyll" target="_blank" rel="nofollow"><code>pinghsu</code></a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-item meta-posts">
+                <h3 class="meta-title">RECENT POSTS</h3>
+                
+                    <li>
+                        <a href="/2021-08-03-Conformer">Conformer: Convolution-augmented Transformer for Speech Recognition</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition">Very Deep Convolutional Networks for Large-Scale Image Recognition</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2020-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2020-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-30-Attention-based-models-for-TDSV">Attention-based Models For Text-dependent Speaker Verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances">Text-Independent Speaker Verification with Adversarial Learning on Short Utterances</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
+                    </li>
+                
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<!-- #end -->
+<script src="//cdn.bootcss.com/jquery/1.10.1/jquery.min.js"></script>
+<script>
+	!window.jQuery && document.write(unescape('%3Cscript src="/style/js/jquery.min.js"%3E%3C/script%3E'))
+</script>
+<script src="/style/js/headroom.min.js"></script>
+<script src="/style/js/nav.min.js"></script>
+<script type="text/javascript">
+    var header = new Headroom(document.getElementById("header"), {
+        tolerance: 10,
+        offset : 80,
+        classes: {
+            initial: "animated",
+            pinned: "slideDown",
+            unpinned: "slideUp"
+        }
+    });
+    header.init();
+</script>
+
+<script>window.SmoothScrollOptions = { stepSize: 36 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/smoothscroll/1.4.8/SmoothScroll.min.js"></script>
+<script>
+	!window.SmoothScroll && document.write(unescape('%3Cscript src="/style/js/SmoothScroll.min.js"%3E%3C/script%3E'))
+</script>
+
+
+
+
+  </body>
+</html>

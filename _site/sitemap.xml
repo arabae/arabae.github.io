@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+    
+    <url>
+      <loc>http://localhost:4000/2021-08-03-Conformer</loc>
+      
+        <lastmod>2021-08-03T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition</loc>
+      
+        <lastmod>2021-01-25T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2020-10-13-Cross-Attentive-Pooling-for-SV</loc>
+      
+        <lastmod>2020-10-13T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2020-10-06-Metric-Laerning-for-Keyword-Spotting</loc>
+      
+        <lastmod>2020-10-06T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2019-07-30-Attention-based-models-for-TDSV</loc>
+      
+        <lastmod>2019-07-30T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2019-07-24-TISV-with-Adversarial-Learning-on-Short-Utterances</loc>
+      
+        <lastmod>2019-07-24T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2019-07-10-GE2E-loss-for-SV</loc>
+      
+        <lastmod>2019-07-10T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV</loc>
+      
+        <lastmod>2019-06-03T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA</loc>
+      
+        <lastmod>2019-05-22T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
+      <loc>http://localhost:4000/2019-05-01-Attentive-Statistics-Pooling-for-Deep-Speaker-Embedding</loc>
+      
+        <lastmod>2019-05-01T00:00:00+09:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+</urlset>
+    
+    

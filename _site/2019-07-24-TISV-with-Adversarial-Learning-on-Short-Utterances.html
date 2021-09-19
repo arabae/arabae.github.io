@@ -15,6 +15,31 @@
     <link href="/style/css/highlight.min.css" rel="stylesheet">
     <link href="/style/css/style.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="/style/css/iconfont/iconfont.css">
+	
+	  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    TeX: {
+      equationNumbers: {
+        autoNumber: "AMS"
+      }
+    },
+    tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$'] ],
+    processEscapes: true,
+  }
+});
+MathJax.Hub.Register.MessageHook("Math Processing Error",function (message) {
+	  alert("Math Processing Error: "+message[1]);
+	});
+MathJax.Hub.Register.MessageHook("TeX Jax - parse error",function (message) {
+	  alert("Math Processing Error: "+message[1]);
+	});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+	
 </head>
 
 <body class="bg-grey" gtools_scp_screen_capture_injected="true">
@@ -410,7 +435,7 @@ gitalk.render('gitalk-container')
     <div class="footer-social">
         <div class="footer-container clearfix">
             <div class="social-list">
-                <a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
+		<a href="/"><span class='iconfont icon-home'></span>&nbsp;&nbsp;HOME</a>
                 <a rel="nofollow" target="_blank" href="https://github.com/arabae"><span class='iconfont icon-github'></span>&nbsp;&nbsp;Github</a>
                 <a target="_blank" href="/feed.xml"><span class='iconfont icon-rss'></span>&nbsp;&nbsp;RSS</a>
             </div>
@@ -434,11 +459,19 @@ gitalk.render('gitalk-container')
                 <h3 class="meta-title">RECENT POSTS</h3>
                 
                     <li>
-                        <a href="/2019-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                        <a href="/2021-08-03-Conformer">Conformer: Convolution-augmented Transformer for Speech Recognition</a>
                     </li>
                 
                     <li>
-                        <a href="/2019-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
+                        <a href="/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition">Very Deep Convolutional Networks for Large-Scale Image Recognition</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2020-10-13-Cross-Attentive-Pooling-for-SV">Cross attentive pooling for speaker verification</a>
+                    </li>
+                
+                    <li>
+                        <a href="/2020-10-06-Metric-Laerning-for-Keyword-Spotting">Metric Learning for Keyword Spotting</a>
                     </li>
                 
                     <li>
@@ -451,14 +484,6 @@ gitalk.render('gitalk-container')
                 
                     <li>
                         <a href="/2019-07-10-GE2E-loss-for-SV">Generalized End to End Loss For Speaker Verification</a>
-                    </li>
-                
-                    <li>
-                        <a href="/2019-06-03-Generative-Adversarial-Speaker-Embedding-Networks-for-Domain-Roubust-E2E-SV">Generative Adversarial Speaker Embedding Networks for Domain Robust End-to-End Speaker Verification</a>
-                    </li>
-                
-                    <li>
-                        <a href="/2019-05-22-E2E-DNN-based-Speaker-Recognition-Inspired-by-i-vector-and-PLDA">End-to-End DNN based Speaker Recognition Inspired by i-vector and PLDA</a>
                     </li>
                 
             </div>

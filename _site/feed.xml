@@ -5,9 +5,694 @@
     <description>Speech/Speaker Recognition Study</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 09 Jan 2021 19:21:09 +0900</pubDate>
-    <lastBuildDate>Sat, 09 Jan 2021 19:21:09 +0900</lastBuildDate>
+    <pubDate>Sun, 19 Sep 2021 20:11:53 +0900</pubDate>
+    <lastBuildDate>Sun, 19 Sep 2021 20:11:53 +0900</lastBuildDate>
     <generator>Jekyll v3.8.7</generator>
+    
+      <item>
+        <title>Conformer: Convolution-augmented Transformer for Speech Recognition</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#abstract&quot; id=&quot;markdown-toc-abstract&quot;&gt;&lt;strong&gt;&lt;em&gt;Abstract&lt;/em&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#1-introduction&quot; id=&quot;markdown-toc-1-introduction&quot;&gt;&lt;strong&gt;&lt;em&gt;1. Introduction&lt;/em&gt;&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#2-conformerencoder&quot; id=&quot;markdown-toc-2-conformerencoder&quot;&gt;&lt;em&gt;2. ConformerEncoder&lt;/em&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#21-multi-headed-self-attention-module&quot; id=&quot;markdown-toc-21-multi-headed-self-attention-module&quot;&gt;2.1. Multi-Headed Self-Attention Module&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#22-convolution-module&quot; id=&quot;markdown-toc-22-convolution-module&quot;&gt;2.2. Convolution Module&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#23-feedforward-module&quot; id=&quot;markdown-toc-23-feedforward-module&quot;&gt;2.3. FeedForward Module&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#24-conformer-block&quot; id=&quot;markdown-toc-24-conformer-block&quot;&gt;2.4. Conformer Block&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#3-experiments&quot; id=&quot;markdown-toc-3-experiments&quot;&gt;&lt;em&gt;3. Experiments&lt;/em&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#31-data&quot; id=&quot;markdown-toc-31-data&quot;&gt;3.1 Data&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#32-conformer-tranducer&quot; id=&quot;markdown-toc-32-conformer-tranducer&quot;&gt;3.2 Conformer Tranducer&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#33-results-on-librispeech&quot; id=&quot;markdown-toc-33-results-on-librispeech&quot;&gt;3.3 Results on LibriSpeech&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#34-ablation-studies&quot; id=&quot;markdown-toc-34-ablation-studies&quot;&gt;3.4 Ablation Studies&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#4-conclusion&quot; id=&quot;markdown-toc-4-conclusion&quot;&gt;&lt;em&gt;4. Conclusion&lt;/em&gt;&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#further-reading&quot; id=&quot;markdown-toc-further-reading&quot;&gt;&lt;strong&gt;Further reading&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Anmol Gulati, James Qin, Chung-Cheng Chiu, Niki Parmar, Yu Zhang, Jiahui Yu, Wei Han, Shibo Wang, Zhengdong Zhang, Yonghui Wu, Ruoming Pang&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;abstract&quot;&gt;&lt;strong&gt;&lt;em&gt;Abstract&lt;/em&gt;&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;최근 Transformer 및 Convolution neural network(CNN) 기반 모델은 Automatic Speech Recognition(ASR)에서 Recurrent neural networks (RNNs)보다 성능이 좋아 기대되는 결과를 보임&lt;/p&gt;
+
+&lt;p&gt;Transformer 모델은 content-based global interaction을 잘 포착하는 반면 CNN은 local feature를 효과적으로 활용함&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;parameter-efficient 방식으로 audio sequence의 local 및 global dependency를 모두 모델링하기 위해 CNN과 Transformer를 결합하는 방법을 연구하여 두 세계의 장점을 모두 달성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;⇒ Conformer라는 음성 인식을 위한 Convolution-Augmented Transformer를 제안&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Conformer는 SOTA 정확도를 달성하는 이전 Transformer 및 CNN 기반 모델보다 훨씬 뛰어난 성능을 가져옴&lt;/p&gt;
+
+&lt;p&gt;LibriSpeech 벤치마크 사용&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;WER 2.1% / 4.3% (language model X) - test/testother&lt;/li&gt;
+  &lt;li&gt;WER 1.9% / 3.9% (language model O)&lt;/li&gt;
+  &lt;li&gt;WER 2.7% / 6.3% (small model, only 10M parameter)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;1-introduction&quot;&gt;&lt;strong&gt;&lt;em&gt;1. Introduction&lt;/em&gt;&lt;/strong&gt;&lt;/h1&gt;
+
+&lt;p&gt;NN기반의 End-to-End ASR system은 최근 몇 년 동안 크게 개선됨&lt;/p&gt;
+
+&lt;p&gt;RNN은 audio sequence의 temproal dependency를 효과적으로 모델링할 수 있기 때문에 ASR에 대해 사실상 일반적인 선택&lt;/p&gt;
+
+&lt;p&gt;최근 self-attention에 기반의 &lt;strong&gt;transformer 구조&lt;/strong&gt;는 &lt;strong&gt;long distance interaction을 capture&lt;/strong&gt;하는 능력과 &lt;strong&gt;high training efficiency&lt;/strong&gt;로 sequence 모델링에 주로 사용됨&lt;/p&gt;
+
+&lt;p&gt;더불어, CNN도 &lt;strong&gt;local receptive field layer&lt;/strong&gt;를 통해 &lt;strong&gt;점진적으로 local context를 capture&lt;/strong&gt;하여 ASR에서도 성공적&lt;/p&gt;
+
+&lt;p&gt;그러나 self-attention 또는 CNN 모델은 각각 한계점이 존재&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;Transformers&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;long-range global context pattern에 효과적&lt;/li&gt;
+  &lt;li&gt;세분화된 local feature pattern을 추출하는 능력은 떨어짐&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;CNN&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;local 정보를 활용하고, vision에서 사실상 computational block으로 사용됨&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#further-reading&quot;&gt;translation equivariance&lt;/a&gt;를 유지하고 edge와 shape과 같은 feature를 capture할 수 있는 local window를 통해 shared position-based kernel을 학습&lt;/li&gt;
+  &lt;li&gt;local connectivity를 사용하는 것은 global information을 capture하기 위해선 더 많은 layer와 parameter가 필요하다는 제한이 존재&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;이러한 문제점을 해결하기 위해 동시에 연구된 &lt;strong&gt;contextnet&lt;/strong&gt;은 더 긴 context를 capture 하기 위해 &lt;strong&gt;각 residual block에 squeeze-and-excitation module을 둚&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;그러나 전체 sequence에 대해 &lt;strong&gt;global average만 적용&lt;/strong&gt;하기 때문에 &lt;strong&gt;dynamic한 global context&lt;/strong&gt;를 capture하기엔 여전히 &lt;strong&gt;제한적&lt;/strong&gt;임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;최근 연구에 따르면 CNN과 self-attention을 결합하면 개별적으로 사용하는 것보다 향상되었음&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;position-wise local feature를 모두 학습하고 content-based global interaction을 사용할 수 있음&lt;/li&gt;
+  &lt;li&gt;동시에 [15, 16]과 같은 논문은 equivariance을 유지하는 상대적 위치 기반 정보로 self-attention을 강화함&lt;/li&gt;
+  &lt;li&gt;Wu et al. [17]은 입력을 self-attention과 convolution의 두 가지 branch로 분할하고 출력을 연결하는 multi-branch architecture를 제안
+    &lt;ul&gt;
+      &lt;li&gt;이 task는 mobile application을 대상으로 했으며, machine translation task의 개선을 보여줌&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826541-f87104f7-5b5e-41c9-9081-29db15b294bf.png&quot; alt=&quot;img&quot; style=&quot;zoom:40%;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;본 논문에서는 ASR에서 CNN과 self-attention을 유기적(organically)으로 결합하는 방법을 연구
+global과 local interaction이 parameter 효율성을 위해 중요하다고 가정
+→ 이를 달성하기 위해 self-attention과 convolution의 새로운 조합이 두개의 장점을 모두 달성할 것이라고 제안&lt;/p&gt;
+
+&lt;p&gt;self-attention은 global interation을 학습하는 반면 convolution은 relative-offset-based local correlation를 효율적으로 capture함&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Wu et al. [17, 18],에서 영감을 받았고, 그림 1과 같이 한 쌍의 feedforward module 사이에 끼워진 self-attention과 convolution의 새로운 조합을 소개!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;Conformer&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;이전 SOTA Transformer Transducer[7]와 비교&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;LibriSpeech dataset 사용 (외부 language model이 있는 testother 데이터 셋에서 상대적으로 15% 향상)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;10M, 30M, 118M parameter 크기를 갖는 모델 비교&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;10M: test/testother에서 2.7%/6.3%로 유사한 크기의 다른 모델[10]과 비교했을 때 개선됨&lt;/li&gt;
+  &lt;li&gt;30M: 139M parameter를 사용하는 transformer transducer[7]보다 개선됨&lt;/li&gt;
+  &lt;li&gt;118M: 언어 모델을 사용하지 않고 2.1%/4.3%, 사용하면 1.9%/3.9% 성능을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;➕ attention head 수, convolution kernel size, activation fuction, feedforward layer 배치, convolution module을 transformer기반 network에 추가하는 다양한 방법의 효과에 대해 깊이 연구하고, 각각이 어떻게 정확도를 향상시키는지 초점을 둚&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826558-cf9ff480-0a20-4313-804d-569ac4c39e3e.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;2-conformerencoder&quot;&gt;&lt;em&gt;2. ConformerEncoder&lt;/em&gt;&lt;/h1&gt;
+
+&lt;p&gt;audio encoder는 먼저 convolution subsampling layer을 사용해 입력을 처리하고, 다음에 fig1과 같이 여러 conformer block을 거침&lt;/p&gt;
+
+&lt;p&gt;본 논문 model의 구별되는 특징은 [7, 19]에서 transformer block 부분이 conformer block으로 사용됨&lt;/p&gt;
+
+&lt;p&gt;conformer block은 4개의 module(feed-forward module, self-attention module, convolution module, second feed-forward module)이 함께 쌓여 구성됨&lt;/p&gt;
+
+&lt;p&gt;section 2.1, 2 and 2.3에서는 각각 self-attention, convolution, feed-forward module을 소개하고, 마지막으로 2.4에서는 이러한 하위 block이 어떻게 결합되는지 설명&lt;/p&gt;
+
+&lt;h3 id=&quot;21-multi-headed-self-attention-module&quot;&gt;2.1. Multi-Headed Self-Attention Module&lt;/h3&gt;
+
+&lt;p&gt;relative sinusoidal(sin 곡선) positional encoding 방식인 Transformer-XL의 중요한 기술을 통합하면서 multi-head self-attention (MHSA)를 사용&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;💡 relative positional encoding&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;self-attention module이 다른 입력 길이에 대해 더욱 잘 일반화할 수 있도록 함&lt;/li&gt;
+  &lt;li&gt;resulting encoder는 발화 길이의 변화에 대해 더 강인함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;더 깊은 모델을 훈련하고, 정규화하는데 도움이 되는 dropout과 함께 pre-norm residual unit을 사용함&lt;/p&gt;
+
+&lt;p&gt;아래의 그림 3은 multi-head self-attention module block을 나타냄&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826564-520cebdc-c97e-45b1-8349-2842c44f6ca0.png&quot; alt=&quot;img&quot; style=&quot;zoom:40%;&quot; /&gt;&lt;/center&gt;
+
+&lt;h3 id=&quot;22-convolution-module&quot;&gt;2.2. Convolution Module&lt;/h3&gt;
+
+&lt;p&gt;[17]에서 영감을 받아 convolution module은 pointwise convolution과 gated linear unit(glu)인 gating mechanism으로 시작&lt;/p&gt;
+
+&lt;p&gt;그 다음 1D depthwise convolution layer가 이어지고, Batchnorm은 deep 모델 훈련을 돕기 위해 convolution 직후에 위치함&lt;/p&gt;
+
+&lt;p&gt;그림 2는 convolution block을 나타냄&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128827668-4697e2e9-3d33-49e7-9968-28a8af2a70e8.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;23-feedforward-module&quot;&gt;2.3. FeedForward Module&lt;/h3&gt;
+
+&lt;p&gt;[6]에서 제안된 Transformer 구조는 MHSA layer 이후 feed-forward module이 이어지고, two linear transformation 사이에 nonlinear activation이 존재함&lt;/p&gt;
+
+&lt;p&gt;residual connectiondms feed-forward layer 위에 추가되고 layer normalization이 이어짐&lt;/p&gt;
+
+&lt;p&gt;이 구조는 Transformer ASR model [7, 24]에도 적용됨&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826571-ee6a4944-a20c-4625-98ba-99df6b0fc53c.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;pre-norm residual unit[21, 22]을 따르고, residual unit안에 첫 번째 linear layer 이전 입력에서 layer normalization을 적용함&lt;/p&gt;
+
+&lt;p&gt;또한, Swish activation 및 dropout을 적용하여 network를 정규화하는데 도움을 줌&lt;/p&gt;
+
+&lt;p&gt;그림 4는 Feed-Forward Network(FFN) module을 나타냄&lt;/p&gt;
+
+&lt;h3 id=&quot;24-conformer-block&quot;&gt;2.4. Conformer Block&lt;/h3&gt;
+
+&lt;p&gt;제안한 conformer block에는 그림 1과 같이 &lt;strong&gt;multi-head self-attention module과 convolution module 사이에 2개의 feed-forward module&lt;/strong&gt;이 포함됨&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;이 샌드위치 구조는 transformer block의 원래 feed-forward layer를 2개의 half-step feed-forwar layer(attention layer 전 후로 배치)로 대체한 Macaron-Net[18]에서 영감을 얻었음&lt;/li&gt;
+  &lt;li&gt;Macron-Net에서와 같이 본 논문의 feed-forward layer에서 half-step residual weight를 사용함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;두번째 feed-forward module 다음에 최종 layernorm layer가 옴&lt;/p&gt;
+
+&lt;p&gt;수학적으로 conformer block i에 대한 입력 $x_i$에 대해 block의 출력 $y_i$가 다음과 같다는 것을 의미함&lt;/p&gt;
+
+&lt;p&gt;$\tilde{x_i} = x_i + \frac{1}{2}FFN(x_i)$
+$x’_i = \tilde{x_i} + MHSA(\tilde{x_i})$&lt;/p&gt;
+
+&lt;p&gt;$x’‘_i = x’_i + Conv(x’_i)$&lt;/p&gt;
+
+&lt;p&gt;$y_i = Layernorm(x’‘_i + \frac{1}{2}FFN(x’‘_i))$&lt;/p&gt;
+
+&lt;p&gt;section 3.4.3에서 이전 작업에서 사용된 &lt;strong&gt;vanilla FFN과 Macron-style의 half-step FFN을 비교&lt;/strong&gt;함&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2개의 macaron-net style feed-forward layer 사이에 attention module과 convolution module을 끼워넣는 half-step residual connection이 있는게 conformer architecture에서 단일 feed-forward module을 사용하는 것보다 &lt;strong&gt;상당히 개선&lt;/strong&gt;된다는 것을 발견함&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;convolution과 self-attention의 조합은 이전에 연구되었으며 이를 달성하는 많은 방법을 상상할 수 있었음
+self-attention으로 convolution을 증가시키는 다양한 옵션은 section 3.4.2에 작성&lt;/p&gt;
+
+&lt;p&gt;⇒ &lt;strong&gt;self-attention module 뒤에 쌓인 convolution module&lt;/strong&gt;이 음성 인식에 가장 잘 작동하는 것을 발견&lt;/p&gt;
+
+&lt;h1 id=&quot;3-experiments&quot;&gt;&lt;em&gt;3. Experiments&lt;/em&gt;&lt;/h1&gt;
+
+&lt;h3 id=&quot;31-data&quot;&gt;3.1 Data&lt;/h3&gt;
+
+&lt;p&gt;970시간 labeled speech와 language model 구축을 위한 추가 800M word token text전용 corpus로 구성된 LibriSpeech dataset에서 제안된 모델을 평가&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;25ms window, 10ms stride&lt;/li&gt;
+  &lt;li&gt;80-channel filterbank feature&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;SpecAugment [27, 28] with mask parameter (F=27)와 최대 time-mask ratio(ps=0.05)를 가진 10개 time mask 사용&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;time msak의 최대 size는 발화 길이 * ps로 설정&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;32-conformer-tranducer&quot;&gt;3.2 Conformer Tranducer&lt;/h3&gt;
+
+&lt;p&gt;network 깊이, model dimension, attention head 수의 다양한 조합을 스위핑하고, model parameter size 제약 내에서 가장 성능이 좋은 모델을 선택해 10M, 30M, 118M  parameter를 사용하여 소, 중, 대 세가지 모델을 식별&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;모든 모델에서 single-LSTM layer decoder를 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;표 1은 architecture hyperparameter를 보여줌&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128827078-593e8915-0585-42e0-b603-f3974ec64f4d.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;dropout&lt;/strong&gt;: module 입력에 추가되기 전에 conformer의 각 residual unit, 즉 각 module의 출력에 적용 (비율 $P_{drop}$ = 0.1)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Variational noise&lt;/strong&gt;[5, 30]&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;L2 regularization&lt;/strong&gt;: 1e-6 weight (모든 학습 가능한 wight에 추가)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Adam&lt;/strong&gt; optimizer(β1 = 0.9, β2 = 0.98, ε = 10−9)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;transformer&lt;/strong&gt; &lt;strong&gt;learning rate schedule&lt;/strong&gt; (10k warm-up step, 최대 learning rate $\frac{0.05}{\sqrt{d}}$ (d: model dimension)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;3-layer LSTM LM&lt;/strong&gt; (width 4096)
+    &lt;ul&gt;
+      &lt;li&gt;LibriSpeech 960h에서 구축된 1k Words Per Minute(WPM)으로 tokenized LibriSpeech960h transcript가 추가된 LibriSpeech language model corpus에서 훈련&lt;/li&gt;
+      &lt;li&gt;LM은 dev-set transcript의 word-level perplexity(혼란도)가 63.9&lt;/li&gt;
+      &lt;li&gt;shallow fusion에 대한 LM weigth λ는 grid search를 통해 dev-set에서 조정&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;⇒ 모든 모델은 &lt;strong&gt;Lingvo toolkit&lt;/strong&gt;으로 구현&lt;/p&gt;
+
+&lt;h3 id=&quot;33-results-on-librispeech&quot;&gt;3.3 Results on LibriSpeech&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128827091-238c5479-203d-4918-b555-655df0c6614a.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;표 2는 LibriSpeech test-clean/test-other에 대한 모델의 WER 결과를 ContextNet, Transformer transducer 및 QuartzNet을 포함한 몇 가지 최신 모델과 비교&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;모든 평가 결과는 소수점 이하 1자리로 반올림&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;언어 모델 X&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;중간 모델의 성능은 test/testother에서 이미 가장 잘 알려진 Transformer, LSTM 기반 모델 또는 유사한 크기의 convolution 모델을 능가하는 2.3/5.0로 경쟁력 있는 결과를 달성&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;언어 모델 O&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;모든 기존 모델 중 가장 낮은 WER&lt;/li&gt;
+  &lt;li&gt;single NN에서 Transformer와 convolution을 결합하는 것의 효율성을 분명히 보여줌&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;34-ablation-studies&quot;&gt;3.4 Ablation Studies&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;3.4.1. Conformer Block vs Transformer Block&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Conformer block은 여러 방면에서 Transformer block과 다름&lt;/p&gt;
+
+&lt;p&gt;특히, macaron-style의 convolution block과 이를 둘러싼 FFN pair가 존재
+⇒ 총 parameter 수를 변경하지 않고, conformer block을 transformer block으로 변경하여 차이를 확인&lt;/p&gt;
+
+&lt;p&gt;표 3는 conformer block에 대한 각 변형의 영향을 나타냄&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128827098-dde8d71e-599e-405c-b83e-ad70b5fe9e0e.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;모든 차이점 중에서 &lt;strong&gt;convolution sub-block&lt;/strong&gt;이 가장 중요한 feature이지만 macaron-style의 FFN pair를 갖는 것이 동일한 수의 parameter를 갖는 single FFN보다 더 효과적&lt;/p&gt;
+
+&lt;p&gt;swish activation을 사용하면 Conformer 모델에서 더 빠른 수렴이 이루어짐&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;3.4.2 Combinations of Convolution and Transformer Modules&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;MHSA module과 convolution module을 결합하는 다양한 방법의 효과를 연구&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;convolution module의 depthwise convolution을 lightweight convolution[35]으로 교체 시도
+    &lt;ul&gt;
+      &lt;li&gt;특히, dev-other dataset에서 성능이 크게 떨어지는 것을 볼 수 있음&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Conformer 모델에서 MHSA module 앞에 convolution module을 배치
+    &lt;ul&gt;
+      &lt;li&gt;dev-other에서 0.1만큼 결과가 저하시키는 것을 발견&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;[17]에서 제안한 대로 output이 연결된 multi-head self-attention module과 convolution module의 parallel branch로 input을 분할
+    &lt;ul&gt;
+      &lt;li&gt;제안한 architecture와 비교할 때 성능을 악화시킨다는 것을 발견&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;⇒ 표 4는 Conformer block에서 self-attention module 뒤에 convolution module을 배치하는 이점을 시사함&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826577-dfee6a64-4c88-426e-8652-9ea83a8a39de.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;3.4.3. Macaron Feed Forward Modules&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Transformer 모델에서와 같이 attention block 이후 single FFN 대신 Conformer block에는 self-attention 및 convolution module 사이에 macaron과 같은 한 쌍의 feed-forward module이 있음&lt;/p&gt;
+
+&lt;p&gt;또한, Conformer feed-forward module은 half-step residule과 함께 사용됨&lt;/p&gt;
+
+&lt;p&gt;표 5는 single FFN 또는 전체 full-step residual을 사용해 Conformer block을 변경할 때 결과를 나타냄&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;차이가 많이 없지만, macaron style feed-forward module이 가장 좋은 성능을 보임&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128827103-fde4055b-51d1-48d7-a372-6e8e0624c306.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;3.4.4. Number of Attention Heads&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;self-attention에서 각 attention head는 입력의 다른 부분에 초점을 맞추어 학습하여 단순한 weighted average 이상으로 predict를 개선할 수 있음&lt;/p&gt;
+
+&lt;p&gt;large 모델에서 모든 layer에서 4~32까지 동일한 수의 attention head를 변경하면서 사용해 효과를 연구하기 위해 실험을 수행&lt;/p&gt;
+
+&lt;p&gt;표 6에서 볼 수 있듯이 특히 dev-other dataset에 대해 attention head를 최대 16까지 증가시키면 정확도가 향상된다는 것을 발견&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826587-7f85fcb1-4ec0-4660-8df9-5d54144b5562.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;&lt;em&gt;3.4.5. Ablation study on depthwise convolution kernel sizes&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;depthwise convolution에서 kernel size의 영향을 연구하기 위해 모든 layer에 대해 동일한 kernel size를 사용해 large 모델에서 kernel size를 {3, 7, 17, 32, 65}로 스윕하여 실험&lt;/p&gt;
+
+&lt;p&gt;kernel size 17과 32까지 size가 클수록 성능이 향상되지만, 표 7에서 볼 수 있듯이 size 65의 경우에는 성능이 악화된다는 것을 발견&lt;/p&gt;
+
+&lt;p&gt;dev WER에서 소수 둘째자리를 비교하면 비교하면 나머지보다 size 32가 더 나은 성능을 보임&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/128826596-fede2ba9-ac3d-4a18-b5ac-0c2a6196592e.png&quot; alt=&quot;img&quot; style=&quot;zoom:60%;&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;4-conclusion&quot;&gt;&lt;em&gt;4. Conclusion&lt;/em&gt;&lt;/h1&gt;
+
+&lt;p&gt;본 몬문에서는 End-to-End speech recognition을 위해 &lt;strong&gt;CNN 및 Transformer의 구성 요소를 통합&lt;/strong&gt;하는 architecture인 &lt;strong&gt;Conformer를 도입&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;각 구성 요소의 중요성을 연구해 Convolution module을 포함하는 것이 Conformer 성능에 중요하다는 것을 보여줌&lt;/p&gt;
+
+&lt;p&gt;LibriSpeech dataset에 대한 이전 model보다 더 적은 parameter로 향상된 정확도를 보임&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;test/test-other에 대해 1.9%/3.9%로 SOTA 달성&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;further-reading&quot;&gt;&lt;strong&gt;Further reading&lt;/strong&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;💡 translation equivariance&lt;/strong&gt;&lt;br /&gt;
+&lt;a href=&quot;https://chriswolfvision.medium.com/what-is-translation-equivariance-and-why-do-we-use-convolutions-to-get-it-6f18139d4c59&quot;&gt;What is translation equivariance, and why do we use convolutions to get it?&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;💡 Transformer와 구조적으로 비교&lt;/strong&gt;&lt;br /&gt;
+&lt;a href=&quot;https://github.com/kakaobrain/nlp-paper-reading/blob/master/notes/conformer.md&quot;&gt;kakaobrain/nl-paper-reading&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Tue, 03 Aug 2021 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2021-08-03-Conformer</link>
+        <guid isPermaLink="true">http://localhost:4000/2021-08-03-Conformer</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
+    
+      <item>
+        <title>Very Deep Convolutional Networks for Large-Scale Image Recognition</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#abstact&quot; id=&quot;markdown-toc-abstact&quot;&gt;Abstact&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#1-introduction&quot; id=&quot;markdown-toc-1-introduction&quot;&gt;1. Introduction&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#2-convnet-configurations&quot; id=&quot;markdown-toc-2-convnet-configurations&quot;&gt;2. ConvNet Configurations&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#21-architecture&quot; id=&quot;markdown-toc-21-architecture&quot;&gt;2.1 Architecture&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#22-confiurations&quot; id=&quot;markdown-toc-22-confiurations&quot;&gt;2.2 Confiurations&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#23-discussion&quot; id=&quot;markdown-toc-23-discussion&quot;&gt;2.3 Discussion&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#3-classification-framework&quot; id=&quot;markdown-toc-3-classification-framework&quot;&gt;3. Classification Framework&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#31-training&quot; id=&quot;markdown-toc-31-training&quot;&gt;3.1 Training&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#32-testing&quot; id=&quot;markdown-toc-32-testing&quot;&gt;3.2 &lt;strong&gt;Testing&lt;/strong&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;span style=&quot;font-size:13pt&quot;&gt;Karen Simonyan, Andrew Zisserman&lt;/span&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;abstact&quot;&gt;Abstact&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;본 논문에서는 large-scale image recognition setting에서 CNN의 깊이가 accuarcy에 미치는 영향에 관한 연구 진행&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;주요 기여&lt;/strong&gt;: 매주 작은 (3x3) convolution filter를 사용해서 깊이를 증가시키면서 network를 평가 (16-19 weight layer를 쌓아서 이전 보다 상당히 개선함)&lt;/li&gt;
+  &lt;li&gt;다른 데이터 셋에서도 일반화되어 가장 좋은 성능을 얻을 수 있었고, 두 가지 최고 성능의 ConvNet 모델을 공개&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Convolutional Networks (ConvNets)은 최근 large-scale 이미지 및 비디오 인식에서 아주 좋은 성능을 보임
+    &lt;ul&gt;
+      &lt;li&gt;deep ConvNets(2012)을 개선하기 위한 여러 시도를 진행
+        &lt;ol&gt;
+          &lt;li&gt;첫 번째 convolutional layer의 strid와 window size를 더 작게 사용하는 것(2013)&lt;/li&gt;
+          &lt;li&gt;전체 이미지와 여러  크기에 걸쳐 조밀하게 network를 훈련하고 테스트하는 것(2014)&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;본 논문에서는 ConvNet architecture 설계의 또 다른 중요한 측면인 “&lt;strong&gt;깊이, depth&lt;/strong&gt;“에 대해 다룸
+    &lt;ul&gt;
+      &lt;li&gt;이를 위해 &lt;strong&gt;모든 layer에서 (3x3)의 매주 작은 convolution filter를 사용&lt;/strong&gt;하여 network의 깊이를 계속 증가시킴
+  — parameter 수를 줄임으로써 일반화가 더 용이, overfitting을 막고, 연산량을 줄임&lt;/li&gt;
+      &lt;li&gt;결과적으로 classification과 &lt;strong&gt;localisation tasks&lt;/strong&gt;에 대한 가장 좋은 정확도 뿐만 아니라 다른 이미지 인식 데이터 셋에도 적용할 수 있는 훨씬 더 정확한 ConvNet architecture를 개발&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;localisation tasks&lt;/strong&gt;
+object가 있는 위치를 찾아 그 주위에 bounding box를 그리는 것&lt;/p&gt;
+
+&lt;p&gt;❓❓❓&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;large public image repositories&lt;/strong&gt;
+기존에는 이미지 많지 않아서 훈련이 크게, 많이 할 수 없었는데 ImageNet(image database)과 같은 저장소가 생겨서 이러한 문제점을 해결할 수 있었음
+&lt;strong&gt;high-dimensional shallow feature&lt;/strong&gt;
+높은 차원의 데이터를 학습 계층을 적게 사용해서도 학습을 가능하게 했다? — 딥러닝이 유행하기 전에는 자동으로 네트워크를 훈련하는게 아니라, 필터를 수동으로 손으로 만들어 사용했는데 상대적으로 dimension이 크고 복잡한데 예전 모델을 일컫는 것 같음&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;testbed&lt;/strong&gt;
+image를 활용해서 내가 가지고 있는 문제나 모델을 테스트하는 장소&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;used as a part of a relatively simple pipelines&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;다른 모델과 합쳐서 사용할 때 앞단에 많이 사용됨&lt;/p&gt;
+
+&lt;h1 id=&quot;2-convnet-configurations&quot;&gt;2. ConvNet Configurations&lt;/h1&gt;
+
+&lt;h3 id=&quot;21-architecture&quot;&gt;2.1 Architecture&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Conv layer&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;feature extractor&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;input: fixed-size 224x224 RGB (preprocessing: 각 channel에 대해 mean빼는 것 — data centering)
+    &lt;ul&gt;
+      &lt;li&gt;음수~양수로 값의 범위를 맞춤&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;(3x3) filter를 사용하는 convolutional layer를 쌓은 구조
+    &lt;ul&gt;
+      &lt;li&gt;3x3 filter: 위/아래, 왼쪽/오른쪽, 중앙의 정보를 수집할 수 있는 가장 작은 크기&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;1x1 convolution filter도 사용
+    &lt;ul&gt;
+      &lt;li&gt;input channels의 linear transformation을 위해&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;stride: 1, padding 적용 O&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Spatial Pooling layer&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;conv layer 이후 적용 (모든 conv 이후에 사용되지는 않음)&lt;/li&gt;
+  &lt;li&gt;총 5개의 max poolinhg layer 사용
+    &lt;ul&gt;
+      &lt;li&gt;2x2 size, stride: 2&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;❓❓❓&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Spatial Pooling layer = Spatial Pyramid Pooling? No!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;del&gt;만약 두개가 같다면 이미지 인식에서 일정한 크기로 자르거나 축소해서 모델에 넣은게 아니라 통채로 넣고 pooling을 이용해서 일정한 크기로 맞추서 FC 입력으로 넣는 것 같은데 뒤에서 훈련할 때 특정 차원으로 맞추는 것 같은데 왜 이 방법은 사용하는 것인지?&lt;/del&gt;&lt;/p&gt;
+
+&lt;p&gt;→ 10x10이 있으면 이걸 줄여서 stride에 맞춰 5x5로 줄이는 것 (일반적인 pooling이랑 같음)&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Fully-connected layer (FC)&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;conv에서 나온 feature로 확률값을 이용해 classification&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;3개의 FC 사용 + softmax layer
+    &lt;ul&gt;
+      &lt;li&gt;1-2 layer: 4096개 node, 3 layer: 1000 (classification을 위해)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;activation function: ReLU&lt;/li&gt;
+  &lt;li&gt;Local Response Normalization (LRN) 정규화 포함X (하나 제외하고)
+    &lt;ul&gt;
+      &lt;li&gt;ReLU를 사용하면 양수값은 자기 자신이 나오게 되어, 매우 큰 값을 갖는 경우(outlier) 다른 값들이 기능을 못할 수 있음&lt;/li&gt;
+      &lt;li&gt;ReLU 이후에 나오는 값을 주변 값을 이용해 normalize해줌으로써 이러한 것을 완화&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;22-confiurations&quot;&gt;2.2 Confiurations&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;깊이가 더 깊어짐에도 불구하고 본 논문에서 제안하는 network에 있는 가중치의 수는 더 얕고 큰 conv를 갖는 모델의 가중치 수보다 크지 않음
+    &lt;ul&gt;
+      &lt;li&gt;Sermanet et al., 2014: 144M weights&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/124697233-67018600-df21-11eb-86c6-962f45358b86.png&quot; alt=&quot;img&quot; style=&quot;zoom: 80%;&quot; /&gt;&lt;/center&gt;
+
+&lt;h3 id=&quot;23-discussion&quot;&gt;2.3 Discussion&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;차별점&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;stride=4 11x11 filter, stride=2 7x7 filter와 같이 큰 filter를 사용하는 이전 모델들과 달리 &lt;strong&gt;3x3의 매우 작은 size의 filter를 사용&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;3x3 filter를 사용하는 이유&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Table1에서 중간에 spatial pooling이 없는 경우 여러 개의 conv가 stack되어 있는 것을 알 수 있음&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;2개를 사용하게되면 5x5 filter를 사용하는 것과 같은 기능을 수행할 수 있음 (= effective receptive field가 같음)
+    &lt;ul&gt;
+      &lt;li&gt;3개 사용: 7x7&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;→ 얻는 이점은?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;activation function을 더 많이 거치면서 non-linear한 문제를 더 잘 풀 수 있게 됨&lt;/li&gt;
+  &lt;li&gt;parameter의 수를 줄임
+    &lt;ul&gt;
+      &lt;li&gt;C채널의 3x3 convolution이 3 layer인 경우: $3(3^2C^2) = 27C^2$&lt;/li&gt;
+      &lt;li&gt;C채널 7x7 convolution이 1 layer인 경우: $7^2(C^2)=49C^2$&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;decision function의 비선형성을 증가시키기 위해 1x1 conv를 사용
+— 비선형성을 증가시키면 좀 더 복잡한 문제를 풀 수 있게 됨&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;유사한 task&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Lin et al.(2014)
+— “Network in Network”에서 1x1 conv가 활용됨, 그러나 본 논문의 구조보다 깊지 않으며 ILSVRC 데이터 셋에서 평가하지 않음&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Goodfellow et al.(2014)
+— 거리 번호 인식에서 깊은 ConvNets을 적용했고 깊이가 증가함에 따라 성능이 향상됨을 보여줌&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Szegedy et al.(2014)
+—”GoogLeNet” 매우 깊은 ConvNet(22 layer)와 작은 convolution을 기반한다는 점에서 유사함 (1x1, 5x5 사용), 본 논문보다 network topology가 복잡하고 단일 네트워크 분류에서 본 논문 성능이 더 우수&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;3-classification-framework&quot;&gt;3. Classification Framework&lt;/h1&gt;
+
+&lt;h3 id=&quot;31-training&quot;&gt;3.1 Training&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;hyperparameter&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;cost function: Cross Entropy&lt;/li&gt;
+  &lt;li&gt;mini-batch size: 256&lt;/li&gt;
+  &lt;li&gt;optimizer: Momentum=0.9&lt;/li&gt;
+  &lt;li&gt;regularization: L2 regularization($5 · 10^{−4}$), Dropout(0.5)&lt;/li&gt;
+  &lt;li&gt;learning rate: $10^{-2}$ (validation accuarcy의 증가가 멈추면 0.1씩 감소 — 3배 감소)&lt;/li&gt;
+  &lt;li&gt;370L iterations (74 epochs)&lt;/li&gt;
+  &lt;li&gt;pre-initialization: A model의 일부(처음 4개 conv+마지막 3개 FC)를 훈련한 뒤 가져와서 초기값으로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Training image size&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;isotropically-rescaled&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;image를 VGG model input size(224x224)에 맞도록 변경해줘야 함&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;S를 이용&lt;/strong&gt;해서 &lt;strong&gt;비율은 그대로&lt;/strong&gt; 두고 size를 바꾼 뒤 &lt;strong&gt;crop하여 사용&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;training scale S&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;S를 고정시키는 것
+    &lt;ul&gt;
+      &lt;li&gt;S=256으로 두어 먼저 network를 훈련하고, S=384로 훈련할 때는 256으로 훈련한 파라미터로 가중치를 초기화하여 사용하고, 더 작은 learning rate 사용 ($10^{-3}$)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;256~512 중 random하게 S값 사용 (multi-scale)
+    &lt;ul&gt;
+      &lt;li&gt;object가 모두 다른 size를 갖으면서 학습효과가 더 좋아질 수 있음&lt;/li&gt;
+      &lt;li&gt;data augmentation 효과(= scale jittering)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;32-testing&quot;&gt;3.2 &lt;strong&gt;Testing&lt;/strong&gt;&lt;/h3&gt;
+
+&lt;p&gt;train에 사용된 S와 같은 역할을 하는 &lt;strong&gt;Q&lt;/strong&gt; 를 사용하여 &lt;strong&gt;image rescaling&lt;/strong&gt; 적용&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;$Q \ne S$&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;구조 변경&lt;/strong&gt; (crop하지 않은 전체 이미지에 적용할 수 있음)&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;FC layer → conv
+    &lt;ul&gt;
+      &lt;li&gt;first: &lt;strong&gt;7x7 conv&lt;/strong&gt;&lt;/li&gt;
+      &lt;li&gt;last two: &lt;strong&gt;1x1 conv&lt;/strong&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;→ class 수와 동일한 channel 수와 input image size에 따라 가변 공간 해상도를 갖는 class score map&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;고정 크기의 벡터&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;class score를 얻기 위해 pooling 진행(spatially averaged)&lt;/li&gt;
+  &lt;li&gt;image를 수평으로 뒤집어서, 원본 이미지와 뒤집힌 이미지의 softmax 결과를 평균내 최종 score로 사용&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;Reference&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;paper [&lt;a href=&quot;https://arxiv.org/pdf/1409.1556.pdf&quot;&gt;📑&lt;/a&gt;]&lt;/li&gt;
+  &lt;li&gt;CNN의 parameter 개수와 tensor 사이즈 계산하기 [&lt;a href=&quot;https://seongkyun.github.io/study/2019/01/25/num_of_parameters/&quot;&gt;👆&lt;/a&gt;]&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 25 Jan 2021 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition</link>
+        <guid isPermaLink="true">http://localhost:4000/2021-01-25-Very-Deep-Convolutional-Networks-for-Large-Scale-Image-Recognition</guid>
+        
+        
+        <category>review</category>
+        
+      </item>
     
       <item>
         <title>Cross attentive pooling for speaker verification</title>
@@ -303,9 +988,9 @@ $R^S_{1, 1}$; support set의 1번째 frame hidden representation과 query set의
 
 &lt;p&gt;&lt;img src=&quot;https://user-images.githubusercontent.com/46676700/95680595-d0b06600-0c15-11eb-8d5a-b8b7166ea620.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
 </description>
-        <pubDate>Sun, 13 Oct 2019 00:00:00 +0900</pubDate>
-        <link>http://localhost:4000/2019-10-13-Cross-Attentive-Pooling-for-SV</link>
-        <guid isPermaLink="true">http://localhost:4000/2019-10-13-Cross-Attentive-Pooling-for-SV</guid>
+        <pubDate>Tue, 13 Oct 2020 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2020-10-13-Cross-Attentive-Pooling-for-SV</link>
+        <guid isPermaLink="true">http://localhost:4000/2020-10-13-Cross-Attentive-Pooling-for-SV</guid>
         
         
         <category>review</category>
@@ -563,9 +1248,9 @@ eq.8에서 non-target의 class index는 N이라고 가정&lt;br /&gt;
   &lt;li&gt;L을 최소화하면 분자에 있는 값(k번째 class의 embedding과 parameter의 거리)이 작아지므로 해당 class에 속한 embedding과 parameter가 점점 가까워질 것&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-        <pubDate>Sun, 06 Oct 2019 00:00:00 +0900</pubDate>
-        <link>http://localhost:4000/2019-10-06-Metric-Laerning-for-Keyword-Spotting</link>
-        <guid isPermaLink="true">http://localhost:4000/2019-10-06-Metric-Laerning-for-Keyword-Spotting</guid>
+        <pubDate>Tue, 06 Oct 2020 00:00:00 +0900</pubDate>
+        <link>http://localhost:4000/2020-10-06-Metric-Laerning-for-Keyword-Spotting</link>
+        <guid isPermaLink="true">http://localhost:4000/2020-10-06-Metric-Laerning-for-Keyword-Spotting</guid>
         
         
         <category>review</category>
